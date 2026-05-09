@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+# Query Object Conventions
+
+- One query concern per class. Simple one-line filters stay as model scopes.
+- Public entry point is `#call`; accept optional filters as keyword arguments.
+- Return `ActiveRecord::Relation` for chainability, or `Hash` for aggregations.
+- Query objects are read-only. No writes, callbacks, jobs, emails, or side effects.
+- Use `includes`, `preload`, or `eager_load` when returned records need associations.
+
+```ruby
+# BAD
+class RecentOrdersQuery
+  def call
+    Order.where('created_at > ?', 30.days.ago).each(&:touch)
+  end
+end
+
+# GOOD
+class RecentOrdersQuery
+  def call(status: nil)
+    orders = Order.includes(:customer).where('created_at > ?', 30.days.ago)
+    status ? orders.where(status:) : orders
+  end
+end
+```

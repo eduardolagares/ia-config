@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+# Testing Conventions
+
+- **Stack**: Minitest (`ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc.). Prefer `test` blocks or `def test_*` over RSpec-style `describe`/`it` unless project already uses `minitest/spec`.
+- **TDD cycle**: RED (failing test) → GREEN (minimal implementation) → REFACTOR. Change production code or tests per step, not both in same step when proving behavior.
+- **One behavior per test**: one assertion cluster per `test` / `def test_*`; split unrelated cases into separate tests.
+- **Naming**: someone reading only the name should understand what behavior is under test—subject, scenario when relevant, and expected outcome—without opening the body. Describe behavior (`test 'returns 404 when missing'`), not implementation (`test 'calls find'`).
+
+```ruby
+# ❌ BAD — two behaviors, vague name
+test 'works' do
+  assert subject.valid?
+  assert subject.save
+end
+
+# ✅ GOOD
+test 'is valid with required attributes' do
+  assert_predicate subject, :valid?
+end
+
+test 'persists when valid' do
+  assert_nothing_raised { subject.save! }
+end
+```

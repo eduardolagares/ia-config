@@ -1,0 +1,17 @@
+---
+alwaysApply: true
+---
+# Clean Code — Ruby on Rails
+
+- Names reveal intent: `calculate_net_revenue` > `calc`. Named scopes > inline queries.
+- No magic numbers — use constants or ActiveRecord `enum`.
+- Booleans end with `?`: `active?`, `billable?`, `overdue?`.
+- Methods do one thing. Name contains "and" → split it.
+- Guard clauses and early return over nesting.
+- Comments explain **why**, never **what**. Dead code: delete it, use git.
+- No business logic in `before_action`.
+- AR callbacks (`after_create`, `before_save`) only for model invariants. External side effects (email, job, integration) → out.
+- Async or retry → `ApplicationJob`.
+- Services with single `.call` entry point, return via `Result` struct.
+- Complex queries in `app/queries` or scopes, never in the controller.
+- Tests assert behavior, not internal implementation. Mocks only for external dependencies.

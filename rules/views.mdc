@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+# View & component conventions
+
+- **Reusable UI** → ViewComponent under `app/components/`. Prefer components over shared partials for fragments with clear boundaries and tests.
+- **Display formatting** → presenter in `app/presenters/`, subclass `SimpleDelegator` (or delegate to model/record). Dates, currency, labels, conditional copy, assembled strings for the template.
+- **Templates stay dumb** → no business rules, queries, or orchestration in ERB/HAML/SLIM or component templates. Call presenter methods or pass already-resolved values from the controller/query layer.
+
+```ruby
+# app/presenters/order_presenter.rb
+class OrderPresenter < SimpleDelegator
+  def initialize(order)
+    super(order)
+  end
+
+  def status_label
+    { 'paid' => 'Paid', 'pending' => 'Awaiting payment' }[status] || status.titleize
+  end
+end
+```
+
+```erb
+<%# views: use presenter, not inline rules %>
+<%= @order_presenter.status_label %>
+```
+
+```ruby
+# app/components/order_summary_component.rb
+class OrderSummaryComponent < ViewComponent::Base
+  def initialize(order:)
+    @order = OrderPresenter.new(order)
+  end
+end
+```

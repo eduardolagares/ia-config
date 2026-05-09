@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+# Rails models
+
+Thin: validations, associations, scopes, predicates. Orchestration → services/jobs. Callbacks only `before_validation` / `after_initialize` (normalize, defaults); avoid business logic in save/create callbacks unless team OK.
+
+`has_many`/`has_one` → `dependent:`. `enum` hash + int values. `validates` + migrations aligned (`null: false`, indexes). Simple filters → `scope`; complex SQL → query PORO. Tests: Shoulda for shape; custom examples for tricky behavior.
+
+```ruby
+has_many :items, dependent: :destroy
+enum :status, { draft: 0, published: 1 }
+it { is_expected.to validate_presence_of(:title) }
+```

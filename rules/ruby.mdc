@@ -1,0 +1,18 @@
+---
+alwaysApply: true
+---
+# Ruby Conventions
+
+- **Kwargs always.** Exception: single obvious arg (`def find(id)`).
+- **Method names:** verbs, spelled out, concise. No `calc`, `proc`, `get_`.
+- **Variable names:** spelled out. Only loop iterators may be single-letter.
+
+```ruby
+# ❌ BAD
+def calc_tot(usr, qty); end
+calc_tot(u, 3)
+
+# ✅ GOOD
+def calculate_total(user:, quantity:); end
+calculate_total(user: user, quantity: 3)
+```
