@@ -1,11 +1,20 @@
 ---
-alwaysApply: true
+description: Ruby language conventions (kwargs, naming, control flow, blocks, metaprogramming)
+globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
 # Ruby Conventions
 
 - **Kwargs always.** Exception: single obvious arg (`def find(id)`).
 - **Method names:** verbs, spelled out, concise. No `calc`, `proc`, `get_`.
 - **Variable names:** spelled out. Only loop iterators may be single-letter.
+- Use explicit `return` only for guard clauses; let the last expression return naturally.
+- Avoid `unless` with `else`; rewrite as `if`.
+- Use `&&` / `||`, never `and` / `or`.
+- Use safe navigation (`&.`) only when `nil` is an expected state.
+- Prefer `Array.wrap(value)` when input may be scalar or array.
+- Blocks: `do...end` for multi-line, `{ ... }` for single-line.
+- Avoid monkey patches outside of explicit, isolated initializers.
+- Do not use metaprogramming when a regular method solves the problem.
 
 ```ruby
 # ❌ BAD

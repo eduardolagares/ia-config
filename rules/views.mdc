@@ -1,11 +1,20 @@
 ---
-alwaysApply: true
+description: View, ViewComponent, presenter, and helper conventions (I18n, slots, dumb templates)
+globs: app/views/**/*.erb,app/views/**/*.html.erb,app/views/**/*.slim,app/views/**/*.haml,app/components/**/*.rb,app/components/**/*.html.erb,app/components/**/*.html.slim,app/components/**/*.html.haml,app/presenters/**/*.rb,app/helpers/**/*.rb
 ---
 # View & component conventions
 
 - **Reusable UI** → ViewComponent under `app/components/`. Prefer components over shared partials for fragments with clear boundaries and tests.
 - **Display formatting** → presenter in `app/presenters/`, subclass `SimpleDelegator` (or delegate to model/record). Dates, currency, labels, conditional copy, assembled strings for the template.
 - **Templates stay dumb** → no business rules, queries, or orchestration in ERB/HAML/SLIM or component templates. Call presenter methods or pass already-resolved values from the controller/query layer.
+- All user-facing strings via I18n; no hardcoded strings in templates.
+- Use lazy lookup `t('.key')` inside views; the path mirrors the template file.
+- Never use `<%= raw %>`; use `sanitize` or `safe_join`.
+- Helpers for cross-cutting formatting; presenters for record-specific formatting.
+- One ViewComponent per visual concept; name reflects the visual concept, not the data shape.
+- Prefer ViewComponent slots over `if/else` for complex composition.
+- Use `link_to` with `data: { turbo_method: :delete }` instead of manual JS.
+- No queries (`Model.where`, `.find`) inside templates.
 
 ```ruby
 # app/presenters/order_presenter.rb

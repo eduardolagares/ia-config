@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+description: Clean code conventions for Ruby on Rails (naming, structure, error handling, callbacks, services)
+globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
 # Clean Code — Ruby on Rails
 
@@ -12,6 +13,18 @@ alwaysApply: true
 - No business logic in `before_action`.
 - AR callbacks (`after_create`, `before_save`) only for model invariants. External side effects (email, job, integration) → out.
 - Async or retry → `ApplicationJob`.
-- Services with single `.call` entry point, return via `Result` struct.
+- Services expose a single `.call` entry point.
 - Complex queries in `app/queries` or scopes, never in the controller.
 - Tests assert behavior, not internal implementation. Mocks only for external dependencies.
+- Use `Time.current` and `Date.current`, never `Time.now` or `Date.today` in application code.
+- Freeze mutable constants: Array, Hash, and String.
+- Rescue specific error classes. Never `rescue Exception`.
+- Use `Hash#fetch` when a missing key is a bug. Use `[]` only when `nil` is valid.
+- Prefer `presence` over `present? ? value : nil`.
+- Use `tap` only for side effects, never to transform values.
+- Avoid `default_scope`; prefer explicit scopes.
+- Memoize with `||=` only for idempotent values that cannot be `nil` or `false`.
+- Public methods first, private methods below. Prefer `private` over `protected`.
+- Methods return one kind of result. Do not mix `nil`, objects, and exceptions for normal flow.
+- Predicates return `true` or `false`, not generic truthy/falsy values.
+- Use `Data.define` for value objects when available; use `Struct` only for legacy code.

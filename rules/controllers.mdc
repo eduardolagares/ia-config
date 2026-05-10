@@ -1,7 +1,6 @@
 ---
-description: Rails controller and request spec conventions (Pundit, thin controllers, REST)
-globs: app/controllers/**/*.rb,spec/requests/**/*.rb
-alwaysApply: true
+description: Rails controller and integration test conventions (Pundit, thin controllers, REST)
+globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 ---
 
 # Controller conventions
@@ -14,3 +13,11 @@ alwaysApply: true
 - Follow REST conventions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`.
 - Prefer `respond_to` with `format.html`.
 - Test with request specs in `spec/requests/`, not controller specs.
+- Actions ≤ 10 lines; longer logic goes to a service, query object, or private method.
+- Use `before_action` only for setup (load resource, authorize), never for business rules.
+- Render validation errors with `status: :unprocessable_entity` (`render :new, status: :unprocessable_entity`).
+- Use `flash[:notice]` / `flash[:alert]` on redirect; `flash.now` when re-rendering.
+- Do not rescue `ActiveRecord::RecordNotFound` in controllers; let the middleware return 404.
+- Avoid instance variables beyond what the view consumes.
+- Use namespaces (`Admin::`, `Api::V1::`) for distinct areas; one controller per resource.
+- Do not `skip_before_action :verify_authenticity_token` without a documented reason.

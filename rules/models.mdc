@@ -1,11 +1,22 @@
 ---
-alwaysApply: true
+description: Rails model conventions (associations, validations, enums, callbacks, concerns)
+globs: app/models/**/*.rb,test/models/**/*.rb
 ---
 # Rails models
 
 Thin: validations, associations, scopes, predicates. Orchestration → services/jobs. Callbacks only `before_validation` / `after_initialize` (normalize, defaults); avoid business logic in save/create callbacks unless team OK.
 
-`has_many`/`has_one` → `dependent:`. `enum` hash + int values. `validates` + migrations aligned (`null: false`, indexes). Simple filters → `scope`; complex SQL → query PORO. Tests: Shoulda for shape; custom examples for tricky behavior.
+Simple filters → `scope`; complex SQL → query PORO. Tests: Shoulda for shape; custom examples for tricky behavior.
+
+- `belongs_to` is required by default; use `optional: true` only when truly optional.
+- Always pair `validates :uniqueness` with a unique index in the database.
+- Use integer-backed `enum`; strings only with explicit reason.
+- Concerns only for behavior shared by 2+ models.
+- Avoid `attr_accessor` for AR state; use `attribute :name, :type` virtual attributes.
+- Normalize input with `normalizes :field, with: ->(v) { ... }` (Rails 7+).
+- Add counter caches when counts appear in list views.
+- Always set explicit `dependent:` on `has_many` / `has_one` (`:destroy`, `:nullify`, `:restrict_with_error`).
+- Mirror presence validations with `null: false` in the migration.
 
 ```ruby
 has_many :items, dependent: :destroy

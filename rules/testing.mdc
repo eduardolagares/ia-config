@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+description: Minitest conventions (TDD cycle, naming, time/HTTP isolation, mocking boundaries)
+globs: test/**/*.rb
 ---
 # Testing Conventions
 
@@ -7,6 +8,16 @@ alwaysApply: true
 - **TDD cycle**: RED (failing test) → GREEN (minimal implementation) → REFACTOR. Change production code or tests per step, not both in same step when proving behavior.
 - **One behavior per test**: one assertion cluster per `test` / `def test_*`; split unrelated cases into separate tests.
 - **Naming**: someone reading only the name should understand what behavior is under test—subject, scenario when relevant, and expected outcome—without opening the body. Describe behavior (`test 'returns 404 when missing'`), not implementation (`test 'calls find'`).
+- No `sleep` in tests; use explicit assertions instead.
+- Use `travel_to` or `freeze_time` for time-dependent tests; never `Time.now` directly.
+- Test the public API; do not call `send(:private_method, ...)` from tests.
+- One test file per class; the `test/` tree mirrors `app/`.
+- System tests only for critical user flows (slow); unit tests for everything else.
+- VCR (or WebMock) for external HTTP; never hit real APIs in CI.
+- Random test order is the default; never use `i_suck_and_my_tests_are_order_dependent!`.
+- Standardize on fixtures **or** factories per project, not both.
+- Do not share `setup` state across unrelated tests.
+- Mock only external dependencies (HTTP, queue, gateway, time, RNG); never mock your own code.
 
 ```ruby
 # ❌ BAD — two behaviors, vague name

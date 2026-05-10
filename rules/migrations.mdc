@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+description: Rails migration conventions (reversibility, indexes, foreign keys, safe schema changes)
+globs: db/migrate/**/*.rb
 ---
 # Migration conventions
 
@@ -10,3 +11,10 @@ alwaysApply: true
 - Add unique indexes for uniqueness validations.
 - Use `references` with `foreign_key: true` for associations.
 - Never modify a migration that has already been run; create a new one.
+- One change per migration; do not bundle unrelated alterations.
+- Postgres: index large tables with `disable_ddl_transaction!` and `add_index ..., algorithm: :concurrently`.
+- Adding `null: false` to a populated column requires three steps: add with default, backfill, then `change_column_null`.
+- Backfill data in a job or separate migration; never `update_all` on a hot table inside a schema migration.
+- Drop a column in two deploys: set `self.ignored_columns += [...]` first, then `remove_column` in the next migration.
+- Foreign keys always with `on_delete: :restrict`.
+- Use the `strong_migrations` gem when available; respect its warnings.
