@@ -5,7 +5,7 @@ globs: app/domains/**/rules/**/*.rb
 # Rule Object Conventions
 
 - One question per Rule class.
-- Public entry point is `#result`. No `self.call` facade.
+- Public entry point is `#result`. Optionally expose `self.result` with the **same parameters** as `initialize`, delegating to `new(...).result` for short call sites. Do not use `self.call`; use `self.result` only.
 - Result is a primitive: `Boolean`, `String`, `Integer`, or `Decimal`. Never a Relation, record, or Hash.
 - Namespace under `DominioX::Rules::Y::`, mirroring the domain.
 - Class name always expresses a domain question; no trailing `?`.
@@ -26,6 +26,10 @@ module DominioIngressos
     module Ingressos
       # Cliente é portador se for o comprador sem portador designado, ou se for o portador.
       class ClienteIsPortador
+        def self.result(ingresso:, cliente_id:)
+          new(ingresso:, cliente_id:).result
+        end
+
         def initialize(ingresso:, cliente_id:)
           raise ArgumentError, 'ingresso deve ser um objeto Ingresso' unless ingresso.is_a?(::Ingresso)
 
