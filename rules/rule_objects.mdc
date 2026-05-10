@@ -1,0 +1,44 @@
+---
+description: Rule object conventions (single question per class, primitive result, composability)
+globs: app/domains/**/rules/**/*.rb
+---
+# Rule Object Conventions
+
+- One question per Rule class.
+- Public entry point is `#result`. No `self.call` facade.
+- Result is a primitive: `Boolean`, `String`, `Integer`, or `Decimal`. Never a Relation, record, or Hash.
+- Namespace under `DominioX::Rules::Y::`, mirroring the domain.
+- Class name always expresses a domain question; no trailing `?`.
+- Validate argument types at the boundary with `raise ArgumentError`.
+- Use top-level constants (`::Ingresso`) for type checks to avoid namespace ambiguity.
+- Rules are read-only. No writes, callbacks, jobs, emails, or side effects.
+- A comment above the class states the question in natural language.
+- Rules may compose other Rules by instantiating them and calling `.result`.
+- Reference other Rules with full top-level paths (`::DominioX::Rules::Y::Z`).
+- Trivial rules wrapping a single model attribute are acceptable; `#result` may be a single line.
+
+```ruby
+# frozen_string_literal: true
+
+module DominioIngressos
+  module Rules
+    module Ingressos
+      # Cliente é portador se for o comprador sem portador designado, ou se for o portador.
+      class ClienteIsPortador
+        def initialize(ingresso:, cliente_id:)
+          raise ArgumentError, 'ingresso deve ser um objeto Ingresso' unless ingresso.is_a?(::Ingresso)
+
+          @ingresso = ingresso
+          @cliente_id = cliente_id
+        end
+
+        def result
+          return @ingresso.cliente_id == @cliente_id if @ingresso.portador_id.nil?
+
+          @ingresso.portador_id == @cliente_id
+        end
+      end
+    end
+  end
+end
+```

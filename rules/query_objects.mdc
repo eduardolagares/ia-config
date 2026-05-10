@@ -15,7 +15,6 @@ alwaysApply: true
 - Expose a class-level facade: `def self.call(...) = new(...).call`.
 - Namespace under `DominioX::Queries::Y::`.
 - Reuse model named scopes instead of inline `where(...)` when they exist.
-- Start every query file with `# frozen_string_literal: true`.
 - Annotate `self.call` and `#call` with YARD `# @return [ActiveRecord::Relation<X>]`.
 - Decompose `#call` into private methods when there are composed clauses.
 - Normalize parameter variants in the initializer (e.g., accept `id:` or `ids:` and coerce to a single internal form).

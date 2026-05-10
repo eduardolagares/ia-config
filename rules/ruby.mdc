@@ -7,6 +7,7 @@ globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,*
 - **Kwargs always.** Exception: single obvious arg (`def find(id)`).
 - **Method names:** verbs, spelled out, concise. No `calc`, `proc`, `get_`.
 - **Variable names:** spelled out. Only loop iterators may be single-letter.
+- Every Ruby file starts with `# frozen_string_literal: true`.
 - Use explicit `return` only for guard clauses; let the last expression return naturally.
 - Avoid `unless` with `else`; rewrite as `if`.
 - Use `&&` / `||`, never `and` / `or`.
