@@ -20,6 +20,7 @@ alwaysApply: true
 - Normalize parameter variants in the initializer (e.g., accept `id:` or `ids:` and coerce to a single internal form).
 - Accept an optional base relation/scope for composability: `def initialize(scope: Model.all, ...)`.
 - Prefer `preload` over `includes` when associations are known and there is no filter or order on the association.
+- Never instantiate a query object inside a loop; resolve the relation once and iterate it.
 
 ```ruby
 # BAD

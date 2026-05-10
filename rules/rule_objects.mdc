@@ -16,6 +16,7 @@ globs: app/domains/**/rules/**/*.rb
 - Rules may compose other Rules by instantiating them and calling `.result`.
 - Reference other Rules with full top-level paths (`::DominioX::Rules::Y::Z`).
 - Trivial rules wrapping a single model attribute are acceptable; `#result` may be a single line.
+- Document the `#result` return type with a YARD `# @return [Type]` comment when it is not a Boolean (e.g., `# @return [BigDecimal]`).
 
 ```ruby
 # frozen_string_literal: true

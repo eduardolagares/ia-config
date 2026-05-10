@@ -18,6 +18,8 @@ globs: test/**/*.rb
 - Standardize on fixtures **or** factories per project, not both.
 - Do not share `setup` state across unrelated tests.
 - Mock only external dependencies (HTTP, queue, gateway, time, RNG); never mock your own code.
+- Test files are named `*_test.rb`; the file mirrors the class under test.
+- Use `assert_difference` and `assert_changes` to assert state changes instead of comparing values manually.
 
 ```ruby
 # ❌ BAD — two behaviors, vague name

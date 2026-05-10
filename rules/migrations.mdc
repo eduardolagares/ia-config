@@ -18,3 +18,5 @@ globs: db/migrate/**/*.rb
 - Drop a column in two deploys: set `self.ignored_columns += [...]` first, then `remove_column` in the next migration.
 - Foreign keys always with `on_delete: :restrict`.
 - Use the `strong_migrations` gem when available; respect its warnings.
+- Name indexes explicitly when the auto-generated name exceeds 63 characters (Postgres limit).
+- Use `insert_all` / `upsert_all` for bulk operations; never `records.each(&:save!)` inside a migration.
