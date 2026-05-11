@@ -1,53 +1,49 @@
 ---
-description: Rule object conventions (single question per class, primitive result, composability)
+description: Rule objects — one domain question, primitive #result, read-only
 globs: app/domains/**/rules/**/*.rb
 ---
-# Rule Object Conventions
+# Rule objects
 
-## What it is and how to use it
+- **When:** one boolean / small primitive answers “is this domain fact true?” reused in use cases, auth hints, views. **Else:** SQL-shaped reads → query object (`query_objects.mdc`); multi-step mutation → use case (`use_cases.mdc`).
+- **Name:** domain question, **no** trailing `?` (e.g. `ClienteIsPortador`). **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::` (same depth idea as queries / use cases).
 
-- A **rule object** encodes **one domain question** with a **primitive** answer (`Boolean`, `String`, `Integer`, or `BigDecimal`). It expresses policy or invariant checks (“is this customer the ticket holder?”) without loading unrelated graphs or performing writes.
-- **Use one** when the same boolean or numeric decision appears in several layers (authorization hints, use case guards, view helpers) or when inlining the logic would obscure intent. Do **not** use a rule for **SQL report-style reads** (use a **query object**, `query_objects.mdc`) or for **multi-step commands** (use a **use case**, `use_cases.mdc`).
-- **How to use:** pass **already-resolved** domain objects into `initialize`; validate types at the boundary with `raise ArgumentError`. Never accept raw `params` or `ActionController::Parameters` — the caller passes named arguments built from validated input. Call `#result` (or `self.result(...)` when provided). Compose bigger decisions by calling `.result` on other rule classes with **full constant paths** (`::DominioX::Rules::Y::Z`). Rules stay **read-only**: no saves, jobs, mail, or I/O.
-- **Where it lives:** under `app/domains/<domain>/rules/**/*.rb`, namespaced `DominioX::Rules::Y::`, consistent with queries and use cases in that domain.
+## Invariants
 
-- One question per Rule class.
-- Public entry point on the instance is `#result`. Exposing `self.result` with the **same parameters** as `initialize`, delegating to `new(...).result`, is optional but recommended for shorter call sites. Do not use `self.call`; when a class-level helper exists, use `self.result` only.
-- Result is a primitive: `Boolean`, `String`, `Integer`, or `BigDecimal`. Never a Relation, record, or Hash.
-- Namespace under `DominioX::Rules::Y::`, mirroring the domain.
-- Class name always expresses a domain question; no trailing `?`.
-- Validate argument types at the boundary with `raise ArgumentError`.
-- Use top-level constants (`::Ingresso`) for type checks to avoid namespace ambiguity.
-- Rules are read-only. No writes, callbacks, jobs, emails, or side effects.
-- A comment above the class states the question in natural language.
-- Rules may compose other Rules by instantiating them and calling `.result`.
-- Reference other Rules with full top-level paths (`::DominioX::Rules::Y::Z`).
-- Trivial rules wrapping a single model attribute are acceptable; `#result` may be a single line.
-- Document the `#result` return type with a YARD `# @return [Type]` comment when it is not a Boolean (e.g., `# @return [BigDecimal]`).
+- **Single question** per class. `#result` returns **only** `Boolean`, `String`, `Integer`, or `BigDecimal` — never `ActiveRecord::Relation`, model instance, or `Hash`.
+- **API:** instance `#result`. Optional `def self.result(...) = new(...).result` with **same** kwargs as `initialize`. **Never** `self.call` for rules.
+- **Input:** resolved domain objects / validated scalars in `initialize`. **Never** raw `params` / `ActionController::Parameters`. **Validate** types at boundary → `raise ArgumentError`. Use **top-level** `::Model` in `is_a?` to avoid NS confusion.
+- **Effects:** read-only — no saves, jobs, mail, I/O, callbacks.
+- **Compose:** other rules via `::DominioX::Rules::Y::Other.result(...)` or `new(...).result` — always **full** constant path.
+- **Doc:** class comment = the question in natural language. YARD `# @return [Type]` on `#result` **mandatory** when result is not `Boolean` (e.g. `BigDecimal`).
+
+## Do not
+
+- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace.
+
+## Reference skeleton
 
 ```ruby
 # frozen_string_literal: true
 
+# Natural-language question this class answers.
 module DominioIngressos
   module Rules
     module Ingressos
-      # Cliente é portador se for o comprador sem portador designado, ou se for o portador.
       class ClienteIsPortador
         def self.result(ingresso:, cliente_id:)
           new(ingresso:, cliente_id:).result
         end
 
         def initialize(ingresso:, cliente_id:)
-          raise ArgumentError, 'ingresso deve ser um objeto Ingresso' unless ingresso.is_a?(::Ingresso)
+          raise ArgumentError, "ingresso must be Ingresso" unless ingresso.is_a?(::Ingresso)
 
           @ingresso = ingresso
           @cliente_id = cliente_id
         end
 
+        # @return [Boolean]
         def result
-          return @ingresso.cliente_id == @cliente_id if @ingresso.portador_id.nil?
-
-          @ingresso.portador_id == @cliente_id
+          # primitive expression only
         end
       end
     end

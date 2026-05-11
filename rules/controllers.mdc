@@ -1,23 +1,20 @@
 ---
-description: Rails controller and integration test conventions (Pundit, thin controllers, REST)
+description: Thin controllers — Pundit, strong params, REST, use cases / queries
 globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 ---
+# Controllers
 
-# Controller conventions
-
-- Keep controllers thin: orchestrate, don't implement business logic.
-- Always `authorize` with Pundit on every action.
-- Use `policy_scope(Model)` for index queries (multi-tenant isolation).
-- Use strong parameters (`params.require(:x).permit(...)`).
-- Use presenters (`app/presenters/`) for view formatting, not controllers.
-- Follow REST conventions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`.
-- Prefer `respond_to` with `format.html`.
-- Test with request specs in `spec/requests/`, not controller specs.
-- Actions ≤ 10 lines; state-changing or multi-step business flow → **domain use case** (`app/domains/**/use_cases/`, see `use_cases.mdc`); complex reads → **query object** (`query_objects.mdc`); trivial glue only → private method on the controller.
-- Use `before_action` only for setup (load resource, authorize), never for business rules.
-- Render validation errors with `status: :unprocessable_entity` (`render :new, status: :unprocessable_entity`).
-- Use `flash[:notice]` / `flash[:alert]` on redirect; `flash.now` when re-rendering.
-- Do not rescue `ActiveRecord::RecordNotFound` in controllers; let the middleware return 404.
-- Avoid instance variables beyond what the view consumes.
-- Use namespaces (`Admin::`, `Api::V1::`) for distinct areas; one controller per resource.
-- Do not `skip_before_action :verify_authenticity_token` without a documented reason.
+- Thin: load, authorize, call domain / render — **no** embedded business rules.
+- **Pundit:** `authorize` every action; `policy_scope(Model)` on collections (tenant / visibility).
+- Strong params: `params.require(:x).permit(...)`.
+- Formatting for views → presenter (`app/presenters/`), not controller ivar assembly of strings.
+- RESTful actions: `index` `show` `new` `create` `edit` `update` `destroy`; `respond_to` + `format.html` when needed.
+- Tests: **request** specs (`spec/requests/`), not controller specs.
+- Action body ≤ **10 lines**. Writes / multi-step flow → `app/domains/**/use_cases/` (`use_cases.mdc`). Heavy AR reads → query object (`query_objects.mdc`). Trivial wiring → `private` controller method.
+- `before_action` only for setup (find record, `authorize`) — **not** business branching.
+- Validation re-render: `status: :unprocessable_entity` (e.g. `render :new, status: :unprocessable_entity`).
+- Flash: `flash[:notice]` / `flash[:alert]` on redirect; `flash.now` when re-rendering same request.
+- Do **not** rescue `ActiveRecord::RecordNotFound` — middleware → 404.
+- Ivars: only what the view / serializer needs.
+- Namespaces (`Admin::`, `Api::V1::`, …) per area; one controller per resource surface.
+- `skip_before_action :verify_authenticity_token` only with documented reason (API token flow, etc.).

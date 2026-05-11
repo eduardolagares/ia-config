@@ -1,27 +1,27 @@
 ---
-description: Clean code conventions for Ruby on Rails (structure, error handling, callbacks, use cases; naming → ruby.mdc)
+description: Rails clean code — time zones, errors, AR boundaries; syntax/naming → ruby.mdc
 globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
-# Clean Code — Ruby on Rails
+# Clean code (Rails)
 
-- Naming and Ruby syntax → `ruby.mdc`.
-- No magic numbers — use constants or ActiveRecord `enum`.
-- Booleans end with `?`: `active?`, `billable?`, `overdue?`.
-- Methods do one thing. Name contains "and" → split it.
-- Comments explain **why**, never **what**. Dead code: delete it, use git.
-- AR callbacks (`after_create`, `before_save`) only for model invariants. External side effects (email, job, integration) → out.
-- Async or retry → `ApplicationJob`.
-- Domain **use cases** expose a single `.call` entry point (`use_cases.mdc`); do not use them for trivial reads.
-- Complex reads → **query objects** under `app/domains/**/queries/` (`query_objects.mdc`) or model `scope`s — never in the controller.
-- Use `Time.current` and `Date.current`, never `Time.now` or `Date.today` in application code.
-- Freeze mutable constants: Array, Hash, and String.
-- Rescue specific error classes. Never `rescue Exception`.
-- Use `Hash#fetch` when a missing key is a bug. Use `[]` only when `nil` is valid.
-- Prefer `presence` over `present? ? value : nil`.
-- Use `tap` only for side effects, never to transform values.
-- Avoid `default_scope`; prefer explicit scopes.
-- Memoize with `||=` only for idempotent values that cannot be `nil` or `false`.
-- Public methods first, private methods below. Prefer `private` over `protected`.
-- Methods return one kind of result. Do not mix `nil`, objects, and exceptions for normal flow.
-- Predicates return `true` or `false`, not generic truthy/falsy values.
-- Use `Data.define` for value objects when available; use `Struct` only for legacy code.
+- Naming / Ruby grammar → `ruby.mdc`.
+- No magic numbers → named constants or AR `enum`.
+- Predicate methods end with `?` (`active?`, `billable?`).
+- One responsibility per method; name contains “and” → split.
+- Comments: **why** only; no dead code (git has history).
+- AR callbacks (`after_create`, `before_save`, …) **only** for invariants on the record itself. Mail, jobs, integrations, external I/O → **out** of callbacks (use case / job / subscriber pattern per project).
+- Async / retry → `ApplicationJob`.
+- Mutations / orchestration → domain use case `.call` (`use_cases.mdc`); not for trivial reads.
+- Non-trivial reads → query object (`query_objects.mdc`) or model `scope` — **not** fat controller queries.
+- `Time.current` / `Date.current` in app code — **not** `Time.now` / `Date.today`.
+- Freeze mutable literals (`[]`, `{}`, strings used as constants).
+- `rescue` only specific classes — **never** `rescue Exception`.
+- `Hash#fetch` when missing key is a bug; `[]` only when `nil` is valid.
+- Prefer `value.presence` over `value.present? ? value : nil`.
+- `tap` only for side effects — not to build return values.
+- No `default_scope`; explicit scopes only.
+- `||=` memoization only when value is idempotent **and** falsy (`nil`/`false`) must not be a meaningful cached result.
+- Public API first, `private` section after; prefer `private` over `protected`.
+- Uniform return contract per method — do not mix `nil`, objects, and exceptions for normal control flow.
+- Predicates return strict `true`/`false`.
+- Value objects: `Data.define` when Ruby version allows; `Struct` only legacy.

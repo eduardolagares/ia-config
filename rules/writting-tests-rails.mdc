@@ -1,42 +1,27 @@
 ---
-description: How to write Rails/Minitest tests — TDD, naming, assertions, isolation (business-focused, concise)
+description: Minitest tests — TDD, naming, business assertions, isolation
 globs: test/**/*.rb
 ---
-# Writing tests (Minitest)
+# Tests (Minitest)
 
-Conventions for **authoring** test code (`test/**/*.rb`): structure, naming, and assertions—not CI setup or tooling beyond the stack below.
-
-- **Focus**: When writing a case, keep it **concise** (only what is needed to prove one outcome). Names should be **humanized**—natural language you could say to a non-developer. Assert **business behavior** (domain rules, money, access, user-visible outcomes), not implementation mechanics (which method ran, internal structure).
-- **Stack**: Minitest (`ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc.). Prefer `test` blocks or `def test_*` over RSpec-style `describe`/`it` unless project already uses `minitest/spec`.
-- **TDD cycle**: RED (failing test) → GREEN (minimal implementation) → REFACTOR. Change production code or tests per step, not both in same step when proving behavior.
-- **One behavior per test**: one assertion cluster per `test` / `def test_*`; split unrelated cases into separate tests.
-- **Naming**: someone reading only the name should understand the **business scenario** and expected outcome—subject, context when relevant, result—without opening the body. Prefer short, readable phrases (`test 'refuses sale when stock is zero'`), not jargon or implementation (`test 'calls find'`, `test 'invokes validator'`).
-- No `sleep` in tests; use explicit assertions instead.
-- Use `travel_to` or `freeze_time` for time-dependent tests; never `Time.now` directly.
-- Test the public API; do not call `send(:private_method, ...)` from tests.
-- One test file per class; the `test/` tree mirrors `app/`.
-- System tests only for critical user flows (slow); unit tests for everything else.
-- VCR (or WebMock) for external HTTP; never hit real APIs in CI.
-- Random test order is the default; never use `i_suck_and_my_tests_are_order_dependent!`.
-- Standardize on fixtures **or** factories per project, not both.
-- Do not share `setup` state across unrelated tests.
-- Mock only external dependencies (HTTP, queue, gateway, time, RNG); never mock your own code.
-- Test files are named `*_test.rb`; the file mirrors the class under test.
-- Use `assert_difference` and `assert_changes` to assert state changes instead of comparing values manually.
+- Scope: authoring `test/**/*.rb` — structure, naming, assertions (not CI wiring).
+- Each case **short** and proves **one** outcome. Name is **human sentence** (product person readable): scenario + expectation — not `test_calls_foo`.
+- Stack: `ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc. Prefer `test "…" do` or `def test_*` — not RSpec DSL unless project already uses `minitest/spec`.
+- TDD: RED → GREEN → REFACTOR; do not change prod + assertions in same step when proving behavior.
+- One behavior cluster per test method; unrelated expectations → split files / tests.
+- No `sleep` — deterministic waits/assertions.
+- Time: `travel_to` / `freeze_time` — not bare `Time.now` in assertions setup.
+- Test **public** API — no `send(:private_method)`.
+- File layout: `test/**` mirrors `app/**`; file `*_test.rb` per class under test.
+- System tests: critical flows only (slow); default unit/integration.
+- HTTP: WebMock / VCR — no real network in CI.
+- Order: rely on Minitest random order — never `i_suck_and_my_tests_are_order_dependent!`.
+- Fixtures **xor** factories per project convention — not both mixed without reason.
+- `setup` data not shared across unrelated tests.
+- Mock/stub **external** boundaries (HTTP, mail, queue, clock, RNG) — not your own application classes.
+- State deltas → `assert_difference` / `assert_changes` instead of manual before/after juggling when fit.
 
 ```ruby
-# ❌ BAD — two behaviors, vague name
-test 'works' do
-  assert subject.valid?
-  assert subject.save
-end
-
-# ✅ GOOD — concise, humanized, business-oriented
-test 'accepts order when all required fields are present' do
-  assert_predicate subject, :valid?
-end
-
-test 'records the order when data is complete' do
-  assert_nothing_raised { subject.save! }
-end
+# bad: test "works" do … multiple unrelated asserts … end
+# good: test "rejects checkout when stock is zero" do … one scenario … end
 ```

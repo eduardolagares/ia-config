@@ -1,28 +1,24 @@
 ---
-description: Ruby language conventions (kwargs, naming, control flow, blocks, metaprogramming)
+description: Ruby style — kwargs, naming, control flow, no needless meta
 globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
-# Ruby Conventions
+# Ruby
 
-- **Kwargs always.** Exception: single obvious arg (`def find(id)`).
-- **Method names:** verbs, spelled out, concise. No `calc`, `proc`, `get_`.
-- **Variable names:** spelled out. Only loop iterators may be single-letter.
-- Every Ruby file starts with `# frozen_string_literal: true`.
-- Use explicit `return` only for guard clauses; let the last expression return naturally.
-- Avoid `unless` with `else`; rewrite as `if`.
-- Use `&&` / `||`, never `and` / `or`.
-- Use safe navigation (`&.`) only when `nil` is an expected state.
-- Prefer `Array.wrap(value)` when input may be scalar or array.
-- Blocks: `do...end` for multi-line, `{ ... }` for single-line.
-- Avoid monkey patches outside of explicit, isolated initializers.
-- Do not use metaprogramming when a regular method solves the problem.
+- Methods take **kwargs**; exception: single obvious positional (`find(id)`).
+- Method names: verbs, full words, concise — no `calc`, `proc`, `get_` prefixes. Variables spelled out; single-letter only in tight loops.
+- Every file: `# frozen_string_literal: true` first line.
+- `return` only for early exit; otherwise last expression is the return.
+- No `unless` / `else` pair — rewrite with `if`.
+- `&&` / `||` — never `and` / `or` for logic.
+- `&.` only when `nil` is an expected state.
+- Input maybe scalar or array → `Array.wrap(value)`.
+- Blocks: multi-line `do`/`end`; single-line `{ }`.
+- No monkey patches except deliberate, isolated initializer shims.
+- No metaprogramming when a plain method works.
 
 ```ruby
-# ❌ BAD
-def calc_tot(usr, qty); end
-calc_tot(u, 3)
-
-# ✅ GOOD
+# bad: calc_tot(u, 3)
+# good:
 def calculate_total(user:, quantity:); end
 calculate_total(user: user, quantity: 3)
 ```

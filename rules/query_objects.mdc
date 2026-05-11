@@ -1,70 +1,54 @@
 ---
-description: Query object conventions (single concern, self.call facade, namespacing, composability)
+description: Query objects — read-only, relation: / @relation, self.call, YARD
 alwaysApply: true
+globs: app/domains/**/queries/**/*.rb
 ---
-# Query Object Conventions
+# Query objects
 
-## What it is and how to use it
+- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`use_cases.mdc`); domain yes/no primitive → rule object (`rule_objects.mdc`).
+- **Name:** ends with `Query`. **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
 
-- A **query object** is a single-purpose class that builds a **read-only** database query: filters, joins, ordering, counts, or small **read** aggregations (`Hash`). It answers “which records match this view of the data?” — not “what command should run?” (that is a **use case**, `use_cases.mdc`) and not “is this domain fact true?” (that is a **rule object**, `rule_objects.mdc`).
-- **Use one** when the query is non-trivial, reused in several places, or would clutter a controller/model with composed `where`/`joins`. Keep trivial one-off filters as **model scopes**; do not use a query object to **mutate** state or trigger side effects.
-- **How to use:** resolve authorization and raw input outside the object; pass **validated** keyword arguments (never raw `params`). Call `SomeQuery.call(...)` and receive a chainable `ActiveRecord::Relation` or a `Hash` for aggregations. The **caller** applies pagination, `find`, or iteration — the query object only returns the relation or hash.
-- **Where it lives:** under `app/domains/<domain>/queries/**/*.rb`, namespaced `DominioX::Queries::Y::`, mirroring **rule** and **use case** layout in the same domain.
+## Invariants
 
-- One query concern per class. Simple one-line filters stay as model scopes.
-- Public entry point is `self.call(...)`, delegating to `new(...).call`.
-- Return `ActiveRecord::Relation` for chainability, or `Hash` for aggregations.
-- Query objects are read-only. No writes, callbacks, jobs, emails, or side effects.
-- Use `preload` when returned records need known associations and no filter/order depends on them.
-- Pagination is the caller's responsibility, not the query object's.
-- One query object per concern; class name ends with `Query`.
-- Receive validated values; never accept raw `params`.
-- Expose a class-level facade: `def self.call(...) = new(...).call`.
-- Namespace under `DominioX::Queries::Y::`.
-- Reuse model named scopes instead of inline `where(...)` when they exist.
-- **Document return types (mandatory):** Both `self.call` and `#call` must have a YARD `# @return [Type]` — same bar as Rule Objects for `#result`. Use `# @return [ActiveRecord::Relation<Model>]` when the API returns a chainable relation; use `# @return [Hash]` (or a narrower shape, e.g. `# @return [Hash{Symbol => Integer}]`) for aggregations.
-- Decompose `#call` into private methods when there are composed clauses.
-- Normalize parameter variants in the initializer (e.g., accept `id:` or `ids:` and coerce to a single internal form).
-- **Composable base relation:** the keyword argument for the starting `ActiveRecord::Relation` must be named **`relation:`** (not `scope:` or `base_query:`). Store it as **`@relation`**. Thread the same name through `self.call` when the facade accepts an override (e.g. `def self.call(..., relation: Model.all)` → `new(..., relation:)`).
-- Prefer `preload` over `includes` when associations are known and there is no filter or order on the association.
-- Never instantiate a query object inside a loop; resolve the relation once and iterate it.
+- **API:** `def self.call(...) = new(...).call` — public entry **only** at class level through `self.call` (same pattern as `new(...).call`).
+- **Return:** `ActiveRecord::Relation<Model>` **or** `Hash` (aggregations). Caller owns pagination, `find`, iteration — query returns relation/hash only.
+- **Read-only:** no writes, callbacks, jobs, mail, side effects (no `each(&:touch)` etc.).
+- **Input:** validated kwargs — **never** raw `params`. Normalize variants in `initialize` (e.g. `id:` vs `ids:` → one internal shape).
+- **Base relation:** starting relation kwarg **must** be named `relation:`; store as `@relation`; thread `relation:` through `self.call` defaulting to `Model.all` when applicable.
+- **Includes:** prefer `preload` when associations are for display/preload only and no `where`/`order` on joined tables; use `includes` only when needed for conditional SQL on associations.
+- **Reuse:** prefer existing model **named scopes** over duplicating `where` strings.
+- **Structure:** one concern per class; decompose `#call` into private methods when clauses compose.
+- **Perf:** never `SomeQuery.new` / `.call` **inside** a loop — build relation once, then iterate.
+- **YARD (mandatory):** both `self.call` and `#call` need `# @return [ActiveRecord::Relation<Model>]` or `# @return [Hash]` (narrow `Hash{...}` when useful) — same bar as rule objects’ non-boolean `#result`.
+
+## Do not
+
+- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop.
+
+## Reference skeleton
 
 ```ruby
-# BAD
-class RecentOrdersQuery
-  def self.call
-    new.call
-  end
+module DominioOrders
+  module Queries
+    module Orders
+      class RecentOrdersQuery
+        # @return [ActiveRecord::Relation<Order>]
+        def self.call(status: nil, relation: Order.all)
+          new(status:, relation:).call
+        end
 
-  def call
-    Order.where('created_at > ?', 30.days.ago).each(&:touch)
-  end
-end
+        def initialize(status: nil, relation: Order.all)
+          @status = status
+          @relation = relation
+        end
 
-# GOOD
-class RecentOrdersQuery
-  # @return [ActiveRecord::Relation<Order>]
-  def self.call(status: nil, relation: Order.all)
-    new(status:, relation:).call
-  end
-
-  def initialize(status: nil, relation: Order.all)
-    @status = status
-    @relation = relation
-  end
-
-  # @return [ActiveRecord::Relation<Order>]
-  def call
-    orders = @relation.preload(:customer).where('created_at > ?', 30.days.ago)
-    filter_by_status(orders)
-  end
-
-  private
-
-  attr_reader :status
-
-  def filter_by_status(orders)
-    status ? orders.where(status:) : orders
+        # @return [ActiveRecord::Relation<Order>]
+        def call
+          orders = @relation.preload(:customer).where("created_at > ?", 30.days.ago)
+          @status ? orders.where(status: @status) : orders
+        end
+      end
+    end
   end
 end
 ```

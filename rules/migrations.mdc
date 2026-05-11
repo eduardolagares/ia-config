@@ -1,24 +1,22 @@
 ---
-description: Rails migration conventions (generator, timestamps, reversibility, indexes, foreign keys, safe schema changes)
+description: Rails migrations — generator, version prefix, reversibility, indexes, FKs, safe Postgres
 globs: db/migrate/**/*.rb
 ---
-# Migration conventions
+# Migrations
 
-- Prefer `bin/rails generate migration descriptive_snake_case_name` (or `rails g migration ...`) so Rails creates `YYYYMMDDHHMMSS_migration_name.rb` with a correct, ordered migration version.
-- The leading segment is the migration version: a **14-digit integer** (decimal digits only—same as stored in `schema_migrations`). If creating the file by hand, never shorten, reuse, collide, or use non-numeric characters in that prefix.
-- Always reversible: prefer `change` over `up`/`down`.
-- Add `null: false` for required columns; pair `validates :presence` in the model with NOT NULL here (multi-step flow below when the column already has rows).
-- Add database-level defaults where appropriate.
-- Always add indexes for foreign keys and frequently queried columns.
-- Add unique indexes for uniqueness validations.
-- Use `references` with `foreign_key: true` for associations.
-- Never modify a migration that has already been run; create a new one.
-- One change per migration; do not bundle unrelated alterations.
-- Postgres: index large tables with `disable_ddl_transaction!` and `add_index ..., algorithm: :concurrently`.
-- Adding `null: false` to a populated column requires three steps: add with default, backfill, then `change_column_null`.
-- Backfill data in a job or separate migration; never `update_all` on a hot table inside a schema migration.
-- Drop a column in two deploys: set `self.ignored_columns += [...]` first, then `remove_column` in the next migration.
-- Foreign keys always with `on_delete: :restrict`.
-- Use the `strong_migrations` gem when available; respect its warnings.
-- Name indexes explicitly when the auto-generated name exceeds 63 characters (Postgres limit).
-- Use `insert_all` / `upsert_all` for bulk operations; never `records.each(&:save!)` inside a migration.
+- Generate with `bin/rails g migration descriptive_name` so filename starts with valid **`YYYYMMDDHHMMSS`** (14-digit decimal version in `schema_migrations`). Hand-made files: never shorten, reuse, collide, or use non-digits in that prefix.
+- Prefer reversible **`change`** over `up`/`down`.
+- Required columns: `null: false` aligned with model `validates … presence` (multi-step add when table has rows — see below).
+- DB defaults where they belong at rest layer.
+- Index every FK and hot filter column; **unique** index for every `validates :uniqueness`.
+- `t.references …, foreign_key: true` (or explicit `add_reference` + FK).
+- **Never** edit a migration that has already shipped to an environment — add a new file.
+- **One** logical schema change per migration file.
+- Postgres large-table indexes: `disable_ddl_transaction!` + `add_index …, algorithm: :concurrently`.
+- Backfilling `null: false` on populated column: (1) add column with default / backfill, (2) `change_column_null`, (3) remove temporary default if any — never single reckless `change_column_null` on unknown-null data.
+- Heavy backfills: job or follow-up migration — not `update_all` on huge hot table inside blocking migration transaction.
+- Dropping column: deploy 1 — `self.ignored_columns += [:col]` on model; deploy 2 — `remove_column`.
+- FKs: `on_delete: :restrict` (or stricter team standard — default here restrict).
+- Obey `strong_migrations` when gem present.
+- Index name > 63 chars (Postgres): pass explicit `name:`.
+- Bulk seed in migration: `insert_all` / `upsert_all` — not `rows.each(&:save!)`.

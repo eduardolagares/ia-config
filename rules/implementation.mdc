@@ -1,15 +1,12 @@
 ---
-description: Production edits must stay aligned with existing tests—update counterpart specs when behavior or contracts change.
+description: Edits must keep tests in sync — find counterpart specs, update contracts, run focused tests
 globs: app/**/*.{rb,erb}, lib/**/*.rb
 ---
+# Implementation ↔ tests
 
-# Implementation and editing code
-
-Any change to implementation must **not** leave the affected surface untested or inconsistent with tests that already cover it.
-
-- **Tests follow implementation**: If the file or behavior you change already has tests (unit, integration, system, or counterpart under `test/` per project convention), **update those tests in the same logical change** so they describe and assert the new contract—not only so CI passes, but so failures reflect real regressions.
-- **Discover coverage first**: Before finishing the edit, locate the mirrored/counterpart test file(s) (e.g. `test/models/foo_test.rb` for `app/models/foo.rb`, request/integration tests for routes or flows you touch). If unsure, search by class name, route, or filename pattern used in the project.
-- **Contract changes**: Renamed methods, new branches, different defaults, validation rules, status codes, or side effects → **adjust expectations, setup, and assertions** in existing tests; do not “fix” failures only by weakening tests unless the product decision explicitly drops that behavior (then remove or replace examples with intent documented).
-- **No orphan RED**: Do not merge or consider the edit complete while tests that cover the changed code still expect the old behavior or fail for reasons tied to your change—unless you are in an explicit TDD step where RED is intentional and documented by your workflow.
-- **Scope of runs**: After edits, run at least the tests tied to the touched files (project convention: single file or focused line); avoid relying only on unrelated green tests.
-- **New behavior**: New public behavior requires **new or extended tests** in the appropriate layer (not only updating old assertions when coverage is missing).
+- Changing behavior **implies** updating or adding tests that already cover that surface — green CI alone is not enough; assertions must match the **new** contract.
+- **Before finish:** locate counterpart tests (`test/models/x_test.rb` ↔ `app/models/x.rb`, request/system tests for routes / flows touched — naming varies by project; search by class, path, route).
+- **Contract drift:** renamed API, new branches, defaults, validations, HTTP status, side effects → change setup + assertions in those tests. Weakening tests to green is forbidden unless product explicitly drops the behavior (then delete/replace with documented intent).
+- **No orphan RED:** do not treat work complete while tests for touched code still encode old behavior — except intentional TDD RED called out in workflow.
+- **Run scope:** after edits, run tests tied to changed files (single file / line filter) — not only unrelated suite green.
+- **New public behavior:** add or extend tests in the correct layer; updating one old assertion is insufficient when nothing covered the path before.
