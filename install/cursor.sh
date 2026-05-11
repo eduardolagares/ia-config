@@ -3,16 +3,25 @@
 # Uso: ./install/cursor.sh | ./install/cursor.sh --dry-run
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CURSOR_HOME="${HOME}/.cursor"
 DRY_RUN=false
+
+# shellcheck source=lib/caveman-install.sh
+source "$SCRIPT_DIR/lib/caveman-install.sh"
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
-    -h|--help)
-      echo "Uso: $(basename "$0") [--dry-run]"
+    --with-caveman) INSTALL_CAVEMAN=yes ;;
+    --without-caveman) INSTALL_CAVEMAN=no ;;
+    -h | --help)
+      echo "Uso: $(basename "$0") [--dry-run] [--with-caveman | --without-caveman]"
       echo "Substitui ~/.cursor/{rules,skills,commands} (pasta ou symlink) por symlink para o repo."
+      echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
+      echo "  INSTALL_CAVEMAN=yes|no  evita a pergunta (útil em CI)."
+      echo "  CAVEMAN_REPO_URL=...     URL alternativa do repositório Caveman."
       exit 0
       ;;
   esac
@@ -61,3 +70,5 @@ link_repo_dir commands
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
+
+maybe_install_caveman "$REPO_ROOT" "$DRY_RUN"
