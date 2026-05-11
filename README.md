@@ -1,6 +1,6 @@
 # ia-config
 
-Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). As skills de terceiros **não são commitadas** no Git; no fim da instalação o script **sugere** instalar o toolkit **Caveman** (pergunta interativa; podes aceitar ou recusar — ver abaixo).
+Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo).
 
 ## Instalação
 
@@ -18,6 +18,8 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    |---------------|-------------------------|--------|
    | **Cursor**    | `./install/cursor.sh`   | Cria symlinks em `~/.cursor/` para as pastas `rules`, `skills` e `commands` deste repo (substitui destinos existentes com o mesmo nome). |
    | **Claude Code** | `./install/claude.sh` | Igual, em `~/.claude/` (ou em `$CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars)). |
+
+   **Antes dos symlinks**, o script obtém **`rules/karpathy-guidelines.mdc`** do ramo `main` de [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (ficheiro `.cursor/rules/karpathy-guidelines.mdc` no upstream). É **obrigatório** para a instalação completar; não está versionado neste repo (`.gitignore`). URL alternativa: variável `KARPATHY_GUIDELINES_URL`.
 
    No **final**, o instalador **sugere** as skills **Caveman**: aparece uma pergunta (predefinição *não*) sobre **instalar** esse toolkit. Se aceitares, corre um `git clone` shallow de [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) e copia-se `skills/` desse repo para `skills/` deste clone (ficheiros cobertos pelo `.gitignore`). Exige **git** instalado.
 
@@ -48,13 +50,14 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
 
 ### `install/`
 
-Scripts bash que ligam **pastas inteiras** do repo a `~/.cursor/` ou `~/.claude/` via symlink (`rules`, `skills`, `commands`), e biblioteca partilhada para, no fim, **sugerir** e opcionalmente instalar as skills Caveman.
+Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, ligam **pastas inteiras** do repo a `~/.cursor/` ou `~/.claude/` via symlink (`rules`, `skills`, `commands`), e no fim **sugerem** as skills Caveman.
 
 | Ficheiro      | Função |
 |---------------|--------|
 | `cursor.sh`   | Instalação para Cursor. |
 | `claude.sh`   | Instalação para Claude Code; respeita `CLAUDE_CONFIG_DIR`. |
-| `lib/caveman-install.sh` | Clone shallow do upstream e cópia para `skills/`; usado pelos dois scripts. |
+| `lib/karpathy-rules.sh` | `curl` do `.mdc` Karpathy a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); **obrigatório**. |
+| `lib/caveman-install.sh` | Clone shallow do upstream e cópia para `skills/`; opcional (pergunta no fim). |
 
 ### `rules/`
 
@@ -72,7 +75,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). Cada ficheiro d
 | `query_objects.mdc`  | Query objects. |
 | `rule_objects.mdc`   | Rule objects / objetos de regra de domínio. |
 | `context-mode.mdc`   | Uso de context-mode / análise sem inundar o contexto. |
-| `karpathy-guidelines.mdc` | Diretrizes de comportamento para o agente (simplicidade, mudanças cirúrgicas). |
+| `karpathy-guidelines.mdc` | **Externo:** obtido pelo `install/` a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); não commitado. Diretrizes Karpathy para o agente. |
 
 ### `commands/`
 
@@ -95,7 +98,7 @@ Pastas reservadas (`hooks/.gitkeep`, `prompts/.gitkeep`) para poderes acrescenta
 
 ### `.gitignore`
 
-Ignora paths de **skills de terceiros** sob `skills/` para não voltarem a ser commitadas por engano.
+Ignora `rules/karpathy-guidelines.mdc` (descarregado na instalação) e paths de **skills de terceiros** sob `skills/`.
 
 ---
 

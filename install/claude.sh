@@ -9,6 +9,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
 DRY_RUN=false
 
+# shellcheck source=lib/karpathy-rules.sh
+source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/caveman-install.sh
 source "$SCRIPT_DIR/lib/caveman-install.sh"
 
@@ -21,6 +23,8 @@ for arg in "$@"; do
       echo "Uso: $(basename "$0") [--dry-run] [--with-caveman | --without-caveman]"
       echo "Substitui rules/skills/commands (pasta ou symlink) por symlink para o repo em ~/.claude ou CLAUDE_CONFIG_DIR."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
+      echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
+      echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa do .mdc."
       echo "  INSTALL_CAVEMAN=yes|no  evita a pergunta (útil em CI)."
       echo "  CAVEMAN_REPO_URL=...     URL alternativa do repositório Caveman."
       echo "Refs: https://code.claude.com/docs/en/claude-directory"
@@ -66,6 +70,9 @@ echo "Nota: Claude Code carrega rules como rules/*.md; ficheiros .mdc (Cursor) p
 echo
 
 mkdir -p "$CLAUDE_HOME"
+
+install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN"
+echo
 
 link_repo_dir rules
 echo

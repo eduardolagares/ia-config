@@ -1,4 +1,7 @@
 # Third-party agent skills — install via ecosystem/plugin or ~/.claude; do not vendor here.
+# Karpathy guidelines: fetched by install/ from forrestchang/andrej-karpathy-skills (mandatory).
+rules/karpathy-guidelines.mdc
+
 skills/caveman/
 skills/caveman-*/
 skills/cavecrew/

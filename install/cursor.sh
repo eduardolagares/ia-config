@@ -8,6 +8,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CURSOR_HOME="${HOME}/.cursor"
 DRY_RUN=false
 
+# shellcheck source=lib/karpathy-rules.sh
+source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/caveman-install.sh
 source "$SCRIPT_DIR/lib/caveman-install.sh"
 
@@ -20,6 +22,8 @@ for arg in "$@"; do
       echo "Uso: $(basename "$0") [--dry-run] [--with-caveman | --without-caveman]"
       echo "Substitui ~/.cursor/{rules,skills,commands} (pasta ou symlink) por symlink para o repo."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
+      echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
+      echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa do .mdc."
       echo "  INSTALL_CAVEMAN=yes|no  evita a pergunta (útil em CI)."
       echo "  CAVEMAN_REPO_URL=...     URL alternativa do repositório Caveman."
       exit 0
@@ -61,6 +65,9 @@ if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
 echo
 
 mkdir -p "$CURSOR_HOME"
+
+install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN"
+echo
 
 link_repo_dir rules
 echo
