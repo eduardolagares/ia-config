@@ -1,7 +1,5 @@
 ---
-description: >-
-  Comando /tdd-doc — spec de requisitos + TDD (RED/GREEN) em markdown;
-  proíbe implementação neste chat; só docs/specs/tdd/... via Write/StrReplace.
+description: "Spec de requisitos e TDD (RED/GREEN) em markdown; sem implementação de código neste chat; apenas docs/specs/tdd/... via Write/StrReplace."
 ---
 
 # tdd-doc — documento de requisitos + TDD (RED/GREEN)

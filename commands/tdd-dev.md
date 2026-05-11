@@ -1,7 +1,5 @@
 ---
-description: >-
-  Comando /tdd-dev — implementação TDD a partir do spec; RED/GREEN, menu 1–7,
-  commit só após escolha explícita no menu.
+description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 
 # tdd-dev — implementação TDD
