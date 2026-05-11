@@ -71,8 +71,7 @@ Escrever RED → Confirmar RED → menu 1–7
 → próxima linha
 ```
 
-Ao encerrar a fase: **revisão sênior** do pacote da fase (mesma sessão)
-→ aplicar `~/.cursor/commands/skills/tdd-senior-review.md` → menu 1–7.
+Ao encerrar a fase: **revisão sênior** (code review em nível sênior) do pacote da fase na mesma sessão — continua obrigatória; não apontar arquivo ou skill específicos para esse passo → menu 1–7.
 
 ### Por fase
 
@@ -89,9 +88,7 @@ indispensáveis para os testes existirem; **zero produção**):
    rodar **só** o teste alvo; saída colada com **falha**; o agente principal revisa aderência
    ao RF inline.
 
-3. **Revisão sênior** — o agente principal revisa o pacote RED (testes + aderência observada
-   nas confirmações).
-   → Aplicar `~/.cursor/commands/skills/tdd-senior-review.md` (escopo: RED).
+3. **Revisão sênior** — o agente principal realiza code review em nível sênior do pacote RED (testes + aderência observada nas confirmações); escopo RED; passo obrigatório, sem skill ou arquivo nomeado.
    → Veredicto REPROVADO bloqueia o marco **(1)**; resolver bloqueantes antes de prosseguir.
 
 4. Menu 1–7 (marco **(1)**).
@@ -104,8 +101,7 @@ indispensáveis para os testes existirem; **zero produção**):
    rodar **só** o teste alvo; saída colada com **aprovação**; o agente principal revisa inline;
    atualizar spec por linha (`n/m`, status, path do teste).
 
-3. **Revisão sênior** — o agente principal revisa o pacote GREEN.
-   → Aplicar `~/.cursor/commands/skills/tdd-senior-review.md` (escopo: GREEN).
+3. **Revisão sênior** — o agente principal realiza code review em nível sênior do pacote GREEN; escopo GREEN; passo obrigatório, sem skill ou arquivo nomeado.
    → Veredicto REPROVADO bloqueia o marco **(2)**; resolver bloqueantes antes de prosseguir.
 
 4. Menu 1–7 (marco **(2)**).
@@ -123,8 +119,7 @@ a escolha numerada. **`git commit` é proibido** até o usuário **confirmar por
    avançar sem commit.
 2. **Revisar manualmente** — parar; aguardar próximo input; sem commit;
    reapresentar 1–7 ao retomar.
-3. **Revisão sênior extra** — segunda passagem de revisão na mesma sessão;
-   → aplicar `~/.cursor/commands/skills/tdd-senior-review.md` com escopo solicitado;
+3. **Revisão sênior extra** — segunda passagem de code review em nível sênior na mesma sessão; escopo conforme solicitado; sem skill ou arquivo nomeado;
    exibir achados; sem commit automático; reapresentar 1–7.
 4. **Discutir requisito** — ajustar spec; perguntar se deseja implementar antes de
    codar; sem commit; ao decidir versionar, avançar ou aplicar sugestões do revisor,
