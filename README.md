@@ -135,6 +135,7 @@ Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agen
 
 | Ficheiro    | Descrição resumida |
 |-------------|--------------------|
+| `commit.md` | Analisa diff/staging, mensagem curta em pt-BR, `git add` + `git commit` sem pedir confirmação. |
 | `tdd-dev.md` | Fluxo TDD de implementação (RED/GREEN, menus, alinhado a specs `tdd-doc`). |
 | `tdd-doc.md` | Fluxo para documentar/guionar o trabalho TDD no spec. |
 
