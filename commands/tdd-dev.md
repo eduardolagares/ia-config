@@ -1,5 +1,5 @@
 ---
-description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; commit apenas após escolha explícita no menu (itens 1 ou 5)."
+description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 
 # tdd-dev — implementação TDD
@@ -22,6 +22,10 @@ A especificação é produzida pelo comando **`/tdd-doc`** (`~/.cursor/commands/
 
 Após **Caveman (início)** quando aplicável, apresentar a pergunta de modo **sempre com opções numeradas** (ex.: **1** Por RF, **2** Por fase) antes de qualquer outro passo — em toda ativação,
 início ou retomada. Aguardar resposta por **número** ou pelo rótulo explícito correspondente; nunca inferir pelo histórico.
+
+**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o tdd-dev*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 aparece **apenas** nos marcos das seções 3 e 4, nunca empilhado com a pergunta de modo em retomada.
+
+**Ativação que não é retomada** — primeira invocação de `/tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
 
 | | Por RF | Por fase |
 |---|---|---|
@@ -108,7 +112,7 @@ indispensáveis para os testes existirem; **zero produção**):
 
 ## 4. Menu 1–7 (única trilha para commit e avanço)
 
-Apresentar exatamente nos marcos de fim de iteração. Nenhum atalho substitui
+Apresentar exatamente nos marcos de fim de iteração. Em **retomada explícita** (seção 1), **não** apresentar este menu na mesma mensagem que a pergunta de modo; só depois da escolha do modo e quando o fluxo chegar de fato ao marco. Nenhum atalho substitui
 a escolha numerada. **`git commit` é proibido** até o usuário **confirmar por escolha explícita no menu** (número **1** ou **5**). Não inferir "sim", não comitar no fim da mensagem, não comitar por conveniência. Sem escolha **1** ou **5**, **zero** `git commit`.
 
 1. **Comitar e continuar** — somente após o usuário escolher **1** neste menu:
@@ -116,19 +120,19 @@ a escolha numerada. **`git commit` é proibido** até o usuário **confirmar por
    exibir saída; avançar para o próximo marco. Se working tree vazio, informar e
    avançar sem commit.
 2. **Revisar manualmente** — parar; aguardar próximo input; sem commit;
-   reapresentar 1–7 ao retomar.
+   ao voltar, se o input for de **retomada explícita** (seção 1), **só** pergunta de modo na primeira resposta; caso contrário, quando o fluxo estiver no marco do menu, reapresentar 1–7.
 3. **Revisão sênior extra** — segunda passagem de code review em nível sênior na mesma sessão; escopo conforme solicitado; sem skill ou arquivo nomeado;
    exibir achados; sem commit automático; reapresentar 1–7.
 4. **Discutir requisito** — ajustar spec; perguntar se deseja implementar antes de
    codar; sem commit; ao decidir versionar, avançar ou aplicar sugestões do revisor,
    escolher a opção numerada correspondente (ex.: 1, 5, 6 ou 7).
 5. **Só comitar** — somente após o usuário escolher **5** neste menu: `git commit`
-   descritivo; não avançar para o próximo marco; reapresentar 1–7 ao retomar.
+   descritivo; não avançar para o próximo marco; na volta, **retomada explícita** (seção 1) → só pergunta de modo primeiro; senão, reapresentar 1–7 no marco.
 6. **Continuar sem comitar** — avançar imediatamente para o próximo marco sem commit.
 7. **Aceitar sugestões do revisor sênior** — aplicar no código e/ou no spec as
    sugestões e achados da **última** revisão sênior desta sessão (inclui revisão
    extra, se for a mais recente); sem `git commit` automático; ao terminar,
-   reapresentar 1–7.
+   reapresentar 1–7 no marco (retomada explícita: seção 1 — não empilhar com pergunta de modo).
 
 Não usar `tester-rails`.
 
