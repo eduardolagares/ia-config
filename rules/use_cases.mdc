@@ -1,0 +1,121 @@
+---
+description: Use case conventions (Dry::Monads, no dry-transaction, domain namespacing)
+globs: app/domains/**/use_cases/**/*.rb
+---
+# Use Case Rules
+
+## What it is and when to create one
+
+- Represents a user or system intent ("create order", "cancel ticket").
+- One use case per controller action or background job that carries business logic.
+- Do not create one for simple queries or reads — only for operations that change state or orchestrate steps. A use case may perform `find`/`find_by` (or similar) **as a step** inside `#call`; if the class would do **only** a chainable read or report-style listing, use a **query object** instead of a dedicated use case.
+- Name is always verb + noun (`CreateOrder`, `CancelTicket`, `ActivateSubscription`).
+- Namespace under `DominioX::UseCases::Y::`, mirroring the domain (same idea as `DominioX::Queries::Y::` and `DominioX::Rules::Y::`).
+- Prefer **query objects** for read-only composition (`query_objects.mdc`) and **rule objects** for single domain questions (`rule_objects.mdc`).
+
+## Location
+
+- Files live under `app/domains/<domain>/use_cases/**/*.rb`, with subfolders matching nested modules `Y::` (same convention as `rules/` and `queries/` within the domain).
+
+## Rules
+
+- Include `Dry::Monads[:result, :do]` directly — no inheritance from a base class.
+- Define `def self.call(...) = new(...).call`.
+- Input via named parameters or `Dry::Struct` — never a raw hash.
+- Every method invoked with `yield` must return `Success` or `Failure`.
+- Conditional steps belong in their own method that always returns `Success`/`Failure`.
+- Optional steps use the `maybe_` prefix and always return `Success` (with or without a value).
+- Reused or complex logic → extract to another use case; simple logic → private method on the same use case.
+- Do not use `dry-transaction`.
+- Failures use descriptive symbols (`:event_not_found`, `:out_of_stock`).
+- No presentation logic (`render`, HTTP status, I18n).
+
+## Good practices
+
+- Prefer already-resolved objects over IDs — resolution stays in the controller or job.
+- For policy or single-question checks, call **`::DominioX::Rules::Y::Z.result(...)`** (or instantiate and call `#result`) instead of duplicating rule logic inside the use case.
+
+## Call sites
+
+- **Controllers** and **`ApplicationJob`** invoke use cases: load records, authorize (Pundit), call `SomeUseCase.call(...)`, then map `Success`/`Failure` to redirects, flash, or status — see `controllers.mdc`. Use cases never render, set HTTP status, or call I18n.
+
+## Bad
+
+```ruby
+# hash as input
+CreateOrder.call({ user: current_user, event_id: 1 })
+
+# conditional yield
+yield generate_payment(order) if order.requires_payment?
+
+# optional step returning Failure
+def maybe_notify(order)
+  return Failure(:notification_failed) unless order.notifiable?
+  Notification.send(order)
+end
+
+# non-monadic return
+def find_event
+  Event.find_by(id: @event_id)
+end
+
+# base class inheritance
+class CreateOrder < ApplicationUseCase
+
+# outside use_cases (does not mirror Queries/Rules)
+# app/domains/orders/create_order.rb
+
+# use case for a trivial query
+class GetUserOrders < ...
+
+# IDs instead of objects
+CreateOrder.call(user_id: current_user.id, event_id: params[:event_id])
+```
+
+## Good
+
+```ruby
+# named params (full constant at call site in app code)
+DominioOrders::UseCases::Orders::CreateOrder.call(user: current_user, event: event, quantity: 2)
+
+# guard using a rule object (full constant path)
+def call
+  return Failure(:forbidden) unless ::DominioOrders::Rules::Orders::CustomerMayOrder.result(user: @user, event: @event)
+  # ...
+end
+
+# encapsulated conditional step
+def maybe_charge(order)
+  return Success(nil) unless order.requires_payment?
+  Payments::GenerateCharge.call(user: @user, amount: order.total)
+end
+
+# optional step always Success
+def maybe_notify(order)
+  return Success(nil) unless order.notifiable?
+  Success(Notification.send(order))
+end
+
+# explicit monadic return
+def find_event
+  event = Event.find_by(id: @event_id)
+  event ? Success(event) : Failure(:event_not_found)
+end
+
+# direct include + domain namespace + nested Y (matches rules/queries)
+# app/domains/orders/use_cases/orders/create_order.rb
+module DominioOrders
+  module UseCases
+    module Orders
+      class CreateOrder
+        include Dry::Monads[:result, :do]
+        def self.call(...) = new(...).call
+      end
+    end
+  end
+end
+
+# controller resolves before calling
+event = Event.find(params[:event_id])
+DominioOrders::UseCases::Orders::CreateOrder.call(user: current_user, event: event, quantity: params[:quantity])
+```

@@ -4,9 +4,16 @@ globs: app/domains/**/rules/**/*.rb
 ---
 # Rule Object Conventions
 
+## What it is and how to use it
+
+- A **rule object** encodes **one domain question** with a **primitive** answer (`Boolean`, `String`, `Integer`, or `BigDecimal`). It expresses policy or invariant checks (“is this customer the ticket holder?”) without loading unrelated graphs or performing writes.
+- **Use one** when the same boolean or numeric decision appears in several layers (authorization hints, use case guards, view helpers) or when inlining the logic would obscure intent. Do **not** use a rule for **SQL report-style reads** (use a **query object**, `query_objects.mdc`) or for **multi-step commands** (use a **use case**, `use_cases.mdc`).
+- **How to use:** pass **already-resolved** domain objects into `initialize`; validate types at the boundary with `raise ArgumentError`. Never accept raw `params` or `ActionController::Parameters` — the caller passes named arguments built from validated input. Call `#result` (or `self.result(...)` when provided). Compose bigger decisions by calling `.result` on other rule classes with **full constant paths** (`::DominioX::Rules::Y::Z`). Rules stay **read-only**: no saves, jobs, mail, or I/O.
+- **Where it lives:** under `app/domains/<domain>/rules/**/*.rb`, namespaced `DominioX::Rules::Y::`, consistent with queries and use cases in that domain.
+
 - One question per Rule class.
 - Public entry point on the instance is `#result`. Exposing `self.result` with the **same parameters** as `initialize`, delegating to `new(...).result`, is optional but recommended for shorter call sites. Do not use `self.call`; when a class-level helper exists, use `self.result` only.
-- Result is a primitive: `Boolean`, `String`, `Integer`, or `Decimal`. Never a Relation, record, or Hash.
+- Result is a primitive: `Boolean`, `String`, `Integer`, or `BigDecimal`. Never a Relation, record, or Hash.
 - Namespace under `DominioX::Rules::Y::`, mirroring the domain.
 - Class name always expresses a domain question; no trailing `?`.
 - Validate argument types at the boundary with `raise ArgumentError`.
