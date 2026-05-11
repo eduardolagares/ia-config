@@ -1,0 +1,5 @@
+# Caveman toolkit (third-party). Install via Claude plugin or ~/.claude — do not vendor here.
+skills/caveman/
+skills/caveman-*/
+skills/cavecrew/
+skills/compress/
