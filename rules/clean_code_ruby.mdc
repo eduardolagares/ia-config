@@ -5,6 +5,7 @@ globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,*
 # Clean Code — Ruby on Rails
 
 - Names reveal intent: `calculate_net_revenue` > `calc`. Named scopes > inline queries.
+- Variable names are not abbreviated: use full words (`line_items`, `subscription_expires_at`) instead of cryptic shortcuts (`ln_itms`, `sub_exp`). Established acronyms the domain already uses (`id`, `url`, `api`) are fine.
 - No magic numbers — use constants or ActiveRecord `enum`.
 - Booleans end with `?`: `active?`, `billable?`, `overdue?`.
 - Methods do one thing. Name contains "and" → split it.
