@@ -1,0 +1,10 @@
+---
+description: Start every chat in caveman full mode when available
+alwaysApply: true
+---
+
+# Caveman Mode
+
+- At start of every chat, if `caveman` skill exists, run `/caveman full`.
+- If `caveman` skill does not exist, do nothing and continue normally.
+- Do not fail, warn, or add fallback behavior when skill is unavailable.
