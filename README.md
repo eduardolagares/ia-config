@@ -125,6 +125,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). Cada ficheiro d
 | `writting-tests-rails.mdc` | Escrita de testes Rails (Minitest). |
 | `query_objects.mdc`  | Query objects. |
 | `rule_objects.mdc`   | Rule objects / objetos de regra de domínio. |
+| `use_cases.mdc`      | Domain use cases (Dry::Monads, paths under `use_cases/`). |
 | `context-mode.mdc`   | Uso de context-mode / análise sem inundar o contexto. |
 | `karpathy-guidelines.mdc` | **Externo:** obtido pelo `install/` a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); não commitado. Diretrizes Karpathy para o agente. |
 

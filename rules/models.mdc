@@ -4,9 +4,9 @@ globs: app/models/**/*.rb,test/models/**/*.rb
 ---
 # Rails models
 
-Thin: validations, associations, scopes, predicates. Orchestration → services/jobs. Callbacks only `before_validation` / `after_initialize` (normalize, defaults); avoid business logic in save/create callbacks unless team OK.
+Thin: validations, associations, scopes, predicates. Orchestration → **use cases** or **jobs** (`use_cases.mdc`, `ApplicationJob`). Callbacks only `before_validation` / `after_initialize` (normalize, defaults); avoid business logic in save/create callbacks unless team OK.
 
-Simple filters → `scope`; complex SQL → query PORO. Tests: Shoulda for shape; custom examples for tricky behavior.
+Simple filters → `scope`; complex SQL → query PORO (`query_objects.mdc`, `app/domains/**/queries/`). Tests: Shoulda for shape; custom examples for tricky behavior.
 
 - `belongs_to` is required by default; use `optional: true` only when truly optional.
 - Always pair `validates :uniqueness` with a unique index in the database.

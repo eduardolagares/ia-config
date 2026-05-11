@@ -4,6 +4,13 @@ alwaysApply: true
 ---
 # Query Object Conventions
 
+## What it is and how to use it
+
+- A **query object** is a single-purpose class that builds a **read-only** database query: filters, joins, ordering, counts, or small **read** aggregations (`Hash`). It answers “which records match this view of the data?” — not “what command should run?” (that is a **use case**, `use_cases.mdc`) and not “is this domain fact true?” (that is a **rule object**, `rule_objects.mdc`).
+- **Use one** when the query is non-trivial, reused in several places, or would clutter a controller/model with composed `where`/`joins`. Keep trivial one-off filters as **model scopes**; do not use a query object to **mutate** state or trigger side effects.
+- **How to use:** resolve authorization and raw input outside the object; pass **validated** keyword arguments (never raw `params`). Call `SomeQuery.call(...)` and receive a chainable `ActiveRecord::Relation` or a `Hash` for aggregations. The **caller** applies pagination, `find`, or iteration — the query object only returns the relation or hash.
+- **Where it lives:** under `app/domains/<domain>/queries/**/*.rb`, namespaced `DominioX::Queries::Y::`, mirroring **rule** and **use case** layout in the same domain.
+
 - One query concern per class. Simple one-line filters stay as model scopes.
 - Public entry point is `self.call(...)`, delegating to `new(...).call`.
 - Return `ActiveRecord::Relation` for chainability, or `Hash` for aggregations.

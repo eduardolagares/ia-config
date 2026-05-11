@@ -1,5 +1,5 @@
 ---
-description: Clean code conventions for Ruby on Rails (structure, error handling, callbacks, services; naming → ruby.mdc)
+description: Clean code conventions for Ruby on Rails (structure, error handling, callbacks, use cases; naming → ruby.mdc)
 globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
 # Clean Code — Ruby on Rails
@@ -11,8 +11,8 @@ globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,*
 - Comments explain **why**, never **what**. Dead code: delete it, use git.
 - AR callbacks (`after_create`, `before_save`) only for model invariants. External side effects (email, job, integration) → out.
 - Async or retry → `ApplicationJob`.
-- Services expose a single `.call` entry point.
-- Complex queries in `app/queries` or scopes, never in the controller.
+- Domain **use cases** expose a single `.call` entry point (`use_cases.mdc`); do not use them for trivial reads.
+- Complex reads → **query objects** under `app/domains/**/queries/` (`query_objects.mdc`) or model `scope`s — never in the controller.
 - Use `Time.current` and `Date.current`, never `Time.now` or `Date.today` in application code.
 - Freeze mutable constants: Array, Hash, and String.
 - Rescue specific error classes. Never `rescue Exception`.

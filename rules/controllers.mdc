@@ -13,7 +13,7 @@ globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 - Follow REST conventions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`.
 - Prefer `respond_to` with `format.html`.
 - Test with request specs in `spec/requests/`, not controller specs.
-- Actions ≤ 10 lines; longer logic goes to a service, query object, or private method.
+- Actions ≤ 10 lines; state-changing or multi-step business flow → **domain use case** (`app/domains/**/use_cases/`, see `use_cases.mdc`); complex reads → **query object** (`query_objects.mdc`); trivial glue only → private method on the controller.
 - Use `before_action` only for setup (load resource, authorize), never for business rules.
 - Render validation errors with `status: :unprocessable_entity` (`render :new, status: :unprocessable_entity`).
 - Use `flash[:notice]` / `flash[:alert]` on redirect; `flash.now` when re-rendering.
