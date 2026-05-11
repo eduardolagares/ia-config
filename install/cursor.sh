@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Liga este repositório ao Cursor via symlinks de PASTAS em ~/.cursor/
-# Uso: ./install/cursor.sh | ./install/cursor.sh --dry-run
+# Uso: ./install/cursor.sh | ./install/cursor.sh --dry-run | ./install/cursor.sh --upgrade
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CURSOR_HOME="${HOME}/.cursor"
 DRY_RUN=false
+UPGRADE=false
 
 # shellcheck source=lib/karpathy-rules.sh
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
@@ -16,11 +17,13 @@ source "$SCRIPT_DIR/lib/caveman-install.sh"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --upgrade) UPGRADE=true ;;
     --with-caveman) INSTALL_CAVEMAN=yes ;;
     --without-caveman) INSTALL_CAVEMAN=no ;;
     -h | --help)
-      echo "Uso: $(basename "$0") [--dry-run] [--with-caveman | --without-caveman]"
+      echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
       echo "Substitui ~/.cursor/{rules,skills,commands} (pasta ou symlink) por symlink para o repo."
+      echo "  --upgrade  Só atualiza Karpathy + Caveman (mesmas regras que na instalação); não recria symlinks."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
       echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
       echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa do .mdc."
@@ -60,13 +63,26 @@ link_repo_dir() {
 }
 
 echo "Repo:  $REPO_ROOT"
+
+if [[ "$UPGRADE" == true ]]; then
+  echo "Modo upgrade — apenas Karpathy + Caveman (symlinks em ~/.cursor/ não são alterados)."
+  if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
+  echo
+  install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" true
+  echo
+  maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" true
+  echo
+  if [[ "$DRY_RUN" == true ]]; then echo "Upgrade concluído (dry-run)."; else echo "Upgrade concluído."; fi
+  exit 0
+fi
+
 echo "Dest:  symlinks de pasta em $CURSOR_HOME/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
 echo
 
 mkdir -p "$CURSOR_HOME"
 
-install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN"
+install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
 echo
 
 link_repo_dir rules
@@ -78,4 +94,4 @@ link_repo_dir commands
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
 
-maybe_install_caveman "$REPO_ROOT" "$DRY_RUN"
+maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false

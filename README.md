@@ -1,6 +1,6 @@
 # ia-config
 
-Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo).
+Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo). Para **atualizar só** Karpathy e Caveman sem mexer em symlinks, usa **`--upgrade`** nos scripts `install/`.
 
 ## Instalação
 
@@ -33,11 +33,14 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
 
    **Repo alternativo:** `CAVEMAN_REPO_URL=https://... ./install/cursor.sh`
 
+   **Upgrade** (apenas Karpathy + Caveman; **não** altera symlinks): `./install/cursor.sh --upgrade` ou `./install/claude.sh --upgrade`. Volta a descarregar `karpathy-guidelines.mdc` e aplica a mesma lógica Caveman (pergunta “Atualizar”, ou `INSTALL_CAVEMAN=yes ./install/cursor.sh --upgrade`, ou `--without-caveman`). Combina com `--dry-run`.
+
 4. **Simula** sem alterar nada:
 
    ```bash
    ./install/cursor.sh --dry-run
    ./install/claude.sh --dry-run
+   ./install/cursor.sh --upgrade --dry-run
    ```
 
 5. **Reinicia** o Cursor (ou o cliente Claude) para garantir que carrega a configuração nova.

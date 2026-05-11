@@ -5,12 +5,15 @@
 CAVEMAN_REPO_URL="${CAVEMAN_REPO_URL:-https://github.com/JuliusBrussee/caveman.git}"
 
 prompt_install_caveman() {
+  local for_upgrade="${1:-false}"
+  local verb="Instalar"
+  [[ "$for_upgrade" == true ]] && verb="Atualizar"
   local reply
   echo
   if [[ -r /dev/tty ]]; then
-    read -r -p "Instalar skills Caveman (clone de ${CAVEMAN_REPO_URL})? [s/N] " reply </dev/tty
+    read -r -p "${verb} skills Caveman (clone de ${CAVEMAN_REPO_URL})? [s/N] " reply </dev/tty
   else
-    read -r -p "Instalar skills Caveman (clone de ${CAVEMAN_REPO_URL})? [s/N] " reply
+    read -r -p "${verb} skills Caveman (clone de ${CAVEMAN_REPO_URL})? [s/N] " reply
   fi
   case "$(echo "${reply:-}" | tr '[:upper:]' '[:lower:]')" in
     s | sim | y | yes) return 0 ;;
@@ -57,16 +60,21 @@ install_caveman_skills() {
   echo "Skills Caveman copiadas para $repo_root/skills (ficheiros ignorados pelo Git)."
 }
 
-# Decide e executa instalação Caveman após os symlinks.
-# Args: repo_root, dry_run (true/false)
+# Decide e executa instalação Caveman após os symlinks (ou só no modo --upgrade).
+# Args: repo_root, dry_run (true/false), for_upgrade (true/false) — se true, prompt fala em "Atualizar".
 maybe_install_caveman() {
   local repo_root="$1"
   local dry_run="$2"
+  local for_upgrade="${3:-false}"
   local pref="${INSTALL_CAVEMAN:-}"
 
   if [[ "$dry_run" == true ]]; then
     echo
-    echo "[dry-run] No fim seria perguntado se queres instalar Caveman (ou usar --with-caveman / INSTALL_CAVEMAN=yes)."
+    if [[ "$for_upgrade" == true ]]; then
+      echo "[dry-run] Caveman: pergunta ou INSTALL_CAVEMAN / --with-caveman (modo upgrade não altera symlinks)."
+    else
+      echo "[dry-run] No fim seria perguntado se queres instalar Caveman (ou usar --with-caveman / INSTALL_CAVEMAN=yes)."
+    fi
     return 0
   fi
 
@@ -80,9 +88,13 @@ maybe_install_caveman() {
       ;;
   esac
 
-  if prompt_install_caveman; then
+  if prompt_install_caveman "$for_upgrade"; then
     install_caveman_skills "$repo_root"
   else
-    echo "(Caveman não instalado; podes correr de novo o script ou definir INSTALL_CAVEMAN=yes.)"
+    if [[ "$for_upgrade" == true ]]; then
+      echo "(Caveman não atualizado.)"
+    else
+      echo "(Caveman não instalado; podes correr de novo o script ou definir INSTALL_CAVEMAN=yes.)"
+    fi
   fi
 }
