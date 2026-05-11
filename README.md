@@ -122,7 +122,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). Cada ficheiro d
 | `controllers.mdc`    | Controllers. |
 | `views.mdc`          | Views / templates. |
 | `migrations.mdc`     | Migrations e alterações de schema. |
-| `writing-tests.mdc` | Escrita de testes (Minitest). |
+| `writting-tests-rails.mdc` | Escrita de testes Rails (Minitest). |
 | `query_objects.mdc`  | Query objects. |
 | `rule_objects.mdc`   | Rule objects / objetos de regra de domínio. |
 | `context-mode.mdc`   | Uso de context-mode / análise sem inundar o contexto. |
