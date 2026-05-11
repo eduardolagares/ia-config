@@ -5,7 +5,7 @@ globs: app/domains/**/rules/**/*.rb
 # Rule Object Conventions
 
 - One question per Rule class.
-- Public entry point is `#result`. Optionally expose `self.result` with the **same parameters** as `initialize`, delegating to `new(...).result` for short call sites. Do not use `self.call`; use `self.result` only.
+- Public entry point on the instance is `#result`. Exposing `self.result` with the **same parameters** as `initialize`, delegating to `new(...).result`, is optional but recommended for shorter call sites. Do not use `self.call`; when a class-level helper exists, use `self.result` only.
 - Result is a primitive: `Boolean`, `String`, `Integer`, or `Decimal`. Never a Relation, record, or Hash.
 - Namespace under `DominioX::Rules::Y::`, mirroring the domain.
 - Class name always expresses a domain question; no trailing `?`.

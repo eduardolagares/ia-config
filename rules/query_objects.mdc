@@ -15,7 +15,7 @@ alwaysApply: true
 - Expose a class-level facade: `def self.call(...) = new(...).call`.
 - Namespace under `DominioX::Queries::Y::`.
 - Reuse model named scopes instead of inline `where(...)` when they exist.
-- Annotate `self.call` and `#call` with YARD `# @return [ActiveRecord::Relation<X>]`.
+- **Document return types (mandatory):** Both `self.call` and `#call` must have a YARD `# @return [Type]` — same bar as Rule Objects for `#result`. Use `# @return [ActiveRecord::Relation<Model>]` when the API returns a chainable relation; use `# @return [Hash]` (or a narrower shape, e.g. `# @return [Hash{Symbol => Integer}]`) for aggregations.
 - Decompose `#call` into private methods when there are composed clauses.
 - Normalize parameter variants in the initializer (e.g., accept `id:` or `ids:` and coerce to a single internal form).
 - Accept an optional base relation/scope for composability: `def initialize(scope: Model.all, ...)`.
