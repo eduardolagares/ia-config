@@ -18,7 +18,7 @@ alwaysApply: true
 - **Document return types (mandatory):** Both `self.call` and `#call` must have a YARD `# @return [Type]` — same bar as Rule Objects for `#result`. Use `# @return [ActiveRecord::Relation<Model>]` when the API returns a chainable relation; use `# @return [Hash]` (or a narrower shape, e.g. `# @return [Hash{Symbol => Integer}]`) for aggregations.
 - Decompose `#call` into private methods when there are composed clauses.
 - Normalize parameter variants in the initializer (e.g., accept `id:` or `ids:` and coerce to a single internal form).
-- Accept an optional base relation/scope for composability: `def initialize(scope: Model.all, ...)`.
+- **Composable base relation:** the keyword argument for the starting `ActiveRecord::Relation` must be named **`relation:`** (not `scope:` or `base_query:`). Store it as **`@relation`**. Thread the same name through `self.call` when the facade accepts an override (e.g. `def self.call(..., relation: Model.all)` → `new(..., relation:)`).
 - Prefer `preload` over `includes` when associations are known and there is no filter or order on the association.
 - Never instantiate a query object inside a loop; resolve the relation once and iterate it.
 
@@ -37,18 +37,18 @@ end
 # GOOD
 class RecentOrdersQuery
   # @return [ActiveRecord::Relation<Order>]
-  def self.call(status: nil)
-    new(status:).call
+  def self.call(status: nil, relation: Order.all)
+    new(status:, relation:).call
   end
 
-  def initialize(status: nil, scope: Order.all)
+  def initialize(status: nil, relation: Order.all)
     @status = status
-    @scope = scope
+    @relation = relation
   end
 
   # @return [ActiveRecord::Relation<Order>]
   def call
-    orders = @scope.preload(:customer).where('created_at > ?', 30.days.ago)
+    orders = @relation.preload(:customer).where('created_at > ?', 30.days.ago)
     filter_by_status(orders)
   end
 

@@ -1,22 +1,18 @@
 ---
-description: Clean code conventions for Ruby on Rails (naming, structure, error handling, callbacks, services)
+description: Clean code conventions for Ruby on Rails (structure, error handling, callbacks, services; naming → ruby.mdc)
 globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---
 # Clean Code — Ruby on Rails
 
-- Names reveal intent: `calculate_net_revenue` > `calc`. Named scopes > inline queries.
-- Variable names are not abbreviated: use full words (`line_items`, `subscription_expires_at`) instead of cryptic shortcuts (`ln_itms`, `sub_exp`). Established acronyms the domain already uses (`id`, `url`, `api`) are fine.
+- Naming and Ruby syntax → `ruby.mdc`.
 - No magic numbers — use constants or ActiveRecord `enum`.
 - Booleans end with `?`: `active?`, `billable?`, `overdue?`.
 - Methods do one thing. Name contains "and" → split it.
-- Guard clauses and early return over nesting.
 - Comments explain **why**, never **what**. Dead code: delete it, use git.
-- No business logic in `before_action`.
 - AR callbacks (`after_create`, `before_save`) only for model invariants. External side effects (email, job, integration) → out.
 - Async or retry → `ApplicationJob`.
 - Services expose a single `.call` entry point.
 - Complex queries in `app/queries` or scopes, never in the controller.
-- Tests assert behavior, not internal implementation. Mocks only for external dependencies.
 - Use `Time.current` and `Date.current`, never `Time.now` or `Date.today` in application code.
 - Freeze mutable constants: Array, Hash, and String.
 - Rescue specific error classes. Never `rescue Exception`.
