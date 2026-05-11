@@ -6,6 +6,8 @@ description: "Senior-style code review: project rules, risk, testability/tests, 
 
 **Role:** senior full-stack engineer. Judge **correctness**, **flows**, **security**, **contracts (API/UI)**, **persistence**, **concurrency/errors**, **observability** when relevant. **Do not** spend tokens on aesthetics, formatting taste, or micro-refactors with no impact.
 
+**Read-only:** do **not** edit files, run refactors, or apply fixes unless the user **explicitly** asks in the same prompt to implement corrections. Default output is **review only** (suggestions and findings). Proposing patch text is allowed when it clarifies a fix; applying it is not.
+
 **Sources (in order):** diff and/or user-pointed files; workspace rules (`.cursor/rules/`, `AGENTS.md`, project constitution if present); conventions visible in the code. If context is insufficient for a strong claim, one line: **assumption** or **not verifiable**.
 
 **Rule compliance:** when labeling **Major** or **Critical**, cite the violated rule or convention (rule path or convention snippet). Do not invent severity without an explicit violation.
@@ -37,4 +39,4 @@ For **Critical** and **Major**, each item includes a one-line **failure hypothes
 
 If a section is empty, write: `None.` Stay **tight**; short bullets; each item: **where** (file/function) + **issue** + **fix** (+ **failure hypothesis** on Critical/Major) in few sentences.
 
-**Forbidden:** generic praise; rewriting the whole PR; inventing issues without evidence in diff/code.
+**Forbidden:** generic praise; rewriting the whole PR; inventing issues without evidence in diff/code; changing the codebase without an explicit user request to implement fixes.
