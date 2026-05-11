@@ -1,11 +1,13 @@
 ---
-description: Rails migration conventions (reversibility, indexes, foreign keys, safe schema changes)
+description: Rails migration conventions (generator, timestamps, reversibility, indexes, foreign keys, safe schema changes)
 globs: db/migrate/**/*.rb
 ---
 # Migration conventions
 
+- Prefer `bin/rails generate migration descriptive_snake_case_name` (or `rails g migration ...`) so Rails creates `YYYYMMDDHHMMSS_migration_name.rb` with a correct, ordered migration version.
+- The leading segment is the migration version: a **14-digit integer** (decimal digits only—same as stored in `schema_migrations`). If creating the file by hand, never shorten, reuse, collide, or use non-numeric characters in that prefix.
 - Always reversible: prefer `change` over `up`/`down`.
-- Add `null: false` for required columns.
+- Add `null: false` for required columns; pair `validates :presence` in the model with NOT NULL here (multi-step flow below when the column already has rows).
 - Add database-level defaults where appropriate.
 - Always add indexes for foreign keys and frequently queried columns.
 - Add unique indexes for uniqueness validations.

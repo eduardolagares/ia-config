@@ -16,7 +16,7 @@ Simple filters → `scope`; complex SQL → query PORO. Tests: Shoulda for shape
 - Normalize input with `normalizes :field, with: ->(v) { ... }` (Rails 7+).
 - Add counter caches when counts appear in list views.
 - Always set explicit `dependent:` on `has_many` / `has_one` (`:destroy`, `:nullify`, `:restrict_with_error`).
-- Mirror presence validations with `null: false` in the migration.
+- Required attributes: reflect DB constraints in migrations (`null: false`, defaults, backfills — see migrations rule).
 
 ```ruby
 has_many :items, dependent: :destroy
