@@ -1,10 +1,12 @@
 ---
-description: Minitest conventions (TDD, concise business-focused tests, humanized names, isolation)
+description: How to write Rails/Minitest tests — TDD, naming, assertions, isolation (business-focused, concise)
 globs: test/**/*.rb
 ---
-# Testing Conventions
+# Writing tests (Minitest)
 
-- **Focus**: Keep tests **concise** (only what is needed to prove one outcome). Names should be **humanized**—natural language you could say to a non-developer. Assert **business behavior** (domain rules, money, access, user-visible outcomes), not implementation mechanics (which method ran, internal structure).
+Conventions for **authoring** test code (`test/**/*.rb`): structure, naming, and assertions—not CI setup or tooling beyond the stack below.
+
+- **Focus**: When writing a case, keep it **concise** (only what is needed to prove one outcome). Names should be **humanized**—natural language you could say to a non-developer. Assert **business behavior** (domain rules, money, access, user-visible outcomes), not implementation mechanics (which method ran, internal structure).
 - **Stack**: Minitest (`ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc.). Prefer `test` blocks or `def test_*` over RSpec-style `describe`/`it` unless project already uses `minitest/spec`.
 - **TDD cycle**: RED (failing test) → GREEN (minimal implementation) → REFACTOR. Change production code or tests per step, not both in same step when proving behavior.
 - **One behavior per test**: one assertion cluster per `test` / `def test_*`; split unrelated cases into separate tests.
