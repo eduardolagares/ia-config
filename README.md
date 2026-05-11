@@ -1,6 +1,6 @@
 # ia-config
 
-Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). As skills de terceiros **não são commitadas** no Git; o instalador pode **copiar** o toolkit Caveman para `skills/` no fim (ver abaixo).
+Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). As skills de terceiros **não são commitadas** no Git; no fim da instalação o script **sugere** instalar o toolkit **Caveman** (pergunta interativa; podes aceitar ou recusar — ver abaixo).
 
 ## Instalação
 
@@ -19,7 +19,7 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    | **Cursor**    | `./install/cursor.sh`   | Cria symlinks em `~/.cursor/` para as pastas `rules`, `skills` e `commands` deste repo (substitui destinos existentes com o mesmo nome). |
    | **Claude Code** | `./install/claude.sh` | Igual, em `~/.claude/` (ou em `$CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars)). |
 
-   No **final** do script é perguntado se queres **instalar as skills Caveman**: faz-se um `git clone` shallow de [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) e copia-se o conteúdo de `skills/` desse repo para `skills/` deste clone (ficheiros cobertos pelo `.gitignore`). Exige **git** instalado.
+   No **final**, o instalador **sugere** as skills **Caveman**: aparece uma pergunta (predefinição *não*) sobre **instalar** esse toolkit. Se aceitares, corre um `git clone` shallow de [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) e copia-se `skills/` desse repo para `skills/` deste clone (ficheiros cobertos pelo `.gitignore`). Exige **git** instalado.
 
    **Sem prompt interativo** (CI ou scripts):
 
@@ -48,7 +48,7 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
 
 ### `install/`
 
-Scripts bash que ligam **pastas inteiras** do repo a `~/.cursor/` ou `~/.claude/` via symlink (`rules`, `skills`, `commands`), e biblioteca partilhada para a cópia opcional das skills Caveman.
+Scripts bash que ligam **pastas inteiras** do repo a `~/.cursor/` ou `~/.claude/` via symlink (`rules`, `skills`, `commands`), e biblioteca partilhada para, no fim, **sugerir** e opcionalmente instalar as skills Caveman.
 
 | Ficheiro      | Função |
 |---------------|--------|
@@ -101,6 +101,6 @@ Ignora paths de **skills de terceiros** sob `skills/` para não voltarem a ser c
 
 ## Skills Caveman (recomendado)
 
-O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) **não está no histórico Git** deste repo, mas o **instalador pode obtê-lo automaticamente** ao responder *sim* à pergunta final (ou com `--with-caveman` / `INSTALL_CAVEMAN=yes`). Fonte: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
+O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) **não está no histórico Git** deste repo. O **instalador sugere** instalar esse toolkit no final (pergunta interativa); também podes forçar com `--with-caveman` ou `INSTALL_CAVEMAN=yes`. Fonte: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
 
 **Porquê:** comandos como `/tdd-dev` pedem a skill **caveman** quando existe em `skills/` — menos tokens e comportamento alinhado ao texto do comando. Se recusares a instalação e a pasta `skills/` ficar só com `.gitkeep`, esse bloco é ignorado (sem erro).
