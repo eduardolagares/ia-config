@@ -38,6 +38,49 @@ globs: app/domains/**/use_cases/**/*.rb
 ## Call sites
 
 - **Controllers** and **`ApplicationJob`** invoke use cases: load records, authorize (Pundit), call `SomeUseCase.call(...)`, then map `Success`/`Failure` to redirects, flash, or status — see `controllers.mdc`. Use cases never render, set HTTP status, or call I18n.
+- Branch on the monad with `case ... in` (or `result.success?` / `result.failure?` if you prefer). Match known `Failure` symbols explicitly; keep a fallback branch for unexpected failures.
+
+```ruby
+case DominioOrders::UseCases::Orders::CreateOrder.call(user: current_user, event: event)
+in Success(order)
+  render json: order, status: :created
+in Failure(:out_of_stock)
+  render json: { error: "Sem estoque" }, status: :unprocessable_entity
+in Failure(:payment_failed)
+  render json: { error: "Pagamento recusado" }, status: :payment_required
+in Failure(error)
+  render json: { error: error }, status: :unprocessable_entity
+end
+```
+
+Forma imperativa equivalente (útil fora de controllers ou quando o fluxo não cabe num único `case`):
+
+```ruby
+result = DominioOrders::UseCases::Orders::CreateOrder.call(user: current_user, event: event)
+
+if result.success?
+  order = result.value! # objeto dentro do Success
+  render json: order, status: :created
+else
+  error = result.failure # motivo dentro do Failure (ex.: símbolo ou objeto)
+  render json: { error: error }, status: :unprocessable_entity
+end
+```
+
+## `Dry::Monads::Result` — resumo
+
+Uso **dentro** do use case: `Success` / `Failure` / `yield` (com `Dry::Monads[:result, :do]`). Uso **no controller ou job**: inspecionar o retorno de `.call` com `case ... in`, `success?` / `failure?`, `value!`, etc.
+
+| Método / forma | O que faz |
+| --- | --- |
+| `Success(x)` | Constrói resultado de sucesso com valor `x`. |
+| `Failure(x)` | Constrói resultado de falha com motivo `x` (símbolo, string, objeto). |
+| `yield` (do notation) | Desembrulha outro `Result` retornado pelo método chamado; em `Failure`, interrompe o fluxo do `#call` (short-circuit). |
+| `success?` / `failure?` | Indica se o valor é `Success` ou `Failure`. |
+| `value!` | Retorna o valor interno do `Success`; levanta se for `Failure` (só chame após `success?` ou em ramo já casado como `Success`). |
+| `value_or(default)` | Retorna o valor do `Success` ou `default` se for `Failure`. |
+| `fmap { ... }` | Transforma o conteúdo do `Success` sem alterar `Failure`; retorna novo `Result`. |
+| `bind { ... }` | Encadeia: o bloco deve retornar outro `Result` (`Success`/`Failure`); útil para pipelines monádicos fora do `do`/`yield`. |
 
 ## Bad
 
