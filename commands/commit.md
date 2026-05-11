@@ -14,6 +14,6 @@ description: "Diff/staging → short pt-BR message → git add + commit; no perm
 
 **STOP (no commit):** clean tree; merge/rebase conflict or blocked git state.
 
-**NEVER:** ask to commit; stop after message without commit (unless STOP); `git push` unless same-turn user request.
+**NEVER:** ask to commit; stop after message without commit (unless STOP); `git push` unless same-turn user request. **No tool attribution** in commit subject/body **or** in the post-commit reply: do not name or credit Cursor, Claude, Copilot, ChatGPT, IDE, “IA”, “assistente”, or equivalents.
 
 **Conflict:** another active slash command forbids commits → report; do not commit.
