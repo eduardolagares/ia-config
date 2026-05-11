@@ -4,6 +4,8 @@ description: "Diff/staging → short pt-BR message → git add + commit; no perm
 
 # `/commit`
 
+**Somente este comando:** ao executar `/commit`, **não** ler, invocar ou seguir nenhuma skill ou regra externa de mensagem de commit (ex.: caveman-commit, `/caveman-commit`, plugins de commit). O fluxo e o formato estão **só** neste arquivo.
+
 **MUST:** `git status -sb`; `git diff`; `git diff --cached` if staged exists. Draft message from real diff only. `git add` (see below) + `git commit`. Reply: subject line, 1–3 sentence delta summary, commit output or abort reason.
 
 **Message (pt-BR):** imperative; subject ≤72 chars; body max 5 lines, blank line before body only if needed. No vague/generic subject; no English in subject; no emoji; no file laundry lists in subject.
@@ -14,6 +16,6 @@ description: "Diff/staging → short pt-BR message → git add + commit; no perm
 
 **STOP (no commit):** clean tree; merge/rebase conflict or blocked git state.
 
-**NEVER:** ask to commit; stop after message without commit (unless STOP); `git push` unless same-turn user request. **No tool attribution** in commit subject/body **or** in the post-commit reply: do not name or credit Cursor, Claude, Copilot, ChatGPT, IDE, “IA”, “assistente”, or equivalents.
+**NEVER:** ask to commit; stop after message without commit (unless STOP); `git push` unless same-turn user request; read or follow any other commit-message skill/plugin (caveman-commit, `/caveman-commit`, etc.). **No tool attribution** in commit subject/body **or** in the post-commit reply: do not name or credit Cursor, Claude, Copilot, ChatGPT, IDE, “IA”, “assistente”, or equivalents.
 
 **Conflict:** another active slash command forbids commits → report; do not commit.
