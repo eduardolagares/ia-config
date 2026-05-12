@@ -1,5 +1,5 @@
 ---
-description: Start every chat in caveman full mode when available
+description: Start every chat in caveman full when skill exists; announce caveman status first
 alwaysApply: true
 ---
 
@@ -8,3 +8,10 @@ alwaysApply: true
 - At start of every chat, if `caveman` skill exists, run `/caveman full`.
 - If `caveman` skill does not exist, do nothing and continue normally.
 - Do not fail, warn, or add fallback behavior when skill is unavailable.
+
+## Agent status line (first reply only)
+
+- Before any other content in the **first** assistant message of the chat, print exactly one line reporting caveman state:
+  - Skill present and rule applied: `**Caveman:** on · <mode>` where `<mode>` is the active level (`lite`, `full`, `ultra`, `wenyan-lite`, `wenyan-full`, or `wenyan-ultra`). After auto-start via this rule, mode is `full` unless the user already changed it in the same turn.
+  - Skill absent: `**Caveman:** off`
+- That line is the only required extra output for this rule; then continue the answer (in caveman style when on).
