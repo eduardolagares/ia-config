@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: "Diff/staging → short pt-BR message → git add + commit; no permission prompts."
 ---
 

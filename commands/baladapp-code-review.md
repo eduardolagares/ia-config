@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 ---
 

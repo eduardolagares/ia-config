@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: Use cases — Dry::Monads Result, domain NS, no dry-transaction
 globs: app/domains/**/use_cases/**/*.rb
 ---

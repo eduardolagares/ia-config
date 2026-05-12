@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: Thin AR models — validations, scopes, enums; orchestration elsewhere
 globs: app/models/**/*.rb,test/models/**/*.rb
 ---

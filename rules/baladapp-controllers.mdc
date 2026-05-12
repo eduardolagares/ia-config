@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: Thin controllers — Pundit, strong params, REST, use cases / queries
 globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 ---

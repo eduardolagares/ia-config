@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.3"
 description: Views — ViewComponent, presenters, I18n, dumb templates
 globs: app/views/**/*.erb,app/views/**/*.html.erb,app/views/**/*.slim,app/views/**/*.haml,app/components/**/*.rb,app/components/**/*.html.erb,app/components/**/*.html.slim,app/components/**/*.html.haml,app/presenters/**/*.rb,app/helpers/**/*.rb
 ---
