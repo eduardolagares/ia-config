@@ -1,4 +1,5 @@
 ---
+baladapp_ia_config_version: "1.0.2"
 description: "Spec de requisitos e TDD (RED/GREEN) em markdown; sem implementação de código neste chat; apenas docs/specs/tdd/... via Write/StrReplace."
 ---
 
@@ -30,7 +31,8 @@ Atue como **arquiteto de software sênior, criterioso e questionador**.
 - Requisitos funcionais numerados como **RF1, RF2, RF3…** (prefixo fixo `RF`), um por linha.
 - **Lista `### Requisitos`**: cada bullet é uma linha sucinta — enunciado mínimo do comportamento (o quê / escopo essencial). Sem prosa, sem repetição, sem texto RED/GREEN.
 - Documento em **fases**: cada fase contém (1) lista de requisitos e (2) tabela TDD imediatamente abaixo.
-- **Fase pós-implementação (obrigatória, por último)**: registra RFs descobertos após implementação via análise manual/QA. Numeração contínua com o restante do doc. Pode iniciar vazia ou com RF único de escopo; preencher incrementalmente conforme achados.
+- **Fase pós-implementação (obrigatória, por último entre as fases)**: registra RFs descobertos durante o ciclo de implementação via análise manual/QA. Numeração contínua com o restante do doc. Pode iniciar vazia ou com RF único de escopo; preencher incrementalmente conforme achados.
+- **Registros pós-conclusão do spec (obrigatório, após a última fase)**: tópico obrigatório `## Registros pós-conclusão do spec` — **depois** da fase **Pós-implementação** e de sua tabela TDD. Serve para bugs, correções ou ajustes ao **reabrir** o documento depois que o status do spec for **`concluído`** (manutenção do próprio spec ou rastreio de desvios corrigidos fora do ciclo RED/GREEN original). Cada entrada em bullet numerado **PC1, PC2, PC3…** (prefixo fixo `PC`), uma por linha — enunciado sucinto (o quê mudou ou qual bug; contexto mínimo). **Data opcional** no início do bullet (`AAAA-MM-DD — …`) quando ajudar auditoria. Sem tabela TDD nesta seção (não substitui a fase **Pós-implementação**). Preferir **novos PCn** em vez de reescrever entradas antigas; alterar PC existente só se correção explícita do usuário ou erro factual. A lista pode iniciar vazia com placeholder mínimo (não omitir a seção).
 - **Decisões tomadas**: tópico obrigatório `## Decisões tomadas` (logo após o bloco de metadados do topo, antes da **Fase 1**). Cada decisão registrada durante a elaboração do spec em bullet numerado **D1, D2, D3…** (prefixo fixo `D`), uma por linha — enunciado sucinto do que foi decidido e por quê (contexto mínimo). **Não há necessidade de armazenar a data da decisão** (nem por bullet nem em coluna extra). Sem RED/GREEN aqui. Preferir **novos Dn** em vez de reescrever decisões antigas; alterar D existente só se correção explícita do usuário ou contradição insustentável. A lista pode iniciar vazia com placeholder mínimo até a primeira decisão (não omitir a seção).
 
 ### Cabeçalho de fase
@@ -67,17 +69,18 @@ Incluir no topo: nome da atividade, data, agent (modelo/sessão ou `desconhecido
 ### Antes de gravar ou sobrescrever
 
 1. Confirmar que **nenhuma** alteração fora do markdown do spec será gravada neste chat (`Write`/`StrReplace` só no arquivo do spec acordado).
-2. Revisar o texto quanto a bullets RF, bullets D, tabela TDD, colunas RED/GREEN e cabeçalhos conforme este comando.
-3. Checar: RFs alinhados aos `#` da tabela; bullets e coluna Requisito sucintos; `## Decisões tomadas` presente (placeholder vazio ou enumeração D1, D2… contínua); marcadores iniciais RED/GREEN coerentes com `concluídos/total` nos cabeçalhos; fase pós-implementação presente.
+2. Revisar o texto quanto a bullets RF, bullets D, bullets PC, tabela TDD, colunas RED/GREEN e cabeçalhos conforme este comando.
+3. Checar: RFs alinhados aos `#` da tabela; bullets e coluna Requisito sucintos; `## Decisões tomadas` presente (placeholder vazio ou enumeração D1, D2… contínua); marcadores iniciais RED/GREEN coerentes com `concluídos/total` nos cabeçalhos; fase pós-implementação presente; `## Registros pós-conclusão do spec` presente (placeholder vazio ou enumeração PC1, PC2… contínua) **após** a última tabela TDD.
 4. Pedir **confirmação explícita do caminho completo** antes de `Write`/`StrReplace`.
 
 ### Modo edição
 
-- Preferir **novos RFs**, **novos Dn** e novas linhas em vez de alterar requisitos ou decisões existentes.
+- Preferir **novos RFs**, **novos Dn**, **novos PCn** e novas linhas em vez de alterar requisitos, decisões ou registros pós-conclusão existentes.
 - Editar requisito existente só em caso de duplicidade real ou contradição insustentável.
 - Achados pós-implementação: incrementar na fase **Pós-implementação**, não nas fases de entrega encerradas.
-- Após cada edição: resumo das mudanças + destaque dos RED/GREEN e **Dn** criados ou alterados.
-- No delta (novos RFs/Dn/linhas/trechos alterados), repetir a mesma revisão e o checklist de "Antes de gravar" no trecho e fase afetados.
+- Bugs, fixes ou ajustes após o spec **`concluído`** (reabertura do doc): incrementar em **`## Registros pós-conclusão do spec`** (PCn), não em **Dn** nem na fase **Pós-implementação**, salvo se o usuário reabrir deliberadamente o ciclo de entrega e aí tratar como RF/TDD na fase adequada.
+- Após cada edição: resumo das mudanças + destaque dos RED/GREEN e **Dn** / **PCn** criados ou alterados.
+- No delta (novos RFs/Dn/PCn/linhas/trechos alterados), repetir a mesma revisão e o checklist de "Antes de gravar" no trecho e fase afetados.
 
 ### Fases, autorização e commit
 
@@ -90,11 +93,11 @@ Só avançar de fase — e orientar commit do spec — após **confirmação exp
 0. Manter o escopo: nenhuma implementação de código neste chat (ver **Escopo deste chat**).
 1. Esclarecer lacunas (perguntas até não restar ambiguidade crítica).
 2. Propor fases e lista RF numerada, incluindo por último a fase **Pós-implementação**.
-3. Redigir o markdown: `## Decisões tomadas` (D1, D2… conforme acordos na conversa); por fase (cabeçalho, `### Requisitos`, tabela TDD), alinhado ao pedido e às fases/RFs acordados.
+3. Redigir o markdown: `## Decisões tomadas` (D1, D2… conforme acordos na conversa); por fase (cabeçalho, `### Requisitos`, tabela TDD); por último `## Registros pós-conclusão do spec` (placeholder ou PCn), alinhado ao pedido e às fases/RFs acordados.
 4. Mostrar prévia do caminho `docs/specs/tdd/AAAA-MM-DD-nome-da-atividade.md`.
 5. Aplicar checklist de "Antes de gravar".
 6. Pedir confirmação antes de `Write`/`StrReplace` (apenas no arquivo do spec).
-7. Após gravar: resumo + RED/GREEN e decisões (Dn) destacados.
+7. Após gravar: resumo + RED/GREEN e decisões (**Dn**) / registros pós-conclusão (**PCn**) destacados.
 8. Próxima fase ou incremento: repetir a partir do passo 3; pedir confirmação de encerramento antes de commit.
 
 ---
@@ -137,4 +140,8 @@ Só avançar de fase — e orientar commit do spec — após **confirmação exp
 
 | # | Requisito | RED | GREEN | Paralelo |
 |---|-----------|-----|-------|:--------:|
+
+## Registros pós-conclusão do spec
+
+- _(nenhum ainda — PC1, PC2… após status **concluído**: bugs, correções ou ajustes ao reabrir / manutenção do documento)_
 ```

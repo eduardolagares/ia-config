@@ -1,6 +1,8 @@
+install/lib/__pycache__/
+
 # Third-party agent skills — install via ecosystem/plugin or ~/.claude; do not vendor here.
-# Karpathy guidelines: fetched by install/ from forrestchang/andrej-karpathy-skills (mandatory).
-rules/karpathy-guidelines.mdc
+# Karpathy: rules/karpathy-guidelines.mdc é gerado no clone a partir de
+# https://github.com/forrestchang/andrej-karpathy-skills/raw/main/skills/karpathy-guidelines/SKILL.md — não versionar.
 
 skills/caveman/
 skills/caveman-*/

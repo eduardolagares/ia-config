@@ -14,7 +14,7 @@ Quando geres ou reveres código:
 
 1. Usa essas skills quando o pedido corresponder à respetiva `description` (descoberta progressiva do Codex).
 2. Se o workspace for o próprio clone `ia-config`, também podes consultar os `.mdc` em `rules/` no repo.
-3. O ficheiro `rules/karpathy-guidelines.mdc` é obtido pelo instalador a partir do upstream **andrej-karpathy-skills** (não vai estar no Git se ainda não correste o script).
+3. O arquivo `rules/karpathy-guidelines.mdc` é **gerado** pelo instalador a partir do [SKILL.md upstream](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (não fica no Git até você rodar o script).
 
 ## Precedência
 

@@ -1,238 +1,151 @@
-# ia-config
+# baladapp-ia-config
 
-Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). **Claude Code, Antigravity e Codex** usam **python3** em `install/lib/convert_ia_config.py` para converter `.mdc`→`.md` (ex. `globs`→`paths`) e gerar skills/workflows nos paths certos de cada IDE. O **Cursor** e os ficheiros raiz do **Codex/Antigravity** usam **cópias** (sem symlinks). As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo). Para atualizar Karpathy, Caveman e cópias convertidas, segue a secção **[Upgrade (Karpathy e Caveman)](#upgrade-karpathy-e-caveman)**.
+**Idioma deste README:** português do Brasil (pt-BR).
+
+Repositório de **regras**, **comandos** e scripts de instalação para alinhar o assistente de IA ao **seu** fluxo (Ruby on Rails, TDD, convenções de **equipe**). O fluxo documentado é **um** `curl` para `install.sh` ou `upgrade.sh`: o script clona este repo, **baixa** o Karpathy a partir do [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (via **curl** + **python3** no clone) e aplica a configuração nas IDEs suportadas. **Requisitos comuns:** **git**, **curl** e **python3** (também para conversão `.mdc`→`.md` onde aplicável). Skills **Caveman** são opcionais (ver [Skills Caveman](#skills-caveman-recomendado)). Para **atualizar** o `main`, use [Atualizar](#atualizar).
 
 ## Instalação
 
-### Caminho recomendado: `install/install.sh`
-
-Não precisas de ter o repositório já clonado. O script **clona** o ia-config para uma **pasta temporária**, obtém o Karpathy no clone, e **copia** os ficheiros para os destinos de cada ferramenta.
-
-**Requisitos:** **git**, **curl**; **python3** se escolheres Claude, Antigravity ou Codex.
+A instalação é **sempre** este comando (**baixa** `install/install.sh` da branch `main` e executa):
 
 ```bash
-chmod +x install/install.sh   # só se tiveres um clone local
-bash install/install.sh
+curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash
 ```
 
-Ou descarregar o script e correr (evita problemas com `curl | bash` e variáveis de ambiente):
+O script **clona** [eduardolagares/ia-config](https://github.com/eduardolagares/ia-config) em **`main`** para uma pasta temporária e aplica o que estiver definido no instalador (perguntas interativas no terminal).
+
+Simular sem alterar **arquivos**:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh -o /tmp/ia-config-install.sh
-bash /tmp/ia-config-install.sh
+curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash -s -- --dry-run
 ```
 
-Variáveis como `IA_CONFIG_REPO_URL` têm de estar visíveis para o **mesmo** processo `bash` que corre o script (por exemplo `IA_CONFIG_REPO_URL=https://github.com/me/ia-config.git bash /tmp/ia-config-install.sh`), não apenas antes de um `curl` num pipeline.
+Caveman sem pergunta (ex.: CI): `INSTALL_CAVEMAN=yes` antes do `curl` **não** chega ao `bash` do pipeline; use `curl ... | env INSTALL_CAVEMAN=yes bash`.
 
-O instalador pergunta:
+### Migração: você tinha symlinks no Cursor
 
-1. **URL e ramo** do repositório (há valores por omissão).
-2. **Destino:** pastas **globais** (`~/.cursor`, `~/.claude`, …) ou **projeto** (`<projeto>/.cursor` e `<projeto>/.claude`). Antigravity e Codex mantêm-se em **`~/.gemini`** e **`~/.codex`** (e skills em `~/.agents/skills` por omissão), mesmo no modo projeto.
-3. **Quais agentes:** Cursor, Claude Code, Antigravity, Codex (pergunta sim/não a cada um).
-
-Variáveis úteis:
-
-| Variável | Efeito |
-|----------|--------|
-| `IA_CONFIG_REPO_URL` | URL git (predefinição aponta para este repo público). |
-| `IA_CONFIG_BRANCH` | Ramo (predef.: `main`). |
-| `IA_CONFIG_SKIP_CLONE=1` + `IA_CONFIG_REPO_ROOT=/path` | Só para desenvolvimento: usa um clone já existente em vez de clonar para `/tmp`. |
-
-Simular sem alterar ficheiros:
+Se você instalou uma versão antiga com symlinks em `~/.cursor/{rules,skills,commands}`:
 
 ```bash
-./install/install.sh --dry-run
+curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | bash
 ```
 
-### Migração: tinhas symlinks no Cursor
-
-Se instalaste uma versão antiga com symlinks em `~/.cursor/{rules,skills,commands}`, corre a partir da raiz de um clone deste repo:
-
-```bash
-bash install/fix-cursor-symlinks.sh
-```
-
-O script resolve cada symlink, copia o conteúdo da pasta de destino para um diretório real e remove o link. Pastas que já forem diretórios normais não são alteradas. Simular: `bash install/fix-cursor-symlinks.sh --dry-run`. Outro destino (não `~/.cursor`): `CURSOR_HOME=/caminho/.cursor bash install/fix-cursor-symlinks.sh`. Depois, reinicia o Cursor.
-
-### Instalação por agente (clone local)
-
-1. **Clona** este repositório para um path estável (ex.: `~/projetos/ia-config`).
-
-2. **Dá permissão de execução** aos scripts (só na primeira vez):
-
-   ```bash
-   chmod +x install/install.sh install/fix-cursor-symlinks.sh install/cursor.sh install/claude.sh install/antigravity.sh install/codex.sh
-   ```
-
-3. **Escolhe o ambiente** e corre o instalador correspondente a partir da raiz do repo (ou define `IA_CONFIG_REPO_ROOT` se correres a partir de outro sítio):
-
-   | Ferramenta    | Comando                 | Efeito |
-   |---------------|-------------------------|--------|
-   | **Cursor**    | `./install/cursor.sh`   | **Copia** `rules`, `skills` e `commands` para `~/.cursor/` (ou `CURSOR_HOME`), substituindo destinos existentes. |
-   | **Claude Code** | `./install/claude.sh` | Escreve `~/.claude/rules/*.md` (conversão de `rules/*.mdc`), `~/.claude/commands/*.md` (paths no texto apontam para `~/.claude/commands/`) e copia `skills/` para `~/.claude/skills/`. Usa `CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars). |
-   | **Antigravity** | `./install/antigravity.sh` | **Copia** `GEMINI.md` e `AGENTS.md` para `~/.gemini/` (ou `GEMINI_HOME`). Além disso: `antigravity/ia-config/rules/*.md`, `antigravity/global_workflows/*.md` e `antigravity/skills/`. Aviso: `GEMINI.md` pode coincidir com o [Gemini CLI](https://github.com/google-gemini/gemini-cli) no mesmo path. |
-   | **Codex**     | `./install/codex.sh`    | **Copia** `~/.codex/AGENTS.md` a partir de `codex/AGENTS.md`. Gera skills em `~/.agents/skills` (ou `AGENTS_SKILLS_ROOT`): `ia-rule-*` e `command-*` a partir de `rules/` e `commands/`, mais cópia de `skills/` do repo. [Doc Codex](https://developers.openai.com/codex/guides/agents-md). |
-
-   **Antes das cópias**, o script obtém **`rules/karpathy-guidelines.mdc`** do ramo `main` de [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (ficheiro `.cursor/rules/karpathy-guidelines.mdc` no upstream). É **obrigatório** para a instalação completar; não está versionado neste repo (`.gitignore`). URL alternativa: variável `KARPATHY_GUIDELINES_URL`.
-
-   No **final**, o instalador **sugere** as skills **Caveman**: aparece uma pergunta (predefinição *não*) sobre **instalar** esse toolkit. Se aceitares, corre um `git clone` shallow de [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) e copia-se `skills/` desse repo para `skills/` do clone em uso (ficheiros cobertos pelo `.gitignore`). Exige **git** instalado.
-
-   **Sem prompt interativo** (CI ou scripts):
-
-   ```bash
-   INSTALL_CAVEMAN=yes ./install/cursor.sh
-   ./install/claude.sh --with-caveman
-   ./install/cursor.sh --without-caveman   # não pergunta nem instala
-   ```
-
-   **Repo alternativo:** `CAVEMAN_REPO_URL=https://... ./install/cursor.sh`
-
-4. **Simula** sem alterar nada:
-
-   ```bash
-   ./install/cursor.sh --dry-run
-   ./install/claude.sh --dry-run
-   ./install/antigravity.sh --dry-run
-   ./install/codex.sh --dry-run
-   ./install/cursor.sh --upgrade --dry-run
-   ```
-
-5. **Reinicia** o Cursor, o Claude Code, o Antigravity ou o Codex para garantir que carrega a configuração nova.
-
-**Requisitos:** **curl** (Karpathy), **git** (Caveman opcional), **python3** (Claude, Antigravity, Codex — conversão na instalação).
+Simular: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | bash -s -- --dry-run`. Outro destino: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | env CURSOR_HOME=/caminho/.cursor bash`. Depois, reinicie o Cursor.
 
 ---
 
-## Upgrade (Karpathy e Caveman)
+## Atualizar
 
-Serve para **voltar a obter** o `karpathy-guidelines.mdc` e as pastas **Caveman** em `skills/` a partir dos repos upstream. No **Cursor**, `--upgrade` **não** substitui as cópias em `~/.cursor/` (só Karpathy + Caveman no clone em uso). Em **Claude Code**, **Antigravity** e **Codex**, o mesmo comando **volta a sincronizar** as rules/commands/skills convertidas para os diretórios da IDE (além de Karpathy e Caveman). Corre à **raiz do clone** em que queres atualizar o ficheiro Karpathy (ou exporta `IA_CONFIG_REPO_ROOT`).
-
-### Comandos
-
-**Cursor**
+Para alinhar com o último **`main`** sem reinstalar tudo **manualmente**, use **`upgrade.sh`**: mesmo tipo de `curl` que na [Instalação](#instalação), mas o script é `upgrade.sh` (clone em pasta temporária e sincronização com o repo).
 
 ```bash
-cd /caminho/para/ia-config
-./install/cursor.sh --upgrade
+curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash
 ```
 
-**Claude Code** (usa `CLAUDE_CONFIG_DIR` se estiver definido)
+Simular:
 
 ```bash
-cd /caminho/para/ia-config
-./install/claude.sh --upgrade
+curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash -s -- --dry-run
 ```
 
-### O que cada parte faz
-
-| Componente | O que o `--upgrade` faz |
-|------------|-------------------------|
-| **Karpathy** | Descarga de novo `rules/karpathy-guidelines.mdc` a partir do ramo `main` de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (precisa de **curl**). Override da URL: `KARPATHY_GUIDELINES_URL=...`. |
-| **Caveman** | Novo `git clone` shallow de [caveman](https://github.com/JuliusBrussee/caveman) e cópia de `skills/` para `skills/` do teu clone (precisa de **git**). Surge a pergunta **«Atualizar skills Caveman?»** (predefinição *não*). |
-| **Sync IDE** (Claude / Antigravity / Codex) | Volta a gerar ficheiros convertidos em `~/.claude/…`, `~/.gemini/antigravity/…` ou `~/.agents/skills/` conforme o script (precisa de **python3**). |
-
-### Sem perguntas (só Caveman)
-
-```bash
-INSTALL_CAVEMAN=yes ./install/cursor.sh --upgrade
-```
-
-### Só Karpathy (sem atualizar Caveman)
-
-```bash
-./install/cursor.sh --upgrade --without-caveman
-```
-
-(Neste caso o Karpathy **é** atualizado; o Caveman **não** é tocado.)
-
-### Simular
-
-```bash
-./install/cursor.sh --upgrade --dry-run
-./install/claude.sh --upgrade --dry-run
-./install/antigravity.sh --upgrade --dry-run
-./install/codex.sh --upgrade --dry-run
-```
+Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você quiser repetir o fluxo completo de primeira instalação.
 
 ---
 
 ## Conteúdo do repositório
 
+**`VERSION`:** arquivo na raiz com **uma linha** semver; deve coincidir com `baladapp_ia_config_version` no frontmatter de `rules/`, `commands/` e `skills/README.md`. Skills **geradas** pelo `install/lib/convert_ia_config.py` (Codex) e o `.mdc` Karpathy gerado no clone também recebem essa versão a partir deste arquivo.
+
 ### `install/`
 
-Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, **copiam** ficheiros para o **Cursor** (`rules`, `skills`, `commands` em `CURSOR_HOME`), e para **Claude / Antigravity / Codex** escrevem ou copiam ficheiros nas pastas esperadas por cada ferramenta (com conversão via `install/lib/convert_ia_config.py`). **Antigravity** e **Codex** copiam `GEMINI.md`/`AGENTS.md` ou `AGENTS.md` para o home da ferramenta; o resto é cópia/geração. No fim **sugerem** as skills Caveman.
+Scripts chamados por **`install.sh`** e **`upgrade.sh`** (não é necessário rodar nada além do `curl` documentado nas seções [Instalação](#instalação) e [Atualizar](#atualizar)).
 
-| Ficheiro      | Função |
-|---------------|--------|
-| `install.sh`  | Instalador interativo: clone temporário, perguntas (global/projeto, agentes), chama os scripts por agente. |
-| `fix-cursor-symlinks.sh` | Migra `~/.cursor/{rules,skills,commands}` de symlinks para pastas reais. |
-| `cursor.sh`   | Instalação para Cursor (cópias). |
-| `claude.sh`   | Claude Code; `CLAUDE_CONFIG_DIR`; gera `rules/`, `commands/`, `skills/` sob `~/.claude/`. |
-| `antigravity.sh` | Google Antigravity: cópia de `GEMINI.md` e `AGENTS.md`; cópias em `antigravity/ia-config/rules`, `global_workflows`, `skills`. |
-| `codex.sh`    | Codex CLI: cópia de `AGENTS.md`; skills em `AGENTS_SKILLS_ROOT` (predef. `~/.agents/skills`). |
-| `lib/karpathy-rules.sh` | `curl` do `.mdc` Karpathy a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); **obrigatório**. |
-| `lib/caveman-install.sh` | Clone shallow do upstream e cópia para `skills/`; opcional (pergunta no fim). |
-| `lib/ide-sync.sh` | Funções bash partilhadas para sincronizar rules/commands/skills. |
-| `lib/convert_ia_config.py` | Conversões `.mdc`→`.md`, reescrita de paths em comandos, skills Codex. |
+| Arquivo | Função |
+|---------|--------|
+| `install.sh` | Instalador interativo: `curl … | bash`; clona **eduardolagares/ia-config** (`main`) para pasta temporária e orquestra o resto. |
+| `upgrade.sh` | Atualização pelo mesmo padrão de `curl`; ver [Atualizar](#atualizar). |
+| `fix-cursor-symlinks.sh` | Migração pontual de symlinks no Cursor; ver [Migração](#migração-você-tinha-symlinks-no-cursor). |
+| `cursor.sh` | Instalação / upgrade para Cursor (cópias em `CURSOR_HOME`). |
+| `claude.sh` | Instalação / upgrade para Claude Code (`CLAUDE_CONFIG_DIR`). |
+| `antigravity.sh` | Instalação / upgrade para Antigravity (`GEMINI_HOME`). |
+| `codex.sh` | Instalação / upgrade para Codex (`CODEX_HOME`, `AGENTS_SKILLS_ROOT`). |
+
+**`install/lib/`** (suporte, não scripts de entrada): `convert_ia_config.py`, `karpathy-rules.sh`, `ide-sync.sh`, `caveman-install.sh`.
 
 ### `rules/`
 
-Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). As regras **deste repositório** usam o prefixo `baladapp-` no nome do ficheiro; **regras de terceiros** instaladas pelo script (ex.: Karpathy) mantêm o nome original do upstream, **sem** esse prefixo. Cada ficheiro da tabela abaixo documenta convenções para um tipo de código ou preocupação.
+Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). No **frontmatter** YAML de cada arquivo versionado neste repo existe `baladapp_ia_config_version` (mesmo valor semver que `VERSION` na raiz — atualize os dois quando mudar o conjunto de regras).
 
-| Ficheiro             | Tema |
-|----------------------|------|
-| `baladapp-ruby.mdc`           | Convenções de linguagem Ruby. |
+As regras **deste repositório** usam o prefixo `baladapp-` no nome do **arquivo**; **regras de terceiros** instaladas pelo script (ex.: Karpathy, só no **seu** disco após o `install`) mantêm o nome estável `karpathy-guidelines.mdc`, **sem** esse prefixo. Cada **arquivo** da tabela abaixo documenta convenções para um tipo de código ou preocupação.
+
+| Arquivo             | Tema |
+|---------------------|------|
+| `baladapp-caveman.mdc` | Modo caveman full (regra global). |
 | `baladapp-clean_code_ruby.mdc` | Clean code e Rails em geral. |
-| `baladapp-models.mdc`         | Models Active Record. |
-| `baladapp-controllers.mdc`    | Controllers. |
-| `baladapp-views.mdc`          | Views / templates. |
-| `baladapp-migrations.mdc`     | Migrations e alterações de schema. |
+| `baladapp-context-mode.mdc` | Uso de context-mode / análise sem inundar o contexto. |
+| `baladapp-controllers.mdc` | Controllers. |
+| `baladapp-implementation.mdc` | Alterações de código ↔ testes em sincronia. |
+| `baladapp-ia-config-versioning.mdc` | Política de `VERSION` e `baladapp_ia_config_version` nos artefatos versionados. |
+| `baladapp-migrations.mdc` | Migrations e alterações de schema. |
+| `baladapp-models.mdc` | Models Active Record. |
+| `baladapp-query_objects.mdc` | Query objects. |
+| `baladapp-rule_objects.mdc` | Rule objects / objetos de regra de domínio. |
+| `baladapp-ruby.mdc` | Convenções de linguagem Ruby. |
+| `baladapp-use_cases.mdc` | Domain use cases (Dry::Monads, paths under `use_cases/`). |
+| `baladapp-views.mdc` | Views / templates. |
 | `baladapp-writting-tests-rails.mdc` | Escrita de testes Rails (Minitest). |
-| `baladapp-query_objects.mdc`  | Query objects. |
-| `baladapp-rule_objects.mdc`   | Rule objects / objetos de regra de domínio. |
-| `baladapp-use_cases.mdc`      | Domain use cases (Dry::Monads, paths under `use_cases/`). |
-| `baladapp-context-mode.mdc`   | Uso de context-mode / análise sem inundar o contexto. |
-| `baladapp-implementation.mdc`  | Alterações de código ↔ testes em sincronia. |
-| `baladapp-caveman.mdc`       | Modo caveman full (regra global). |
-| `karpathy-guidelines.mdc` | **Externo (sem prefixo `baladapp-`):** obtido pelo `install/` a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); não commitado. Diretrizes Karpathy para o agente. |
+| `karpathy-guidelines.mdc` | **Não** está neste repositório. O `install/` **baixa** o [SKILL.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) do [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), converte para `.mdc` no clone e segue o pipeline habitual. URL raw alternativa: variável `KARPATHY_GUIDELINES_URL`. |
 
 ### `commands/`
 
-Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agente seguir.
+Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agente seguir. O frontmatter inclui `baladapp_ia_config_version` (alinhado a `VERSION` na raiz).
 
-| Ficheiro    | Descrição resumida |
-|-------------|--------------------|
+| Arquivo    | Descrição resumida |
+|------------|--------------------|
 | `baladapp-commit.md` | Analisa diff/staging, mensagem curta em pt-BR, `git add` + `git commit` sem pedir confirmação. Comando: `/baladapp-commit`. |
 | `baladapp-tdd-dev.md` | Fluxo TDD de implementação (RED/GREEN, menus, alinhado ao spec criado com `/baladapp-tdd-doc`). |
-| `baladapp-tdd-doc.md` | Fluxo para documentar/guionar o trabalho TDD no spec. Comando: `/baladapp-tdd-doc`. |
-| `baladapp-code-review.md` | Revisão sénior read-only (pt-BR). Comando: `/baladapp-code-review`. |
+| `baladapp-tdd-doc.md` | Fluxo para documentar/**guiar** o trabalho TDD no spec. Comando: `/baladapp-tdd-doc`. |
+| `baladapp-code-review.md` | Revisão **sênior** read-only (pt-BR). Comando: `/baladapp-code-review`. |
 
 ### `skills/`
 
-No Git existe apenas `skills/.gitkeep` — a pasta existe para o instalador poder **copiar** skills para `~/.cursor/skills` (ou equivalente em projeto).
+No repositório existe apenas **`skills/README.md`** (metadados + `baladapp_ia_config_version`). O instalador **copia** a pasta `skills/` inteira para o Cursor; após aceitar **Caveman**, podem aparecer subpastas com `SKILL.md` (não versionadas aqui).
 
-Depois de correres o instalador e aceitares **Caveman** (ou `INSTALL_CAVEMAN=yes`), aparecem no **clone em uso** pastas em `skills/` copiadas do upstream (`caveman`, `caveman-commit`, etc.); continuam **fora do controlo de versão** (`.gitignore`). O Cursor recebe **cópias** dessas pastas em `CURSOR_HOME/skills/`.
+Depois de **rodar** o instalador e aceitar **Caveman** (ou `INSTALL_CAVEMAN=yes` no mesmo pipeline, ver [Instalação](#instalação)), as skills Caveman ficam nos diretórios que o script tiver configurado.
+
+### `antigravity/`
+
+| Arquivo | Função |
+|---------|--------|
+| `GEMINI.md` | Copiado para o home Antigravity pelo `install/antigravity.sh`. |
+| `AGENTS.md` | Idem. |
+
+### `codex/`
+
+| Arquivo | Função |
+|---------|--------|
+| `AGENTS.md` | Copiado para `CODEX_HOME` pelo `install/codex.sh`. |
 
 ### `hooks/` e `prompts/`
 
-Pastas reservadas (`hooks/.gitkeep`, `prompts/.gitkeep`) para poderes acrescentar localmente hooks ou prompts sem alterar a estrutura base do projeto.
+Cada pasta contém só **`hooks/.gitkeep`** e **`prompts/.gitkeep`** (reservadas para você adicionar arquivos localmente sem mudar a estrutura base).
 
 ### `.gitignore`
 
-Ignora `rules/karpathy-guidelines.mdc` (descarregado na instalação) e paths de **skills de terceiros** sob `skills/`.
+Comentário sobre o Karpathy gerado no clone; entradas atuais ignoram pastas de skills de terceiros sob `skills/`: `skills/caveman/`, `skills/caveman-*/`, `skills/cavecrew/`, `skills/compress/`, `skills/find-skills/`.
 
 ---
 
 ## Skills Caveman (recomendado)
 
-O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) **não está no histórico Git** deste repo. O **instalador sugere** instalar esse toolkit no final (pergunta interativa); também podes forçar com `--with-caveman` ou `INSTALL_CAVEMAN=yes`. Fonte: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
+O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) **não está no histórico Git** deste repo. O instalador via **`curl`** sugere instalar esse toolkit no final (pergunta interativa). Sem pergunta: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | env INSTALL_CAVEMAN=yes bash`. Fonte: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
 
-**Porquê:** comandos como `/baladapp-tdd-dev` pedem a skill **caveman** quando existe em `skills/` — menos tokens e comportamento alinhado ao texto do comando. Se recusares a instalação e a pasta `skills/` ficar só com `.gitkeep`, esse bloco é ignorado (sem erro).
+**Por quê:** comandos como `/baladapp-tdd-dev` pedem a skill **caveman** quando existe em `skills/` — menos tokens e comportamento alinhado ao texto do comando. Se você **recusar** a instalação, o repositório continua só com `skills/README.md` (sem pasta Caveman em `skills/`); esse bloco é ignorado (sem erro).
 
 ---
 
 ## Context-mode (recomendado)
 
-Complemento **opcional**, **fora** dos scripts `install/` — segue o passo a passo do próprio projeto.
+Complemento **opcional**, **fora** dos scripts `install/` — siga o passo a passo do próprio projeto.
 
-**[context-mode](https://github.com/mksglu/context-mode)** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Combina bem com a regra `rules/baladapp-context-mode.mdc` deste repositório: instala e configura o MCP no Cursor (ou no cliente que suportes) quando quiseres esse fluxo.
+**[context-mode](https://github.com/mksglu/context-mode)** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Combina bem com a regra `rules/baladapp-context-mode.mdc` deste repositório: instale e configure o MCP no Cursor (ou no cliente que você usar) quando quiser esse fluxo.

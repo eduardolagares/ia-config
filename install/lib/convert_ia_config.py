@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
 """
 Conversões na instalação: rules .mdc (Cursor) → .md compatível Claude / Antigravity;
-comandos → cópia com reescrita de paths; comandos → skill Codex (.agents/skills).
+comandos → cópia com reescrita de paths; comandos → skill Codex (.agents/skills);
+Karpathy SKILL.md upstream → rules/karpathy-guidelines.mdc.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
 from pathlib import Path
+
+
+def read_ia_config_version(repo_root: Path) -> str:
+    """Lê a primeira linha de VERSION na raiz do repositório (semver do pacote de conteúdo)."""
+    p = repo_root / "VERSION"
+    if not p.is_file():
+        return "0.0.0"
+    raw = p.read_text(encoding="utf-8").strip()
+    if not raw:
+        return "0.0.0"
+    return raw.splitlines()[0].strip() or "0.0.0"
 
 
 def split_frontmatter(text: str) -> tuple[str | None, str]:
@@ -78,6 +91,24 @@ def rule_to_plain_md(src: Path, dst: Path) -> None:
     rule_to_claude_md(src, dst)
 
 
+def karpathy_skill_to_mdc(src: Path, dst: Path) -> None:
+    """Upstream SKILL.md (name/description) → rules/karpathy-guidelines.mdc (Cursor + resto do pipeline)."""
+    raw = src.read_text(encoding="utf-8")
+    meta, body = _parse_simple_frontmatter(raw)
+    desc = meta.get(
+        "description",
+        "Diretrizes comportamentais para reduzir erros comuns em código com LLM.",
+    )
+    body = body.lstrip("\n")
+    repo_root = dst.parent.parent
+    ver = os.environ.get("IA_CONFIG_CONTENT_VERSION", "").strip() or read_ia_config_version(repo_root)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(
+        f"---\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\nalwaysApply: true\n---\n\n{body}",
+        encoding="utf-8",
+    )
+
+
 _PATH_REPLACEMENTS = {
     "claude": [
         ("~/.cursor/commands/skills/", "~/.claude/commands/skills/"),
@@ -140,8 +171,8 @@ def _parse_simple_frontmatter(text: str) -> tuple[dict[str, str], str]:
     for line in fm.splitlines():
         if ":" not in line:
             continue
-            k, v = line.split(":", 1)
-            meta[k.strip()] = v.strip().strip('"').strip("'")
+        k, v = line.split(":", 1)
+        meta[k.strip()] = v.strip().strip('"').strip("'")
     return meta, body
 
 
@@ -157,8 +188,9 @@ def command_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
     body = rewrite_paths_markdown(body, "codex")
     skill_dir.mkdir(parents=True, exist_ok=True)
     skill_md = skill_dir / "SKILL.md"
+    ver = read_ia_config_version(src.parent.parent)
     skill_md.write_text(
-        f"---\nname: {json.dumps(name)}\ndescription: {json.dumps(desc)}\n---\n{body}",
+        f"---\nname: {json.dumps(name)}\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\n---\n{body}",
         encoding="utf-8",
     )
 
@@ -187,8 +219,9 @@ def rule_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
         "Follow when the task matches the description and scopes.\n\n"
     )
     skill_md = skill_dir / "SKILL.md"
+    ver = read_ia_config_version(src.parent.parent)
     skill_md.write_text(
-        f"---\nname: {json.dumps(folder_name)}\ndescription: {json.dumps(desc)}\n---\n{intro}{scope_note}{body.lstrip()}",
+        f"---\nname: {json.dumps(folder_name)}\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\n---\n{intro}{scope_note}{body.lstrip()}",
         encoding="utf-8",
     )
 
@@ -234,6 +267,10 @@ def main() -> int:
     p5.add_argument("src_skills_root", type=Path)
     p5.add_argument("dest_skills_root", type=Path)
 
+    p6 = sub.add_parser("karpathy-skill-to-mdc")
+    p6.add_argument("src", type=Path)
+    p6.add_argument("dst", type=Path)
+
     args = p.parse_args()
     if args.cmd == "rule-to-md":
         rule_to_plain_md(args.src, args.dst)
@@ -245,6 +282,8 @@ def main() -> int:
         rule_to_codex_skill(args.src, args.dest_skills_root)
     elif args.cmd == "sync-skill-trees":
         sync_skill_trees(args.src_skills_root, args.dest_skills_root)
+    elif args.cmd == "karpathy-skill-to-mdc":
+        karpathy_skill_to_mdc(args.src, args.dst)
     return 0
 
 

@@ -1,4 +1,5 @@
 ---
+baladapp_ia_config_version: "1.0.2"
 description: "FS senior review: read-only, pt-BR report, blocks 1–4; caveman spec — still binding."
 ---
 

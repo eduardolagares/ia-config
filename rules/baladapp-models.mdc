@@ -1,4 +1,5 @@
 ---
+baladapp_ia_config_version: "1.0.2"
 description: Thin AR models — validations, scopes, enums; orchestration elsewhere
 globs: app/models/**/*.rb,test/models/**/*.rb
 ---

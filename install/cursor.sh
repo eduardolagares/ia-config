@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${IA_CONFIG_REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+REPO_ROOT="${INSTALL_IA_SOURCE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 CURSOR_HOME="${CURSOR_HOME:-${HOME}/.cursor}"
 DRY_RUN=false
 UPGRADE=false
@@ -24,11 +24,10 @@ for arg in "$@"; do
       echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
       echo "Substitui $CURSOR_HOME/{rules,skills,commands} por cópias das pastas do repo (sem symlinks)."
       echo "  CURSOR_HOME=...  destino (predef.: ~/.cursor; em projeto: /caminho/.cursor)."
-      echo "  IA_CONFIG_REPO_ROOT=...  raiz do clone ia-config (o install.sh define isto)."
       echo "  --upgrade  Só atualiza Karpathy + Caveman; não substitui rules/skills/commands em CURSOR_HOME."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
-      echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
-      echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa do .mdc."
+      echo "  Descarrega obrigatoriamente Karpathy a partir do SKILL.md upstream (forrestchang/andrej-karpathy-skills)."
+      echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa (predef.: .../skills/karpathy-guidelines/SKILL.md)."
       echo "  INSTALL_CAVEMAN=yes|no  evita a pergunta (útil em CI)."
       echo "  CAVEMAN_REPO_URL=...     URL alternativa do repositório Caveman."
       exit 0

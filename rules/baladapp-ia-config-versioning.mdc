@@ -1,0 +1,25 @@
+---
+baladapp_ia_config_version: "1.0.2"
+description: "Repositório ia-config — ao mudar rule, command ou skill versionado, incrementar semver e alinhar frontmatter."
+alwaysApply: true
+---
+
+# Versionamento do pacote (ia-config)
+
+**Escopo:** arquivos versionados neste repositório com `baladapp_ia_config_version` no frontmatter YAML — em geral `rules/**/*.mdc`, `commands/**/*.md`, `skills/README.md` e, se existirem no Git, `skills/**/SKILL.md` ou outros markdown com essa chave.
+
+**Obrigatório no mesmo conjunto de alterações (idealmente no mesmo commit):**
+
+1. **`VERSION` na raiz** — uma linha, semver. Incrementar de forma coerente com a mudança: **patch** para correções ou ajustes de texto/comportamento retrocompatíveis; **minor** para novo arquivo de rule/command/skill ou capacidade nova; **major** para remoção ou mudança incompatível com quem consome o pacote.
+2. **`baladapp_ia_config_version`** — deve ser **igual** ao conteúdo de `VERSION` em **todos** os artefatos versionados do repo que carregam essa chave (não deixar um arquivo em `1.0.0` e outro em `1.0.1`). O instalador e `install/lib/convert_ia_config.py` usam `VERSION` como fonte da verdade para gerações; manter o frontmatter alinhado evita drift.
+3. **Não** alterar só um arquivo versionado sem atualizar `VERSION` e os demais frontmatters quando a mudança for publicável (regra do README do repo: coincidência global).
+
+**Exceção mínima:** commits puramente mecânicos definidos pelo mantenedor (ex.: renomear variável interna sem mudar semântica) ainda devem manter consistência se qualquer `baladapp_ia_config_version` ou `VERSION` for tocado.
+
+```yaml
+# Exemplo de frontmatter — use o mesmo semver que a linha única de VERSION
+---
+baladapp_ia_config_version: "X.Y.Z"
+description: "…"
+---
+```

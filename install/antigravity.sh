@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${IA_CONFIG_REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+REPO_ROOT="${INSTALL_IA_SOURCE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 GEMINI_HOME="${GEMINI_HOME:-${HOME}/.gemini}"
 DRY_RUN=false
 UPGRADE=false
@@ -30,10 +30,10 @@ for arg in "$@"; do
       echo "Além disso: rules convertidas em antigravity/ia-config/rules/ ; commands em antigravity/global_workflows/ ; skills em antigravity/skills/."
       echo "  --upgrade  Karpathy, Caveman, re-cópia GEMINI/AGENTS e re-sync das pastas antigravity acima."
       echo "  GEMINI_HOME=...  diretório base (predefinição: ~/.gemini)."
-      echo "  IA_CONFIG_REPO_ROOT=...  raiz do clone ia-config."
       echo "Aviso: GEMINI.md pode ser partilhado com o Gemini CLI (mesmo path)."
       echo "No fim: pergunta opcional Caveman (clone → skills/)."
       echo "  INSTALL_CAVEMAN=yes|no  CAVEMAN_REPO_URL=..."
+      echo "  Karpathy: SKILL.md upstream → rules/karpathy-guidelines.mdc (KARPATHY_GUIDELINES_URL=... opcional)."
       exit 0
       ;;
   esac

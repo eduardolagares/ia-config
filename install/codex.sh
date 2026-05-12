@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${IA_CONFIG_REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+REPO_ROOT="${INSTALL_IA_SOURCE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 CODEX_HOME="${CODEX_HOME:-${HOME}/.codex}"
 DRY_RUN=false
 UPGRADE=false
@@ -30,11 +30,11 @@ for arg in "$@"; do
       echo "Gera skills em AGENTS_SKILLS_ROOT (predef.: ~/.agents/skills): cada rule .mdc → ia-rule-*/SKILL.md; cada command → command-*/SKILL.md; copia skills/ do repo."
       echo "  --upgrade  Karpathy, Caveman e re-sync dessas skills (ficheiro AGENTS.md copiado de novo)."
       echo "  CODEX_HOME=...  diretório do Codex (predefinição: ~/.codex)."
-      echo "  IA_CONFIG_REPO_ROOT=...  raiz do clone ia-config."
       echo "  AGENTS_SKILLS_ROOT=...  destino das skills (predefinição: ~/.agents/skills)."
       echo "Se existir AGENTS.override.md com conteúdo, o Codex pode ignorar AGENTS.md."
       echo "No fim: pergunta opcional Caveman (clone → skills/)."
       echo "  INSTALL_CAVEMAN=yes|no  CAVEMAN_REPO_URL=..."
+      echo "  Karpathy: SKILL.md upstream → rules/karpathy-guidelines.mdc (KARPATHY_GUIDELINES_URL=... opcional)."
       exit 0
       ;;
   esac
