@@ -1,6 +1,6 @@
 ---
 VERSION: "0.0.1"
-description: "README do baladapp-ia-config — visão geral, instalação, atualização e mapa do repositório."
+description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
 # baladapp-ia-config
@@ -55,96 +55,46 @@ Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você qu
 
 ---
 
-## Conteúdo do repositório
+## Comandos
 
-**`VERSION`:** arquivo na raiz com **uma linha** semver; deve coincidir com o atributo `VERSION` no frontmatter de `rules/`, `commands/` e `skills/README.md`. Skills **geradas** pelo `install/lib/convert_ia_config.py` (Codex) e o `.mdc` Karpathy gerado no clone também recebem essa versão a partir deste arquivo.
+Comandos slash (Markdown em `commands/`) que o instalador copia para a IDE; ficam disponíveis no chat após o `install.sh`/`upgrade.sh`.
 
-### `install/`
+| Comando | O que faz |
+|---------|-----------|
+| `/baladapp-commit` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
+| `/baladapp-tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
+| `/baladapp-tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF ou por fase, com menu de iteração; segue o spec criado por `/baladapp-tdd-doc`. |
+| `/baladapp-code-review` | Revisão sênior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 
-Scripts chamados por **`install.sh`** e **`upgrade.sh`** (não é necessário rodar nada além do `curl` documentado nas seções [Instalação](#instalação) e [Atualizar](#atualizar)).
+---
 
-| Arquivo | Função |
-|---------|--------|
-| `install.sh` | Instalador interativo: `curl … | bash`; clona **eduardolagares/ia-config** (`main`) para pasta temporária e orquestra o resto. |
-| `upgrade.sh` | Atualização pelo mesmo padrão de `curl`; ver [Atualizar](#atualizar). |
-| `fix-cursor-symlinks.sh` | Migração pontual de symlinks no Cursor; ver [Migração](#migração-você-tinha-symlinks-no-cursor). |
-| `cursor.sh` | Instalação / upgrade para Cursor (cópias em `CURSOR_HOME`). |
-| `claude.sh` | Instalação / upgrade para Claude Code (`CLAUDE_CONFIG_DIR`). |
-| `antigravity.sh` | Instalação / upgrade para Antigravity (`GEMINI_HOME`). |
-| `codex.sh` | Instalação / upgrade para Codex (`CODEX_HOME`, `AGENTS_SKILLS_ROOT`). |
+## Regras
 
-**`install/lib/`** (suporte, não scripts de entrada): `convert_ia_config.py`, `karpathy-rules.sh`, `ide-sync.sh`.
+Regras em `.mdc` (Cursor **Project Rules** / contexto por glob) que o instalador copia para a IDE. Todas começam com o prefixo `baladapp-` e ficam em `rules/` neste repo.
 
-### `.cursor/rules/` (manutenção deste repo)
+| Arquivo | Tema |
+|---------|------|
+| `baladapp-clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR; sintaxe/nomes → `baladapp-ruby.mdc`. |
+| `baladapp-controllers.mdc` | Controllers magros — Pundit, strong params, REST, use cases / queries. |
+| `baladapp-implementation.mdc` | Edits mantêm testes em sincronia — achar spec contraparte, atualizar contratos, rodar testes focados. |
+| `baladapp-migrations.mdc` | Migrations Rails — gerador, prefixo de versão, reversibilidade, índices, FKs, Postgres seguro. |
+| `baladapp-models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
+| `baladapp-query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
+| `baladapp-rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
+| `baladapp-ruby.mdc` | Estilo Ruby — kwargs, nomes, fluxo de controle, sem meta desnecessária. |
+| `baladapp-use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
+| `baladapp-views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
+| `baladapp-writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
 
-Regras usadas **só** ao desenvolver **este** repositório no Cursor; **não** entram na pasta `rules/` nem são copiadas pelo `install/` para consumidores do pacote.
-
-| Ficheiro | Função |
-|----------|--------|
-| `versioning.mdc` | Política do arquivo `VERSION` e do atributo `VERSION` no frontmatter dos artefatos publicados em `rules/`, `commands/`, `skills/`. |
-
-### `rules/`
-
-Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). No **frontmatter** YAML de cada arquivo versionado neste repo existe o atributo `VERSION` (mesmo valor semver do arquivo `VERSION` na raiz — atualize os dois quando mudar o conjunto de regras).
-
-As regras **deste repositório** usam o prefixo `baladapp-` no nome do **arquivo**; **regras de terceiros** instaladas pelo script (ex.: Karpathy, só no **seu** disco após o `install`) mantêm o nome estável `karpathy-guidelines.mdc`, **sem** esse prefixo. Cada **arquivo** da tabela abaixo documenta convenções para um tipo de código ou preocupação.
-
-| Arquivo             | Tema |
-|---------------------|------|
-| `baladapp-clean_code_ruby.mdc` | Clean code e Rails em geral. |
-| `baladapp-controllers.mdc` | Controllers. |
-| `baladapp-implementation.mdc` | Alterações de código ↔ testes em sincronia. |
-| `baladapp-migrations.mdc` | Migrations e alterações de schema. |
-| `baladapp-models.mdc` | Models Active Record. |
-| `baladapp-query_objects.mdc` | Query objects. |
-| `baladapp-rule_objects.mdc` | Rule objects / objetos de regra de domínio. |
-| `baladapp-ruby.mdc` | Convenções de linguagem Ruby. |
-| `baladapp-use_cases.mdc` | Domain use cases (Dry::Monads, paths under `use_cases/`). |
-| `baladapp-views.mdc` | Views / templates. |
-| `baladapp-writting-tests-rails.mdc` | Escrita de testes Rails (Minitest). |
-| `karpathy-guidelines.mdc` | **Não** está neste repositório. O `install/` **baixa** o [SKILL.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) do [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), converte para `.mdc` no clone e segue o pipeline habitual. URL raw alternativa: variável `KARPATHY_GUIDELINES_URL`. |
-
-### `commands/`
-
-Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agente seguir. O frontmatter inclui o atributo `VERSION` (alinhado ao arquivo `VERSION` na raiz).
-
-| Arquivo    | Descrição resumida |
-|------------|--------------------|
-| `baladapp-commit.md` | Analisa diff/staging, mensagem curta em pt-BR, `git add` + `git commit` sem pedir confirmação. Comando: `/baladapp-commit`. |
-| `baladapp-tdd-dev.md` | Fluxo TDD de implementação (RED/GREEN, menus, alinhado ao spec criado com `/baladapp-tdd-doc`). |
-| `baladapp-tdd-doc.md` | Fluxo para documentar/**guiar** o trabalho TDD no spec. Comando: `/baladapp-tdd-doc`. |
-| `baladapp-code-review.md` | Revisão **sênior** read-only (pt-BR). Comando: `/baladapp-code-review`. |
-
-### `skills/`
-
-No repositório existe apenas **`skills/README.md`** (metadados + atributo `VERSION`). O instalador **copia** a pasta `skills/` inteira para os destinos configurados. Subpastas com `SKILL.md` que **você** adicionar localmente (por exemplo após instalar o **Caveman** por fora) são copiadas junto; pastas típicas de terceiros ficam no `.gitignore` deste repo (ver secção `.gitignore` abaixo).
-
-### `antigravity/`
-
-| Arquivo | Função |
-|---------|--------|
-| `GEMINI.md` | Copiado para o home Antigravity pelo `install/antigravity.sh`. |
-| `AGENTS.md` | Idem. |
-
-### `codex/`
-
-| Arquivo | Função |
-|---------|--------|
-| `AGENTS.md` | Copiado para `CODEX_HOME` pelo `install/codex.sh`. |
-
-### `hooks/` e `prompts/`
-
-Cada pasta contém só **`hooks/.gitkeep`** e **`prompts/.gitkeep`** (reservadas para você adicionar arquivos localmente sem mudar a estrutura base).
-
-### `.gitignore`
-
-Comentário sobre o Karpathy gerado no clone; entradas atuais ignoram pastas de skills de terceiros sob `skills/`: `skills/caveman/`, `skills/caveman-*/`, `skills/cavecrew/`, `skills/compress/`, `skills/find-skills/`.
+> A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) e converte para `.mdc` durante a instalação.
 
 ---
 
 ## Skills Caveman (recomendado)
 
-O ecossistema **[Caveman](https://github.com/JuliusBrussee/caveman)** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
+**Projeto:** <https://github.com/JuliusBrussee/caveman>
+
+O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
 **Por quê:** comandos como `/baladapp-tdd-dev` referem-se à skill **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/` no Codex) — menos tokens e comportamento alinhado ao texto do comando. Sem essa instalação, esse trecho dos comandos é ignorado (sem erro).
 
@@ -152,6 +102,8 @@ O ecossistema **[Caveman](https://github.com/JuliusBrussee/caveman)** (modo comp
 
 ## Context-mode (recomendado)
 
+**Projeto:** <https://github.com/mksglu/context-mode>
+
 Complemento **opcional**, **fora** dos scripts `install/` — siga o passo a passo do próprio projeto.
 
-**[context-mode](https://github.com/mksglu/context-mode)** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Instale e configure o MCP no Cursor (ou no cliente que você usar) quando quiser esse fluxo.
+**context-mode** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Instale e configure o MCP no Cursor (ou no cliente que você usar) quando quiser esse fluxo.
