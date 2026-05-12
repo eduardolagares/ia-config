@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Liga este repositório ao Claude Code via symlinks de PASTAS em ~/.claude/
+# Liga este repositório ao Claude Code: ~/.claude/{rules,commands,skills}/ (cópias convertidas).
 # Respeita CLAUDE_CONFIG_DIR se definido (https://code.claude.com/en/env-vars).
 # Uso: ./install/claude.sh | ./install/claude.sh --dry-run | ./install/claude.sh --upgrade
 set -euo pipefail
@@ -14,6 +14,8 @@ UPGRADE=false
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/caveman-install.sh
 source "$SCRIPT_DIR/lib/caveman-install.sh"
+# shellcheck source=lib/ide-sync.sh
+source "$SCRIPT_DIR/lib/ide-sync.sh"
 
 for arg in "$@"; do
   case "$arg" in
@@ -23,8 +25,8 @@ for arg in "$@"; do
     --without-caveman) INSTALL_CAVEMAN=no ;;
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
-      echo "Substitui rules/skills/commands (pasta ou symlink) por symlink para o repo em ~/.claude ou CLAUDE_CONFIG_DIR."
-      echo "  --upgrade  Só atualiza Karpathy + Caveman (mesmas regras que na instalação); não recria symlinks."
+      echo "Escreve ~/.claude/{rules,commands,skills}/ : rules .mdc→.md (globs→paths), commands com paths ~/.claude/commands/, skills a partir de skills/ do repo."
+      echo "  --upgrade  Karpathy, Caveman e re-sync de rules/commands/skills em ~/.claude (ou CLAUDE_CONFIG_DIR)."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
       echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
       echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa do .mdc."
@@ -36,38 +38,10 @@ for arg in "$@"; do
   esac
 done
 
-run() {
-  if [[ "$DRY_RUN" == true ]]; then
-    echo "[dry-run] $*"
-  else
-    eval "$1"
-  fi
-}
-
-# Remove $dest se existir (pasta, ficheiro ou symlink) e cria $dest -> $src.
-link_repo_dir() {
-  local name="$1"
-  local src="$REPO_ROOT/$name"
-  local dest="$CLAUDE_HOME/$name"
-
-  if [[ ! -d "$src" ]]; then
-    echo "AVISO: pasta inexistente no repo: $src" >&2
-    return 0
-  fi
-
-  if [[ -e "$dest" || -L "$dest" ]]; then
-    echo "A remover destino existente: $dest" >&2
-    run "rm -rf \"$dest\""
-  fi
-
-  run "ln -sfn \"$src\" \"$dest\""
-  echo "  $dest -> $src"
-}
-
 echo "Repo:   $REPO_ROOT"
 
 if [[ "$UPGRADE" == true ]]; then
-  echo "Modo upgrade — apenas Karpathy + Caveman (symlinks em $CLAUDE_HOME não são alterados)."
+  echo "Modo upgrade — Karpathy, Caveman e re-sync de rules/commands/skills em $CLAUDE_HOME (sem voltar a criar symlinks antigos)."
   [[ -n "${CLAUDE_CONFIG_DIR:-}" ]] && echo "(CLAUDE_CONFIG_DIR está definido)"
   if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
   echo
@@ -75,15 +49,17 @@ if [[ "$UPGRADE" == true ]]; then
   echo
   maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" true
   echo
+  ia_config_sync_claude_rules_and_commands "$REPO_ROOT" "$CLAUDE_HOME" "$DRY_RUN"
+  echo
+  ia_config_sync_claude_skills "$REPO_ROOT" "$CLAUDE_HOME" "$DRY_RUN"
+  echo
   if [[ "$DRY_RUN" == true ]]; then echo "Upgrade concluído (dry-run)."; else echo "Upgrade concluído."; fi
   exit 0
 fi
 
-echo "Dest:   symlinks de pasta em $CLAUDE_HOME/"
+echo "Dest:   $CLAUDE_HOME/{rules,commands,skills}/ (ficheiros gerados; não symlinks das pastas do repo)"
 [[ -n "${CLAUDE_CONFIG_DIR:-}" ]] && echo "(CLAUDE_CONFIG_DIR está definido)"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
-echo
-echo "Nota: Claude Code carrega rules como rules/*.md; ficheiros .mdc (Cursor) podem não ser lidos até duplicares ou renomeares para .md."
 echo
 
 mkdir -p "$CLAUDE_HOME"
@@ -91,13 +67,13 @@ mkdir -p "$CLAUDE_HOME"
 install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
 echo
 
-link_repo_dir rules
+ia_config_sync_claude_rules_and_commands "$REPO_ROOT" "$CLAUDE_HOME" "$DRY_RUN"
 echo
-link_repo_dir skills
+
+maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false
 echo
-link_repo_dir commands
+
+ia_config_sync_claude_skills "$REPO_ROOT" "$CLAUDE_HOME" "$DRY_RUN"
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
-
-maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false

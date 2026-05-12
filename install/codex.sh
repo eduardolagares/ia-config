@@ -13,6 +13,10 @@ UPGRADE=false
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/caveman-install.sh
 source "$SCRIPT_DIR/lib/caveman-install.sh"
+# shellcheck source=lib/ide-sync.sh
+source "$SCRIPT_DIR/lib/ide-sync.sh"
+
+AGENTS_SKILLS_ROOT="${AGENTS_SKILLS_ROOT:-${HOME}/.agents/skills}"
 
 for arg in "$@"; do
   case "$arg" in
@@ -23,8 +27,10 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
       echo "Cria symlink: ${CODEX_HOME}/AGENTS.md -> ${REPO_ROOT}/codex/AGENTS.md"
-      echo "  --upgrade  Só atualiza Karpathy + Caveman; não recria symlinks."
+      echo "Gera skills em AGENTS_SKILLS_ROOT (predef.: ~/.agents/skills): cada rule .mdc → ia-rule-*/SKILL.md; cada command → command-*/SKILL.md; copia skills/ do repo."
+      echo "  --upgrade  Karpathy, Caveman e re-sync dessas skills (symlink AGENTS.md mantido)."
       echo "  CODEX_HOME=...  diretório do Codex (predefinição: ~/.codex)."
+      echo "  AGENTS_SKILLS_ROOT=...  destino das skills (predefinição: ~/.agents/skills)."
       echo "Se existir AGENTS.override.md com conteúdo, o Codex pode ignorar AGENTS.md."
       echo "No fim: pergunta opcional Caveman (clone → skills/)."
       echo "  INSTALL_CAVEMAN=yes|no  CAVEMAN_REPO_URL=..."
@@ -63,18 +69,20 @@ link_repo_path() {
 echo "Repo:   $REPO_ROOT"
 
 if [[ "$UPGRADE" == true ]]; then
-  echo "Modo upgrade — apenas Karpathy + Caveman (symlinks em $CODEX_HOME/ não são alterados)."
+  echo "Modo upgrade — Karpathy, Caveman e re-sync de skills em $AGENTS_SKILLS_ROOT (symlink $CODEX_HOME/AGENTS.md mantido)."
   if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
   echo
   install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" true
   echo
   maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" true
   echo
+  ia_config_sync_codex_managed_skills "$REPO_ROOT" "$AGENTS_SKILLS_ROOT" "$DRY_RUN"
+  echo
   if [[ "$DRY_RUN" == true ]]; then echo "Upgrade concluído (dry-run)."; else echo "Upgrade concluído."; fi
   exit 0
 fi
 
-echo "Dest:   $CODEX_HOME/AGENTS.md"
+echo "Dest:   $CODEX_HOME/AGENTS.md + $AGENTS_SKILLS_ROOT/{ia-rule-*,command-*,...}/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
 echo
 
@@ -84,8 +92,12 @@ install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
 echo
 
 link_repo_path codex/AGENTS.md "$CODEX_HOME/AGENTS.md"
+echo
+
+maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false
+echo
+
+ia_config_sync_codex_managed_skills "$REPO_ROOT" "$AGENTS_SKILLS_ROOT" "$DRY_RUN"
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
-
-maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false

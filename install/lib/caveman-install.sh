@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Instalação opcional das skills Caveman a partir do repositório upstream.
-# Carregado por install/cursor.sh e install/claude.sh.
+# Carregado pelos scripts install/*.sh (Cursor, Claude, Antigravity, Codex).
 
 CAVEMAN_REPO_URL="${CAVEMAN_REPO_URL:-https://github.com/JuliusBrussee/caveman.git}"
 

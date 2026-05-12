@@ -4,14 +4,17 @@ Este ficheiro faz parte do repositório **ia-config**. O Codex lê `AGENTS.md` e
 
 ## Onde estão as convenções
 
-- **Regras** (`.mdc`, alinhadas ao Cursor): pasta `rules/` na **raiz do repositório** (irmã desta pasta `codex/`).
-- **Comandos** (fluxos longos em Markdown): pasta `commands/` na raiz.
+Depois de `./install/codex.sh`, o instalador gera **skills** no diretório global do Codex (predefinição **`~/.agents/skills`**, ou o valor de `AGENTS_SKILLS_ROOT`):
 
-Quando gerares ou reveres código:
+- Cada ficheiro em `rules/*.mdc` do repo vira uma skill `ia-rule-<nome>/SKILL.md` (metadados + corpo; scopes do Cursor convertidos no texto).
+- Cada ficheiro em `commands/*.md` vira `command-<nome>/SKILL.md` (com `name` e `description` no frontmatter).
+- Pastas em `skills/` do repo (ex. Caveman, cada uma com `SKILL.md`) são copiadas para o mesmo destino.
 
-1. Segue o espírito e o detalhe dessas regras se o projeto em curso não disser o contrário.
-2. Se o workspace for o próprio clone `ia-config`, lê os `.mdc` em `rules/` conforme os ficheiros em contexto.
-3. O ficheiro `rules/karpathy-guidelines.mdc` é obtido pelo script `install/codex.sh` a partir do upstream **andrej-karpathy-skills** (não vai estar no Git se ainda não correste o instalador).
+Quando geres ou reveres código:
+
+1. Usa essas skills quando o pedido corresponder à respetiva `description` (descoberta progressiva do Codex).
+2. Se o workspace for o próprio clone `ia-config`, também podes consultar os `.mdc` em `rules/` no repo.
+3. O ficheiro `rules/karpathy-guidelines.mdc` é obtido pelo instalador a partir do upstream **andrej-karpathy-skills** (não vai estar no Git se ainda não correste o script).
 
 ## Precedência
 

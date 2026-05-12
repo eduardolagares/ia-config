@@ -14,6 +14,8 @@ UPGRADE=false
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/caveman-install.sh
 source "$SCRIPT_DIR/lib/caveman-install.sh"
+# shellcheck source=lib/ide-sync.sh
+source "$SCRIPT_DIR/lib/ide-sync.sh"
 
 for arg in "$@"; do
   case "$arg" in
@@ -26,7 +28,8 @@ for arg in "$@"; do
       echo "Cria symlinks em ${GEMINI_HOME}/ para:"
       echo "  GEMINI.md  -> ${REPO_ROOT}/antigravity/GEMINI.md"
       echo "  AGENTS.md  -> ${REPO_ROOT}/antigravity/AGENTS.md"
-      echo "  --upgrade  Só atualiza Karpathy + Caveman; não recria symlinks."
+      echo "Além disso: rules convertidas em antigravity/ia-config/rules/ ; commands em antigravity/global_workflows/ ; skills em antigravity/skills/."
+      echo "  --upgrade  Karpathy, Caveman e re-sync das pastas antigravity acima (symlinks GEMINI/AGENTS mantidos)."
       echo "  GEMINI_HOME=...  diretório base (predefinição: ~/.gemini)."
       echo "Aviso: GEMINI.md pode ser partilhado com o Gemini CLI (mesmo path)."
       echo "No fim: pergunta opcional Caveman (clone → skills/)."
@@ -67,18 +70,22 @@ link_repo_path() {
 echo "Repo:   $REPO_ROOT"
 
 if [[ "$UPGRADE" == true ]]; then
-  echo "Modo upgrade — apenas Karpathy + Caveman (symlinks em $GEMINI_HOME/ não são alterados)."
+  echo "Modo upgrade — Karpathy, Caveman e re-sync de rules/workflows/skills em $GEMINI_HOME/antigravity/ (symlinks GEMINI.md/AGENTS.md mantidos)."
   if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
   echo
   install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" true
   echo
   maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" true
   echo
+  ia_config_sync_antigravity_rules_workflows "$REPO_ROOT" "$GEMINI_HOME" "$DRY_RUN"
+  echo
+  ia_config_sync_antigravity_skills "$REPO_ROOT" "$GEMINI_HOME" "$DRY_RUN"
+  echo
   if [[ "$DRY_RUN" == true ]]; then echo "Upgrade concluído (dry-run)."; else echo "Upgrade concluído."; fi
   exit 0
 fi
 
-echo "Dest:   $GEMINI_HOME/{GEMINI.md,AGENTS.md}"
+echo "Dest:   $GEMINI_HOME/{GEMINI.md,AGENTS.md} + $GEMINI_HOME/antigravity/{ia-config/rules,global_workflows,skills}/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
 echo
 
@@ -90,8 +97,15 @@ echo
 link_repo_path antigravity/GEMINI.md "$GEMINI_HOME/GEMINI.md"
 echo
 link_repo_path antigravity/AGENTS.md "$GEMINI_HOME/AGENTS.md"
+echo
+
+ia_config_sync_antigravity_rules_workflows "$REPO_ROOT" "$GEMINI_HOME" "$DRY_RUN"
+echo
+
+maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false
+echo
+
+ia_config_sync_antigravity_skills "$REPO_ROOT" "$GEMINI_HOME" "$DRY_RUN"
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
-
-maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false

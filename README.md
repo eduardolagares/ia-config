@@ -1,6 +1,6 @@
 # ia-config
 
-Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo). Para atualizar Karpathy e Caveman sem recriar symlinks, segue a secção **[Upgrade (Karpathy e Caveman)](#upgrade-karpathy-e-caveman)**.
+Repositório de **regras** (Cursor), **comandos** e scripts de instalação para alinhar o assistente de IA ao teu fluxo (Ruby on Rails, TDD, convenções de equipa). O instalador descarrega **obrigatoriamente** `rules/karpathy-guidelines.mdc` a partir do projeto **[andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)** (precisa de **curl**). **Claude Code, Antigravity e Codex** usam **python3** em `install/lib/convert_ia_config.py` para converter `.mdc`→`.md` (ex. `globs`→`paths`) e gerar skills/workflows nos paths certos de cada IDE. As skills **Caveman** continuam opcionais — no fim o script **sugere** instalá-las (pergunta interativa — ver abaixo). Para atualizar Karpathy, Caveman e cópias convertidas, segue a secção **[Upgrade (Karpathy e Caveman)](#upgrade-karpathy-e-caveman)**.
 
 ## Instalação
 
@@ -17,9 +17,9 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    | Ferramenta    | Comando                 | Efeito |
    |---------------|-------------------------|--------|
    | **Cursor**    | `./install/cursor.sh`   | Cria symlinks em `~/.cursor/` para as pastas `rules`, `skills` e `commands` deste repo (substitui destinos existentes com o mesmo nome). |
-   | **Claude Code** | `./install/claude.sh` | Igual, em `~/.claude/` (ou em `$CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars)). |
-   | **Antigravity** | `./install/antigravity.sh` | Symlinks em `~/.gemini/` (ou `GEMINI_HOME`) para `antigravity/GEMINI.md` e `antigravity/AGENTS.md` — regras globais do IDE. Aviso: `GEMINI.md` pode coincidir com o [Gemini CLI](https://github.com/google-gemini/gemini-cli) no mesmo path. |
-   | **Codex**     | `./install/codex.sh`    | Symlink em `~/.codex/` (ou `CODEX_HOME`) de `AGENTS.md` → `codex/AGENTS.md` — instruções globais do [Codex](https://developers.openai.com/codex/guides/agents-md). Se usares `AGENTS.override.md`, vê a precedência na doc oficial. |
+   | **Claude Code** | `./install/claude.sh` | Escreve `~/.claude/rules/*.md` (conversão de `rules/*.mdc`), `~/.claude/commands/*.md` (paths no texto apontam para `~/.claude/commands/`) e copia `skills/` para `~/.claude/skills/`. Usa `CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars). |
+   | **Antigravity** | `./install/antigravity.sh` | Symlinks `GEMINI.md` e `AGENTS.md` em `~/.gemini/` (ou `GEMINI_HOME`). Além disso: `antigravity/ia-config/rules/*.md`, `antigravity/global_workflows/*.md` e `antigravity/skills/`. Aviso: `GEMINI.md` pode coincidir com o [Gemini CLI](https://github.com/google-gemini/gemini-cli) no mesmo path. |
+   | **Codex**     | `./install/codex.sh`    | Symlink `~/.codex/AGENTS.md` (ou `CODEX_HOME`) → `codex/AGENTS.md`. Gera skills em `~/.agents/skills` (ou `AGENTS_SKILLS_ROOT`): `ia-rule-*` e `command-*` a partir de `rules/` e `commands/`, mais cópia de `skills/` do repo. [Doc Codex](https://developers.openai.com/codex/guides/agents-md). |
 
    **Antes dos symlinks**, o script obtém **`rules/karpathy-guidelines.mdc`** do ramo `main` de [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (ficheiro `.cursor/rules/karpathy-guidelines.mdc` no upstream). É **obrigatório** para a instalação completar; não está versionado neste repo (`.gitignore`). URL alternativa: variável `KARPATHY_GUIDELINES_URL`.
 
@@ -45,15 +45,15 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    ./install/cursor.sh --upgrade --dry-run
    ```
 
-5. **Reinicia** o Cursor (ou o cliente Claude) para garantir que carrega a configuração nova.
+5. **Reinicia** o Cursor, o Claude Code, o Antigravity ou o Codex para garantir que carrega a configuração nova.
 
-**Nota:** O script do Claude avisa que ficheiros `.mdc` são sobretudo para o Cursor; no Claude Code as rules costumam ser `.md` — podes duplicar ou converter se precisares do mesmo texto nos dois sítios.
+**Requisitos:** **curl** (Karpathy), **git** (Caveman opcional), **python3** (Claude, Antigravity, Codex — conversão na instalação).
 
 ---
 
 ## Upgrade (Karpathy e Caveman)
 
-Serve para **voltar a obter** o `karpathy-guidelines.mdc` e as pastas **Caveman** em `skills/` a partir dos repos upstream **sem** voltar a criar symlinks em `~/.cursor/`, `~/.claude/`, `~/.gemini/` ou `~/.codex/`. Corre sempre à **raiz deste repositório** (onde está a pasta `install/`).
+Serve para **voltar a obter** o `karpathy-guidelines.mdc` e as pastas **Caveman** em `skills/` a partir dos repos upstream. No **Cursor**, `--upgrade` **não** recria symlinks em `~/.cursor/`. Em **Claude Code**, **Antigravity** e **Codex**, o mesmo comando **volta a sincronizar** as rules/commands/skills convertidas para os diretórios da IDE (além de Karpathy e Caveman). Corre sempre à **raiz deste repositório** (onde está a pasta `install/`).
 
 ### Comandos
 
@@ -77,6 +77,7 @@ cd /caminho/para/ia-config
 |------------|-------------------------|
 | **Karpathy** | Descarga de novo `rules/karpathy-guidelines.mdc` a partir do ramo `main` de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (precisa de **curl**). Override da URL: `KARPATHY_GUIDELINES_URL=...`. |
 | **Caveman** | Novo `git clone` shallow de [caveman](https://github.com/JuliusBrussee/caveman) e cópia de `skills/` para `skills/` do teu clone (precisa de **git**). Surge a pergunta **«Atualizar skills Caveman?»** (predefinição *não*). |
+| **Sync IDE** (Claude / Antigravity / Codex) | Volta a gerar ficheiros convertidos em `~/.claude/…`, `~/.gemini/antigravity/…` ou `~/.agents/skills/` conforme o script (precisa de **python3**). |
 
 ### Sem perguntas (só Caveman)
 
@@ -107,16 +108,18 @@ INSTALL_CAVEMAN=yes ./install/cursor.sh --upgrade
 
 ### `install/`
 
-Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, criam symlinks para Cursor/Claude (`rules`, `skills`, `commands`), para Antigravity (`GEMINI.md`, `AGENTS.md` em `~/.gemini/`) ou Codex (`AGENTS.md` em `~/.codex/`), e no fim **sugerem** as skills Caveman.
+Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, criam symlinks para o **Cursor** (`rules`, `skills`, `commands`), e para **Claude / Antigravity / Codex** escrevem ficheiros nas pastas esperadas por cada ferramenta (com conversão via `install/lib/convert_ia_config.py`). **Antigravity** e **Codex** mantêm symlink só para `GEMINI.md`/`AGENTS.md` ou `AGENTS.md`; o resto é cópia. No fim **sugerem** as skills Caveman.
 
 | Ficheiro      | Função |
 |---------------|--------|
 | `cursor.sh`   | Instalação para Cursor. |
-| `claude.sh`   | Instalação para Claude Code; respeita `CLAUDE_CONFIG_DIR`. |
-| `antigravity.sh` | Instalação para Google Antigravity (`~/.gemini/GEMINI.md` e `AGENTS.md`). |
-| `codex.sh`    | Instalação para OpenAI Codex CLI (`~/.codex/AGENTS.md`). |
+| `claude.sh`   | Claude Code; `CLAUDE_CONFIG_DIR`; gera `rules/`, `commands/`, `skills/` sob `~/.claude/`. |
+| `antigravity.sh` | Google Antigravity: symlinks `GEMINI.md` e `AGENTS.md`; cópias em `antigravity/ia-config/rules`, `global_workflows`, `skills`. |
+| `codex.sh`    | Codex CLI: symlink `AGENTS.md`; skills em `AGENTS_SKILLS_ROOT` (predef. `~/.agents/skills`). |
 | `lib/karpathy-rules.sh` | `curl` do `.mdc` Karpathy a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); **obrigatório**. |
 | `lib/caveman-install.sh` | Clone shallow do upstream e cópia para `skills/`; opcional (pergunta no fim). |
+| `lib/ide-sync.sh` | Funções bash partilhadas para sincronizar rules/commands/skills. |
+| `lib/convert_ia_config.py` | Conversões `.mdc`→`.md`, reescrita de paths em comandos, skills Codex. |
 
 ### `rules/`
 
