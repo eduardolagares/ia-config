@@ -1,5 +1,5 @@
 ---
-description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
+description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 
 # tdd-dev — implementação TDD
@@ -23,7 +23,7 @@ A especificação é produzida pelo comando **`/tdd-doc`** (`~/.cursor/commands/
 Após **Caveman (início)** quando aplicável, apresentar a pergunta de modo **sempre com opções numeradas** (ex.: **1** Por RF, **2** Por fase) antes de qualquer outro passo — em toda ativação,
 início ou retomada. Aguardar resposta por **número** ou pelo rótulo explícito correspondente; nunca inferir pelo histórico.
 
-**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o tdd-dev*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 aparece **apenas** nos marcos das seções 3 e 4, nunca empilhado com a pergunta de modo em retomada.
+**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o tdd-dev*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
 
 **Ativação que não é retomada** — primeira invocação de `/tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
 
@@ -112,8 +112,11 @@ indispensáveis para os testes existirem; **zero produção**):
 
 ## 4. Menu 1–7 (única trilha para commit e avanço)
 
-Apresentar exatamente nos marcos de fim de iteração. Em **retomada explícita** (seção 1), **não** apresentar este menu na mesma mensagem que a pergunta de modo; só depois da escolha do modo e quando o fluxo chegar de fato ao marco. Nenhum atalho substitui
-a escolha numerada. **`git commit` é proibido** até o usuário **confirmar por escolha explícita no menu** (número **1** ou **5**). Não inferir "sim", não comitar no fim da mensagem, não comitar por conveniência. Sem escolha **1** ou **5**, **zero** `git commit`.
+Apresentar exatamente nos marcos de fim de iteração. Em **retomada explícita** (seção 1), **não** apresentar este menu na mesma mensagem que a pergunta de modo; só depois da escolha do modo e quando o fluxo chegar de fato ao marco.
+
+**Pedido explícito de menu** — Quando o usuário pedir o menu de iteração em mensagem dedicada ou claramente principal (ex.: *menu*, *menu 1-7*, *menu 1–7*, *menu iteração*, *mostrar menu*, *opções do menu*, equivalentes óbvios em PT/EN), **exibir na íntegra** o menu 1–7 abaixo (todos os itens numerados). Isso **não** substitui escolha **1**–**7** para avanço ou `git commit`; só republica o texto do menu e aguarda número ou rótulo explícito. **Exceção:** na **primeira** resposta após **retomada explícita** (seção 1), prevalece *só* a pergunta de modo — não empilhar este menu na mesma mensagem; após o modo escolhido, um pedido *menu* no marco adequado exibe 1–7 completo.
+
+Nenhum atalho substitui a **escolha numerada** para commit ou avanço de marco. **`git commit` é proibido** até o usuário **confirmar por escolha explícita no menu** (número **1** ou **5**). Não inferir "sim", não comitar no fim da mensagem, não comitar por conveniência. Sem escolha **1** ou **5**, **zero** `git commit`.
 
 1. **Comitar e continuar** — somente após o usuário escolher **1** neste menu:
    stage completo dos artefatos da rodada + `git commit` com mensagem descritiva;

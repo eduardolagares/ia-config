@@ -9,7 +9,7 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
 2. **Dá permissão de execução** aos scripts (só na primeira vez):
 
    ```bash
-   chmod +x install/cursor.sh install/claude.sh
+   chmod +x install/cursor.sh install/claude.sh install/antigravity.sh install/codex.sh
    ```
 
 3. **Escolhe o ambiente** e corre o instalador correspondente a partir da raiz do repo:
@@ -18,6 +18,8 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    |---------------|-------------------------|--------|
    | **Cursor**    | `./install/cursor.sh`   | Cria symlinks em `~/.cursor/` para as pastas `rules`, `skills` e `commands` deste repo (substitui destinos existentes com o mesmo nome). |
    | **Claude Code** | `./install/claude.sh` | Igual, em `~/.claude/` (ou em `$CLAUDE_CONFIG_DIR` se estiver definido — [documentação](https://code.claude.com/en/env-vars)). |
+   | **Antigravity** | `./install/antigravity.sh` | Symlinks em `~/.gemini/` (ou `GEMINI_HOME`) para `antigravity/GEMINI.md` e `antigravity/AGENTS.md` — regras globais do IDE. Aviso: `GEMINI.md` pode coincidir com o [Gemini CLI](https://github.com/google-gemini/gemini-cli) no mesmo path. |
+   | **Codex**     | `./install/codex.sh`    | Symlink em `~/.codex/` (ou `CODEX_HOME`) de `AGENTS.md` → `codex/AGENTS.md` — instruções globais do [Codex](https://developers.openai.com/codex/guides/agents-md). Se usares `AGENTS.override.md`, vê a precedência na doc oficial. |
 
    **Antes dos symlinks**, o script obtém **`rules/karpathy-guidelines.mdc`** do ramo `main` de [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (ficheiro `.cursor/rules/karpathy-guidelines.mdc` no upstream). É **obrigatório** para a instalação completar; não está versionado neste repo (`.gitignore`). URL alternativa: variável `KARPATHY_GUIDELINES_URL`.
 
@@ -38,6 +40,8 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
    ```bash
    ./install/cursor.sh --dry-run
    ./install/claude.sh --dry-run
+   ./install/antigravity.sh --dry-run
+   ./install/codex.sh --dry-run
    ./install/cursor.sh --upgrade --dry-run
    ```
 
@@ -49,7 +53,7 @@ Repositório de **regras** (Cursor), **comandos** e scripts de instalação para
 
 ## Upgrade (Karpathy e Caveman)
 
-Serve para **voltar a obter** o `karpathy-guidelines.mdc` e as pastas **Caveman** em `skills/` a partir dos repos upstream **sem** voltar a criar symlinks em `~/.cursor/` ou `~/.claude/`. Corre sempre à **raiz deste repositório** (onde está a pasta `install/`).
+Serve para **voltar a obter** o `karpathy-guidelines.mdc` e as pastas **Caveman** em `skills/` a partir dos repos upstream **sem** voltar a criar symlinks em `~/.cursor/`, `~/.claude/`, `~/.gemini/` ou `~/.codex/`. Corre sempre à **raiz deste repositório** (onde está a pasta `install/`).
 
 ### Comandos
 
@@ -93,6 +97,8 @@ INSTALL_CAVEMAN=yes ./install/cursor.sh --upgrade
 ```bash
 ./install/cursor.sh --upgrade --dry-run
 ./install/claude.sh --upgrade --dry-run
+./install/antigravity.sh --upgrade --dry-run
+./install/codex.sh --upgrade --dry-run
 ```
 
 ---
@@ -101,12 +107,14 @@ INSTALL_CAVEMAN=yes ./install/cursor.sh --upgrade
 
 ### `install/`
 
-Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, ligam **pastas inteiras** do repo a `~/.cursor/` ou `~/.claude/` via symlink (`rules`, `skills`, `commands`), e no fim **sugerem** as skills Caveman.
+Scripts bash que descarregam **obrigatoriamente** `karpathy-guidelines.mdc`, criam symlinks para Cursor/Claude (`rules`, `skills`, `commands`), para Antigravity (`GEMINI.md`, `AGENTS.md` em `~/.gemini/`) ou Codex (`AGENTS.md` em `~/.codex/`), e no fim **sugerem** as skills Caveman.
 
 | Ficheiro      | Função |
 |---------------|--------|
 | `cursor.sh`   | Instalação para Cursor. |
 | `claude.sh`   | Instalação para Claude Code; respeita `CLAUDE_CONFIG_DIR`. |
+| `antigravity.sh` | Instalação para Google Antigravity (`~/.gemini/GEMINI.md` e `AGENTS.md`). |
+| `codex.sh`    | Instalação para OpenAI Codex CLI (`~/.codex/AGENTS.md`). |
 | `lib/karpathy-rules.sh` | `curl` do `.mdc` Karpathy a partir de [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills); **obrigatório**. |
 | `lib/caveman-install.sh` | Clone shallow do upstream e cópia para `skills/`; opcional (pergunta no fim). |
 
