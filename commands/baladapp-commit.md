@@ -1,5 +1,5 @@
 ---
-baladapp_ia_config_version: "1.0.2"
+VERSION: "0.0.1"
 description: "Diff/staging → short pt-BR message → git add + commit; no permission prompts."
 ---
 

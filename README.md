@@ -1,8 +1,13 @@
+---
+VERSION: "0.0.1"
+description: "README do baladapp-ia-config — visão geral, instalação, atualização e mapa do repositório."
+---
+
 # baladapp-ia-config
 
 **Idioma deste README:** português do Brasil (pt-BR).
 
-Repositório de **regras**, **comandos** e scripts de instalação para alinhar o assistente de IA ao **seu** fluxo (Ruby on Rails, TDD, convenções de **equipe**). O fluxo documentado é **um** `curl` para `install.sh` ou `upgrade.sh`: o script clona este repo, **baixa** o Karpathy a partir do [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (via **curl** + **python3** no clone) e aplica a configuração nas IDEs suportadas. **Requisitos comuns:** **git**, **curl** e **python3** (também para conversão `.mdc`→`.md` onde aplicável). Skills **Caveman** são opcionais (ver [Skills Caveman](#skills-caveman-recomendado)). Para **atualizar** o `main`, use [Atualizar](#atualizar).
+Repositório de **regras**, **comandos** e scripts de instalação para alinhar o assistente de IA ao **seu** fluxo (Ruby on Rails, TDD, convenções de **equipe**). O fluxo documentado é **um** `curl` para `install.sh` ou `upgrade.sh`: o script clona este repo, **baixa** o Karpathy a partir do [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (via **curl** + **python3** no clone) e aplica a configuração nas IDEs suportadas. **Requisitos comuns:** **git**, **curl** e **python3** (também para conversão `.mdc`→`.md` onde aplicável). O pacote de skills **Caveman** é **opcional** e **não** é instalado por estes scripts; veja [Skills Caveman (recomendado)](#skills-caveman-recomendado). Para **atualizar** o `main`, use [Atualizar](#atualizar).
 
 ## Instalação
 
@@ -12,15 +17,13 @@ A instalação é **sempre** este comando (**baixa** `install/install.sh` da bra
 curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash
 ```
 
-O script **clona** [eduardolagares/ia-config](https://github.com/eduardolagares/ia-config) em **`main`** para uma pasta temporária e aplica o que estiver definido no instalador (perguntas interativas no terminal).
+O script **clona** [eduardolagares/ia-config](https://github.com/eduardolagares/ia-config) em **`main`** para uma pasta temporária e aplica o que estiver definido no instalador (perguntas interativas no terminal). Skills de terceiros (ex.: **Caveman**) não fazem parte deste fluxo; instale-as à parte conforme [Skills Caveman (recomendado)](#skills-caveman-recomendado).
 
 Simular sem alterar **arquivos**:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash -s -- --dry-run
 ```
-
-Caveman sem pergunta (ex.: CI): `INSTALL_CAVEMAN=yes` antes do `curl` **não** chega ao `bash` do pipeline; use `curl ... | env INSTALL_CAVEMAN=yes bash`.
 
 ### Migração: você tinha symlinks no Cursor
 
@@ -54,7 +57,7 @@ Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você qu
 
 ## Conteúdo do repositório
 
-**`VERSION`:** arquivo na raiz com **uma linha** semver; deve coincidir com `baladapp_ia_config_version` no frontmatter de `rules/`, `commands/` e `skills/README.md`. Skills **geradas** pelo `install/lib/convert_ia_config.py` (Codex) e o `.mdc` Karpathy gerado no clone também recebem essa versão a partir deste arquivo.
+**`VERSION`:** arquivo na raiz com **uma linha** semver; deve coincidir com o atributo `VERSION` no frontmatter de `rules/`, `commands/` e `skills/README.md`. Skills **geradas** pelo `install/lib/convert_ia_config.py` (Codex) e o `.mdc` Karpathy gerado no clone também recebem essa versão a partir deste arquivo.
 
 ### `install/`
 
@@ -70,22 +73,27 @@ Scripts chamados por **`install.sh`** e **`upgrade.sh`** (não é necessário ro
 | `antigravity.sh` | Instalação / upgrade para Antigravity (`GEMINI_HOME`). |
 | `codex.sh` | Instalação / upgrade para Codex (`CODEX_HOME`, `AGENTS_SKILLS_ROOT`). |
 
-**`install/lib/`** (suporte, não scripts de entrada): `convert_ia_config.py`, `karpathy-rules.sh`, `ide-sync.sh`, `caveman-install.sh`.
+**`install/lib/`** (suporte, não scripts de entrada): `convert_ia_config.py`, `karpathy-rules.sh`, `ide-sync.sh`.
+
+### `.cursor/rules/` (manutenção deste repo)
+
+Regras usadas **só** ao desenvolver **este** repositório no Cursor; **não** entram na pasta `rules/` nem são copiadas pelo `install/` para consumidores do pacote.
+
+| Ficheiro | Função |
+|----------|--------|
+| `versioning.mdc` | Política do arquivo `VERSION` e do atributo `VERSION` no frontmatter dos artefatos publicados em `rules/`, `commands/`, `skills/`. |
 
 ### `rules/`
 
-Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). No **frontmatter** YAML de cada arquivo versionado neste repo existe `baladapp_ia_config_version` (mesmo valor semver que `VERSION` na raiz — atualize os dois quando mudar o conjunto de regras).
+Regras em `.mdc` (Cursor **Project Rules** / contexto por glob). No **frontmatter** YAML de cada arquivo versionado neste repo existe o atributo `VERSION` (mesmo valor semver do arquivo `VERSION` na raiz — atualize os dois quando mudar o conjunto de regras).
 
 As regras **deste repositório** usam o prefixo `baladapp-` no nome do **arquivo**; **regras de terceiros** instaladas pelo script (ex.: Karpathy, só no **seu** disco após o `install`) mantêm o nome estável `karpathy-guidelines.mdc`, **sem** esse prefixo. Cada **arquivo** da tabela abaixo documenta convenções para um tipo de código ou preocupação.
 
 | Arquivo             | Tema |
 |---------------------|------|
-| `baladapp-caveman.mdc` | Modo caveman full (regra global). |
 | `baladapp-clean_code_ruby.mdc` | Clean code e Rails em geral. |
-| `baladapp-context-mode.mdc` | Uso de context-mode / análise sem inundar o contexto. |
 | `baladapp-controllers.mdc` | Controllers. |
 | `baladapp-implementation.mdc` | Alterações de código ↔ testes em sincronia. |
-| `baladapp-ia-config-versioning.mdc` | Política de `VERSION` e `baladapp_ia_config_version` nos artefatos versionados. |
 | `baladapp-migrations.mdc` | Migrations e alterações de schema. |
 | `baladapp-models.mdc` | Models Active Record. |
 | `baladapp-query_objects.mdc` | Query objects. |
@@ -98,7 +106,7 @@ As regras **deste repositório** usam o prefixo `baladapp-` no nome do **arquivo
 
 ### `commands/`
 
-Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agente seguir. O frontmatter inclui `baladapp_ia_config_version` (alinhado a `VERSION` na raiz).
+Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agente seguir. O frontmatter inclui o atributo `VERSION` (alinhado ao arquivo `VERSION` na raiz).
 
 | Arquivo    | Descrição resumida |
 |------------|--------------------|
@@ -109,9 +117,7 @@ Comandos slash (Markdown) invocados no chat; descrevem fluxos longos para o agen
 
 ### `skills/`
 
-No repositório existe apenas **`skills/README.md`** (metadados + `baladapp_ia_config_version`). O instalador **copia** a pasta `skills/` inteira para o Cursor; após aceitar **Caveman**, podem aparecer subpastas com `SKILL.md` (não versionadas aqui).
-
-Depois de **rodar** o instalador e aceitar **Caveman** (ou `INSTALL_CAVEMAN=yes` no mesmo pipeline, ver [Instalação](#instalação)), as skills Caveman ficam nos diretórios que o script tiver configurado.
+No repositório existe apenas **`skills/README.md`** (metadados + atributo `VERSION`). O instalador **copia** a pasta `skills/` inteira para os destinos configurados. Subpastas com `SKILL.md` que **você** adicionar localmente (por exemplo após instalar o **Caveman** por fora) são copiadas junto; pastas típicas de terceiros ficam no `.gitignore` deste repo (ver secção `.gitignore` abaixo).
 
 ### `antigravity/`
 
@@ -138,9 +144,9 @@ Comentário sobre o Karpathy gerado no clone; entradas atuais ignoram pastas de 
 
 ## Skills Caveman (recomendado)
 
-O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) **não está no histórico Git** deste repo. O instalador via **`curl`** sugere instalar esse toolkit no final (pergunta interativa). Sem pergunta: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | env INSTALL_CAVEMAN=yes bash`. Fonte: [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman).
+O ecossistema **[Caveman](https://github.com/JuliusBrussee/caveman)** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
-**Por quê:** comandos como `/baladapp-tdd-dev` pedem a skill **caveman** quando existe em `skills/` — menos tokens e comportamento alinhado ao texto do comando. Se você **recusar** a instalação, o repositório continua só com `skills/README.md` (sem pasta Caveman em `skills/`); esse bloco é ignorado (sem erro).
+**Por quê:** comandos como `/baladapp-tdd-dev` referem-se à skill **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/` no Codex) — menos tokens e comportamento alinhado ao texto do comando. Sem essa instalação, esse trecho dos comandos é ignorado (sem erro).
 
 ---
 
@@ -148,4 +154,4 @@ O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …)
 
 Complemento **opcional**, **fora** dos scripts `install/` — siga o passo a passo do próprio projeto.
 
-**[context-mode](https://github.com/mksglu/context-mode)** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Combina bem com a regra `rules/baladapp-context-mode.mdc` deste repositório: instale e configure o MCP no Cursor (ou no cliente que você usar) quando quiser esse fluxo.
+**[context-mode](https://github.com/mksglu/context-mode)** é um servidor MCP que ajuda a **reduzir ruído no contexto** (por exemplo executando análises em sandbox e devolvendo só o essencial ao chat). Instale e configure o MCP no Cursor (ou no cliente que você usar) quando quiser esse fluxo.

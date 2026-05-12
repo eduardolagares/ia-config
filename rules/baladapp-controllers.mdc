@@ -1,5 +1,5 @@
 ---
-baladapp_ia_config_version: "1.0.2"
+VERSION: "0.0.1"
 description: Thin controllers — Pundit, strong params, REST, use cases / queries
 globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 ---

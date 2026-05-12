@@ -11,25 +11,18 @@ UPGRADE=false
 
 # shellcheck source=lib/karpathy-rules.sh
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
-# shellcheck source=lib/caveman-install.sh
-source "$SCRIPT_DIR/lib/caveman-install.sh"
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --upgrade) UPGRADE=true ;;
-    --with-caveman) INSTALL_CAVEMAN=yes ;;
-    --without-caveman) INSTALL_CAVEMAN=no ;;
     -h | --help)
-      echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
+      echo "Uso: $(basename "$0") [--dry-run] [--upgrade]"
       echo "Substitui $CURSOR_HOME/{rules,skills,commands} por cópias das pastas do repo (sem symlinks)."
       echo "  CURSOR_HOME=...  destino (predef.: ~/.cursor; em projeto: /caminho/.cursor)."
-      echo "  --upgrade  Só atualiza Karpathy + Caveman; não substitui rules/skills/commands em CURSOR_HOME."
-      echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
+      echo "  --upgrade  Só atualiza Karpathy; não substitui rules/skills/commands em CURSOR_HOME."
       echo "  Descarrega obrigatoriamente Karpathy a partir do SKILL.md upstream (forrestchang/andrej-karpathy-skills)."
       echo "  KARPATHY_GUIDELINES_URL=...  URL raw alternativa (predef.: .../skills/karpathy-guidelines/SKILL.md)."
-      echo "  INSTALL_CAVEMAN=yes|no  evita a pergunta (útil em CI)."
-      echo "  CAVEMAN_REPO_URL=...     URL alternativa do repositório Caveman."
       exit 0
       ;;
   esac
@@ -67,12 +60,10 @@ copy_repo_dir() {
 echo "Repo:  $REPO_ROOT"
 
 if [[ "$UPGRADE" == true ]]; then
-  echo "Modo upgrade — apenas Karpathy + Caveman (cópias em $CURSOR_HOME não são alteradas neste passo)."
+  echo "Modo upgrade — apenas Karpathy (cópias em $CURSOR_HOME não são alteradas neste passo)."
   if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
   echo
   install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" true
-  echo
-  maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" true
   echo
   if [[ "$DRY_RUN" == true ]]; then echo "Upgrade concluído (dry-run)."; else echo "Upgrade concluído."; fi
   exit 0
@@ -95,5 +86,3 @@ copy_repo_dir commands
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
-
-maybe_install_caveman "$REPO_ROOT" "$DRY_RUN" false

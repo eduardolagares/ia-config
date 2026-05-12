@@ -1,5 +1,5 @@
 ---
-baladapp_ia_config_version: "1.0.2"
+VERSION: "0.0.1"
 description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 

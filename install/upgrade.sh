@@ -11,10 +11,10 @@ set -euo pipefail
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
 REPO_BRANCH="main"
 
-EXTRA_ARGS=()
+declare -a EXTRA_ARGS
 for arg in "$@"; do
   case "$arg" in
-    --dry-run) EXTRA_ARGS+=(--dry-run) ;;
+    --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
     -h | --help)
       echo "Uso: curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash"
       echo "     curl -fsSL …/install/upgrade.sh | bash -s -- --dry-run"
@@ -122,13 +122,6 @@ if [[ "$NEED_PY" == true ]] && ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-echo
-if prompt_yn "Atualizar skills Caveman (clone upstream → skills/) onde o script aplicar?" "n"; then
-  export INSTALL_CAVEMAN=yes
-else
-  export INSTALL_CAVEMAN=no
-fi
-
 TMP=""
 cleanup() {
   if [[ -n "$TMP" && -d "$TMP" ]]; then
@@ -161,12 +154,36 @@ run_block() {
 }
 
 # Cursor: instalação completa das pastas (espelha o repo; ficheiros novos aparecem; removidos no repo deixam de existir no destino).
-[[ "$UP_CURSOR" == true ]] && run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh" "${EXTRA_ARGS[@]}"
+if [[ "$UP_CURSOR" == true ]]; then
+  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+    run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh" "${EXTRA_ARGS[@]}"
+  else
+    run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh"
+  fi
+fi
 
-# Claude / Antigravity / Codex: fluxo --upgrade (Karpathy, Caveman conforme INSTALL_CAVEMAN, re-sync convertido).
-[[ "$UP_CLAUDE" == true ]] && run_block "Claude Code" bash "$CLONE_DIR/install/claude.sh" --upgrade "${EXTRA_ARGS[@]}"
-[[ "$UP_ANTI" == true ]] && run_block "Antigravity" bash "$CLONE_DIR/install/antigravity.sh" --upgrade "${EXTRA_ARGS[@]}"
-[[ "$UP_CODEX" == true ]] && run_block "Codex" bash "$CLONE_DIR/install/codex.sh" --upgrade "${EXTRA_ARGS[@]}"
+# Claude / Antigravity / Codex: fluxo --upgrade (Karpathy, re-sync convertido).
+if [[ "$UP_CLAUDE" == true ]]; then
+  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+    run_block "Claude Code" bash "$CLONE_DIR/install/claude.sh" --upgrade "${EXTRA_ARGS[@]}"
+  else
+    run_block "Claude Code" bash "$CLONE_DIR/install/claude.sh" --upgrade
+  fi
+fi
+if [[ "$UP_ANTI" == true ]]; then
+  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+    run_block "Antigravity" bash "$CLONE_DIR/install/antigravity.sh" --upgrade "${EXTRA_ARGS[@]}"
+  else
+    run_block "Antigravity" bash "$CLONE_DIR/install/antigravity.sh" --upgrade
+  fi
+fi
+if [[ "$UP_CODEX" == true ]]; then
+  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+    run_block "Codex" bash "$CLONE_DIR/install/codex.sh" --upgrade "${EXTRA_ARGS[@]}"
+  else
+    run_block "Codex" bash "$CLONE_DIR/install/codex.sh" --upgrade
+  fi
+fi
 
 echo
 echo "Upgrade concluído."

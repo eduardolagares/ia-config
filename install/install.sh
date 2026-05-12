@@ -10,10 +10,12 @@ set -euo pipefail
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
 REPO_BRANCH="main"
 
-EXTRA_ARGS=()
+# declare -a evita EXTRA_ARGS "unset" com set -u em bash antigo (ex.: macOS 3.2);
+# índice explícito em vez de += para compatibilidade.
+declare -a EXTRA_ARGS
 for arg in "$@"; do
   case "$arg" in
-    --dry-run) EXTRA_ARGS+=(--dry-run) ;;
+    --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
     -h | --help)
       echo "Uso: curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash"
       echo "     curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash -s -- --dry-run"
@@ -148,7 +150,11 @@ run_agent() {
   local script="$2"
   echo
   echo "---------- $name ----------"
-  bash "$CLONE_DIR/install/$script" "${EXTRA_ARGS[@]}"
+  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+    bash "$CLONE_DIR/install/$script" "${EXTRA_ARGS[@]}"
+  else
+    bash "$CLONE_DIR/install/$script"
+  fi
 }
 
 [[ "$INST_CURSOR" == true ]] && run_agent "Cursor" "cursor.sh"

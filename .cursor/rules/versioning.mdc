@@ -1,0 +1,28 @@
+---
+description: "Repositório ia-config — ao mudar rule, command ou skill versionado (pasta rules/ na raiz), incrementar semver e alinhar frontmatter."
+alwaysApply: true
+---
+
+# Versionamento do pacote (ia-config)
+
+**Aplicação:** só ao trabalho **neste** repositório. Este ficheiro vive em `.cursor/rules/` e **não** é copiado pelo `install/` para quem instala o pacote baladapp.
+
+**Nome do atributo no frontmatter:** `VERSION` (em maiúsculas, igual ao nome do arquivo na raiz). É **esse** o único nome aceito no frontmatter YAML dos artefatos publicados — nada de variantes como `version`, `pkg_version` ou prefixos antigos.
+
+**Escopo:** ficheiros **publicados** com `VERSION` no frontmatter YAML — `README.md` na raiz, `rules/**/*.mdc` na raiz do repo (exclui `.cursor/`), `commands/**/*.md`, `skills/README.md` e, se existirem no Git, `skills/**/SKILL.md` ou outros markdown com essa chave.
+
+**Obrigatório no mesmo conjunto de alterações (idealmente no mesmo commit):**
+
+1. **`VERSION` na raiz** — arquivo de **uma linha** com semver. Incrementar de forma coerente com a mudança: **patch** para correções ou ajustes de texto/comportamento retrocompatíveis; **minor** para novo arquivo de rule/command/skill ou capacidade nova; **major** para remoção ou mudança incompatível com quem consome o pacote.
+2. **`VERSION` no frontmatter** — deve ser **igual** ao conteúdo do arquivo `VERSION` da raiz em **todos** os artefatos publicados do repo que carregam essa chave (não deixar um arquivo em `1.0.0` e outro em `1.0.1`). O instalador e `install/lib/convert_ia_config.py` usam o arquivo `VERSION` como fonte da verdade para gerações; manter o frontmatter alinhado evita drift.
+3. **Não** alterar só um arquivo versionado sem atualizar `VERSION` (arquivo) e os demais frontmatters quando a mudança for publicável (regra do README do repo: coincidência global).
+
+**Exceção mínima:** commits puramente mecânicos definidos pelo mantenedor (ex.: renomear variável interna sem mudar semântica) ainda devem manter consistência se qualquer `VERSION` (arquivo ou frontmatter) for tocado.
+
+```yaml
+# Exemplo de frontmatter — o atributo se chama VERSION e usa o mesmo semver da linha única do arquivo VERSION da raiz
+---
+VERSION: "X.Y.Z"
+description: "…"
+---
+```

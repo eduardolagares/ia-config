@@ -1,5 +1,5 @@
 ---
-baladapp_ia_config_version: "1.0.2"
+VERSION: "0.0.1"
 description: "Spec de requisitos e TDD (RED/GREEN) em markdown; sem implementação de código neste chat; apenas docs/specs/tdd/... via Write/StrReplace."
 ---
 

@@ -1,5 +1,5 @@
 ---
-baladapp_ia_config_version: "1.0.2"
+VERSION: "0.0.1"
 description: Ruby style — kwargs, naming, control flow, no needless meta
 globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
 ---

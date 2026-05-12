@@ -1,11 +1,11 @@
 ---
-baladapp_ia_config_version: "1.0.2"
-description: "FS senior review: read-only, pt-BR report, blocks 1–4; caveman spec — still binding."
+VERSION: "0.0.1"
+description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 ---
 
 # `/baladapp-code-review`
 
-**Caveman / agent context:** Short lines here = **same obligations** as verbose spec. Do not skip rules because text is tight.
+**Agent context:** Short lines here = **same obligations** as verbose spec. Do not skip rules because text is tight.
 
 ## Role + scope
 

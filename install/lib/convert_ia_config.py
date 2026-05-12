@@ -104,7 +104,7 @@ def karpathy_skill_to_mdc(src: Path, dst: Path) -> None:
     ver = os.environ.get("IA_CONFIG_CONTENT_VERSION", "").strip() or read_ia_config_version(repo_root)
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(
-        f"---\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\nalwaysApply: true\n---\n\n{body}",
+        f"---\ndescription: {json.dumps(desc)}\nVERSION: {json.dumps(ver)}\nalwaysApply: true\n---\n\n{body}",
         encoding="utf-8",
     )
 
@@ -190,7 +190,7 @@ def command_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
     skill_md = skill_dir / "SKILL.md"
     ver = read_ia_config_version(src.parent.parent)
     skill_md.write_text(
-        f"---\nname: {json.dumps(name)}\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\n---\n{body}",
+        f"---\nname: {json.dumps(name)}\ndescription: {json.dumps(desc)}\nVERSION: {json.dumps(ver)}\n---\n{body}",
         encoding="utf-8",
     )
 
@@ -221,7 +221,7 @@ def rule_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
     skill_md = skill_dir / "SKILL.md"
     ver = read_ia_config_version(src.parent.parent)
     skill_md.write_text(
-        f"---\nname: {json.dumps(folder_name)}\ndescription: {json.dumps(desc)}\nbaladapp_ia_config_version: {json.dumps(ver)}\n---\n{intro}{scope_note}{body.lstrip()}",
+        f"---\nname: {json.dumps(folder_name)}\ndescription: {json.dumps(desc)}\nVERSION: {json.dumps(ver)}\n---\n{intro}{scope_note}{body.lstrip()}",
         encoding="utf-8",
     )
 
