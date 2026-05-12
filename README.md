@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.3"
+VERSION: "0.0.5"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -53,6 +53,8 @@ curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/insta
 
 Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você quiser repetir o fluxo completo de primeira instalação.
 
+No **upgrade**, comandos slash antigos com prefixo `baladapp-` deixam de existir no destino: em Cursor (e Claude/Antigravity) a pasta `commands` é substituída pela do repo (`bld-`); no **Codex**, o script remove pastas `command-baladapp-*` em `AGENTS_SKILLS_ROOT` antes de recriar `command-bld-*`.
+
 ---
 
 ## Comandos
@@ -61,10 +63,10 @@ Comandos slash (Markdown em `commands/`) que o instalador copia para a IDE; fica
 
 | Comando | O que faz |
 |---------|-----------|
-| `/baladapp-commit` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
-| `/baladapp-tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
-| `/baladapp-tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF ou por fase, com menu de iteração; segue o spec criado por `/baladapp-tdd-doc`. |
-| `/baladapp-code-review` | Revisão sênior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
+| `/bld-commit` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
+| `/bld-tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
+| `/bld-tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF ou por fase, com menu de iteração; segue o spec criado por `/bld-tdd-doc`. |
+| `/bld-code-review` | Revisão sênior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 
 ---
 
@@ -96,7 +98,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob) que o instalador
 
 O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
-**Por quê:** comandos como `/baladapp-tdd-dev` referem-se à skill **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/` no Codex) — menos tokens e comportamento alinhado ao texto do comando. Sem essa instalação, esse trecho dos comandos é ignorado (sem erro).
+**Por quê:** comandos como `/bld-tdd-dev` referem-se à skill **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/` no Codex) — menos tokens e comportamento alinhado ao texto do comando. Sem essa instalação, esse trecho dos comandos é ignorado (sem erro).
 
 ---
 

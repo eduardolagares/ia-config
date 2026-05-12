@@ -2,6 +2,9 @@
 # Atualização: clona eduardolagares/ia-config (main) em /tmp, sincroniza ficheiros
 # com os destinos de instalação (novos ficheiros do repo são copiados; Cursor:
 # rules/skills/commands substituídos pelo conteúdo atual do repo).
+# Comandos antigos com prefixo baladapp-: Cursor/Claude/Antigravity — pasta commands
+# é reescrita por completo; Codex — remove pastas command-baladapp-* em ~/.agents/skills
+# antes de gerar command-bld-* (install/lib/ide-sync.sh).
 #
 # Uso:
 #   curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash

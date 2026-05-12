@@ -15,6 +15,26 @@ ia_config_py() {
   "$IA_PYTHON" "$IA_LIB_DIR/convert_ia_config.py" "$@"
 }
 
+# Skills Codex geridas por comando: pastas command-<slug>. Comandos antigos usavam prefixo
+# baladapp-; o repo passou a bld-. Remove órfãos command-baladapp-* antes de regenerar.
+# Args: agents_skills_home, dry_run (true|false)
+ia_config_remove_legacy_codex_command_skills() {
+  local agents_skills="${1:?}"
+  local dry="${2:?}"
+  shopt -s nullglob
+  local p
+  for p in "$agents_skills"/command-baladapp-*; do
+    [[ -e "$p" ]] || continue
+    if [[ "$dry" == true ]]; then
+      echo "[dry-run] rm -rf $p"
+    else
+      rm -rf "$p"
+      echo "  (legado removido) $(basename "$p")"
+    fi
+  done
+  shopt -u nullglob
+}
+
 # Args: repo_root, claude_home, dry_run (true|false)
 ia_config_sync_claude_rules_and_commands() {
   local repo="$1" home="$2" dry="$3"
@@ -163,11 +183,14 @@ ia_config_sync_codex_managed_skills() {
   echo "Codex: skills globais em $agents_skills (rules + commands + repo/skills)"
   if [[ "$dry" == true ]]; then
     echo "[dry-run] mkdir -p $agents_skills"
+    echo "[dry-run] remover skills Codex command-baladapp-* (comandos renomeados para bld-)"
+    ia_config_remove_legacy_codex_command_skills "$agents_skills" true
     echo "[dry-run] apagar ia-rule-* e command-* geridos; regenerar skills; copiar pastas com SKILL.md de $repo/skills"
     return 0
   fi
   mkdir -p "$agents_skills"
   mkdir -p "$agents_skills/ia-tdd-markdown"
+  ia_config_remove_legacy_codex_command_skills "$agents_skills" false
   shopt -s nullglob
   local f
   for f in "$repo/commands"/*.md; do

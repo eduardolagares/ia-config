@@ -1,11 +1,11 @@
 ---
-VERSION: "0.0.3"
+VERSION: "1.0.0"
 description: "Spec de requisitos e TDD (RED/GREEN) em markdown; sem implementação de código neste chat; apenas docs/specs/tdd/... via Write/StrReplace."
 ---
 
-# baladapp-tdd-doc — documento de requisitos + TDD (RED/GREEN)
+# bld-tdd-doc — documento de requisitos + TDD (RED/GREEN)
 
-Você foi invocado pelo **comando `/baladapp-tdd-doc`**. Aplique as regras abaixo por completo.
+Você foi invocado pelo **comando `/bld-tdd-doc`**. Aplique as regras abaixo por completo.
 
 ## Escopo deste chat (obrigatório)
 
@@ -13,7 +13,7 @@ Enquanto este comando estiver ativo **neste chat**, **é proibido implementar c�
 
 - **Permitido**: perguntas, esclarecimentos, prévia em mensagem, e **somente** criar/editar o markdown do spec no caminho acordado (`docs/specs/tdd/...`) via `Write`/`StrReplace`.
 - **Permitido com ressalva**: citar trechos de código existente ou snippets ilustrativos na conversa, sem propor patch nem gravar código fora do spec.
-- **Se o usuário pedir implementação**: recusar neste chat e indicar continuar em **outro chat** (ou encerrar o `/baladapp-tdd-doc` antes).
+- **Se o usuário pedir implementação**: recusar neste chat e indicar continuar em **outro chat** (ou encerrar o `/bld-tdd-doc` antes).
 
 ## Papel do agente
 

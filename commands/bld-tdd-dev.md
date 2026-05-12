@@ -1,27 +1,27 @@
 ---
-VERSION: "0.0.3"
-description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; guia de sincronização do spec com /baladapp-tdd-doc; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
+VERSION: "1.0.0"
+description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; guia de sincronização do spec com /bld-tdd-doc; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 
-# baladapp-tdd-dev — implementação TDD
+# bld-tdd-dev — implementação TDD
 
-Você foi invocado pelo **comando `/baladapp-tdd-dev`**. Aplique as regras abaixo por completo.
+Você foi invocado pelo **comando `/bld-tdd-dev`**. Aplique as regras abaixo por completo.
 
 ## Caveman (início)
 
 Se a skill **caveman** existir no ambiente (ex.: `~/.agents/skills/caveman/SKILL.md`), **carregue-a e aplique o modo `full`** antes de iniciar o fluxo deste comando (incluindo a seção 1 — escolha por RF ou por fase). Intensidade **full** conforme a própria skill; manter ativa durante a sessão salvo exceções que a skill definir. Se a skill não existir, ignore este bloco.
 
-## Relação com baladapp-tdd-doc
+## Relação com bld-tdd-doc
 
 Seguir o spec ativo em `docs/specs/tdd/AAAA-MM-DD-nome.md` (ou path indicado).
-A especificação é produzida pelo comando **`/baladapp-tdd-doc`** (`~/.cursor/commands/baladapp-tdd-doc.md`).
-**baladapp-tdd-doc** especifica; **baladapp-tdd-dev** implementa e atualiza status no mesmo arquivo.
+A especificação é produzida pelo comando **`/bld-tdd-doc`** (`~/.cursor/commands/bld-tdd-doc.md`).
+**bld-tdd-doc** especifica; **bld-tdd-dev** implementa e atualiza status no mesmo arquivo.
 
 ## Guia — spec como fonte da verdade da sessão
 
 Tudo o que for **decidido** durante o uso deste comando e que altere o entendimento do trabalho — **decisões** (desenho, escopo, trade-offs), **requisitos acrescidos** ou reformulados, **regras** ou critérios de aceite ajustados, descobertas que viram requisito, ou equivalente — **deve** ser refletido no **spec ativo** (`docs/specs/tdd/...` ou path indicado). **Proibido** deixar isso só na conversa: o markdown do spec permanece o contrato rastreável.
 
-**Como alterar o spec** — aplicar as **mesmas diretrizes** do comando **`/baladapp-tdd-doc`** (`~/.cursor/commands/baladapp-tdd-doc.md`), em particular: RFs numerados e alinhados à tabela TDD da fase correta; secção **`## Decisões tomadas`** com bullets **D1, D2…** para decisões; preferir **novos** RF/D/PC e **novas linhas** na tabela em vez de reescrever histórico, salvo correção explícita ou contradição insustentável; fase **Pós-implementação** para achados do ciclo de implementação; **`## Registros pós-conclusão do spec`** (**PC1, PC2…**) após o documento estar **`concluído`**, para bugs ou ajustes em reabertura; checklist e coerência de marcadores RED/GREEN com `concluídos/total` nos cabeçalhos de fase; antes de gravar, rever o checklist desse comando no trecho afetado.
+**Como alterar o spec** — aplicar as **mesmas diretrizes** do comando **`/bld-tdd-doc`** (`~/.cursor/commands/bld-tdd-doc.md`), em particular: RFs numerados e alinhados à tabela TDD da fase correta; secção **`## Decisões tomadas`** com bullets **D1, D2…** para decisões; preferir **novos** RF/D/PC e **novas linhas** na tabela em vez de reescrever histórico, salvo correção explícita ou contradição insustentável; fase **Pós-implementação** para achados do ciclo de implementação; **`## Registros pós-conclusão do spec`** (**PC1, PC2…**) após o documento estar **`concluído`**, para bugs ou ajustes em reabertura; checklist e coerência de marcadores RED/GREEN com `concluídos/total` nos cabeçalhos de fase; antes de gravar, rever o checklist desse comando no trecho afetado.
 
 **Encaixe rápido** — decisão de processo ou produto → **Dn**; novo comportamento a testar → **RF** + linha na tabela TDD (e alinhar RED/GREEN); achado durante QA/manual no mesmo ciclo de entrega → fase **Pós-implementação**; após spec **concluído**, manutenção ou bug fora do ciclo original → **PCn**. Se a mudança for só de texto do spec, pode ser gravada neste chat; continua a valer o restante deste comando (por exemplo, **menu 1–7** e **commit** de código só nas rotas já definidas).
 
@@ -32,9 +32,9 @@ Tudo o que for **decidido** durante o uso deste comando e que altere o entendime
 Após **Caveman (início)** quando aplicável, apresentar a pergunta de modo **sempre com opções numeradas** (ex.: **1** Por RF, **2** Por fase) antes de qualquer outro passo — em toda ativação,
 início ou retomada. Aguardar resposta por **número** ou pelo rótulo explícito correspondente; nunca inferir pelo histórico.
 
-**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o `/baladapp-tdd-dev`*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
+**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o `/bld-tdd-dev`*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
 
-**Ativação que não é retomada** — primeira invocação de `/baladapp-tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
+**Ativação que não é retomada** — primeira invocação de `/bld-tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
 
 | | Por RF | Por fase |
 |---|---|---|

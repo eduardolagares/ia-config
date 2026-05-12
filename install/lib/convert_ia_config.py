@@ -141,7 +141,7 @@ def rewrite_paths_markdown(text: str, mode: str) -> str:
     for old, new in _PATH_REPLACEMENTS.get(mode, []):
         text = text.replace(old, new)
     if mode == "codex":
-        # ~/.agents/skills/command-baladapp-tdd-doc.md → folder command-baladapp-tdd-doc/SKILL.md
+        # ~/.agents/skills/command-bld-tdd-doc.md → folder command-bld-tdd-doc/SKILL.md
         text = re.sub(
             r"(~/.agents/skills/command-)([a-z0-9_-]+)\.md",
             r"\1\2/SKILL.md",

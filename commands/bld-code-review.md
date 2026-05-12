@@ -1,9 +1,9 @@
 ---
-VERSION: "0.0.3"
+VERSION: "1.0.0"
 description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 ---
 
-# `/baladapp-code-review`
+# `/bld-code-review`
 
 **Agent context:** Short lines here = **same obligations** as verbose spec. Do not skip rules because text is tight.
 
