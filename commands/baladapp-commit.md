@@ -2,9 +2,9 @@
 description: "Diff/staging → short pt-BR message → git add + commit; no permission prompts."
 ---
 
-# `/commit`
+# `/baladapp-commit`
 
-**Somente este comando:** ao executar `/commit`, **não** ler, invocar ou seguir nenhuma skill ou regra externa de mensagem de commit (ex.: caveman-commit, `/caveman-commit`, plugins de commit). O fluxo e o formato estão **só** neste arquivo.
+**Somente este comando:** ao executar `/baladapp-commit`, **não** ler, invocar ou seguir nenhuma skill ou regra externa de mensagem de commit (ex.: caveman-commit, `/caveman-commit`, plugins de commit). O fluxo e o formato estão **só** neste arquivo.
 
 **MUST:** `git status -sb`; `git diff`; `git diff --cached` if staged exists. Draft message from real diff only. `git add` (see below) + `git commit`. Reply: subject line, 1–3 sentence delta summary, commit output or abort reason.
 

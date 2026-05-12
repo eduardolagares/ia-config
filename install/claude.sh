@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="${IA_CONFIG_REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}"
 DRY_RUN=false
 UPGRADE=false
@@ -26,6 +26,7 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run] [--upgrade] [--with-caveman | --without-caveman]"
       echo "Escreve ~/.claude/{rules,commands,skills}/ : rules .mdc→.md (globs→paths), commands com paths ~/.claude/commands/, skills a partir de skills/ do repo."
+      echo "  IA_CONFIG_REPO_ROOT=...  raiz do clone ia-config."
       echo "  --upgrade  Karpathy, Caveman e re-sync de rules/commands/skills em ~/.claude (ou CLAUDE_CONFIG_DIR)."
       echo "No fim: pergunta se queres instalar skills Caveman (clone JuliusBrussee/caveman → skills/)."
       echo "  Descarrega obrigatoriamente rules/karpathy-guidelines.mdc (curl) de forrestchang/andrej-karpathy-skills."
@@ -41,7 +42,7 @@ done
 echo "Repo:   $REPO_ROOT"
 
 if [[ "$UPGRADE" == true ]]; then
-  echo "Modo upgrade — Karpathy, Caveman e re-sync de rules/commands/skills em $CLAUDE_HOME (sem voltar a criar symlinks antigos)."
+  echo "Modo upgrade — Karpathy, Caveman e re-sync de rules/commands/skills em $CLAUDE_HOME."
   [[ -n "${CLAUDE_CONFIG_DIR:-}" ]] && echo "(CLAUDE_CONFIG_DIR está definido)"
   if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
   echo
@@ -57,7 +58,7 @@ if [[ "$UPGRADE" == true ]]; then
   exit 0
 fi
 
-echo "Dest:   $CLAUDE_HOME/{rules,commands,skills}/ (ficheiros gerados; não symlinks das pastas do repo)"
+echo "Dest:   $CLAUDE_HOME/{rules,commands,skills}/ (ficheiros gerados a partir do repo)"
 [[ -n "${CLAUDE_CONFIG_DIR:-}" ]] && echo "(CLAUDE_CONFIG_DIR está definido)"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run: nada será alterado)"; fi
 echo

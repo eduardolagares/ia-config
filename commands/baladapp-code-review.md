@@ -2,7 +2,7 @@
 description: "FS senior review: read-only, pt-BR report, blocks 1–4; caveman spec — still binding."
 ---
 
-# `/code-review`
+# `/baladapp-code-review`
 
 **Caveman / agent context:** Short lines here = **same obligations** as verbose spec. Do not skip rules because text is tight.
 

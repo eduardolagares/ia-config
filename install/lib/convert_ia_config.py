@@ -110,7 +110,7 @@ def rewrite_paths_markdown(text: str, mode: str) -> str:
     for old, new in _PATH_REPLACEMENTS.get(mode, []):
         text = text.replace(old, new)
     if mode == "codex":
-        # ~/.agents/skills/command-tdd-doc.md → folder command-tdd-doc/SKILL.md
+        # ~/.agents/skills/command-baladapp-tdd-doc.md → folder command-baladapp-tdd-doc/SKILL.md
         text = re.sub(
             r"(~/.agents/skills/command-)([a-z0-9_-]+)\.md",
             r"\1\2/SKILL.md",
@@ -164,7 +164,7 @@ def command_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
 
 
 def rule_to_codex_skill(src: Path, dest_skill_dir: Path) -> None:
-    """rules/foo.mdc → .agents/skills/ia-rule-foo/SKILL.md"""
+    """rules/<nome>.mdc → .agents/skills/ia-rule-<nome>/SKILL.md (ex.: baladapp-*.mdc ou terceiros sem prefixo)."""
     slug = src.stem
     folder_name = f"ia-rule-{slug}"
     skill_dir = dest_skill_dir / folder_name

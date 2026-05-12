@@ -4,7 +4,7 @@ Este ficheiro faz parte do repositório **ia-config** (Google Antigravity: `~/.g
 
 ## Onde estão as convenções
 
-Depois de correres `./install/antigravity.sh`, o instalador **copia e converte** o conteúdo para a árvore do Antigravity (além do symlink deste `GEMINI.md`):
+Depois de correres `./install/antigravity.sh`, o instalador **copia** `GEMINI.md` e `AGENTS.md` para `~/.gemini/` e **copia e converte** o resto para a árvore do Antigravity:
 
 - **Regras** (`.mdc` do repo → `.md` com `globs` Cursor ajustado a `paths` onde aplicável): `~/.gemini/antigravity/ia-config/rules/*.md` (ou `GEMINI_HOME/antigravity/...` se usares `GEMINI_HOME`).
 - **Workflows** (equivalente a comandos slash): `~/.gemini/antigravity/global_workflows/*.md` — texto com referências ajustadas a esse path.

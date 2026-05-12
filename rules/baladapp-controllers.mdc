@@ -10,7 +10,7 @@ globs: app/controllers/**/*.rb,test/controllers/**/*.rb,test/integration/**/*.rb
 - Formatting for views → presenter (`app/presenters/`), not controller ivar assembly of strings.
 - RESTful actions: `index` `show` `new` `create` `edit` `update` `destroy`; `respond_to` + `format.html` when needed.
 - Tests: **request** specs (`spec/requests/`), not controller specs.
-- Action body ≤ **10 lines**. Writes / multi-step flow → `app/domains/**/use_cases/` (`use_cases.mdc`). Heavy AR reads → query object (`query_objects.mdc`). Trivial wiring → `private` controller method.
+- Action body ≤ **10 lines**. Writes / multi-step flow → `app/domains/**/use_cases/` (`baladapp-use_cases.mdc`). Heavy AR reads → query object (`baladapp-query_objects.mdc`). Trivial wiring → `private` controller method.
 - `before_action` only for setup (find record, `authorize`) — **not** business branching.
 - Validation re-render: `status: :unprocessable_entity` (e.g. `render :new, status: :unprocessable_entity`).
 - Flash: `flash[:notice]` / `flash[:alert]` on redirect; `flash.now` when re-rendering same request.

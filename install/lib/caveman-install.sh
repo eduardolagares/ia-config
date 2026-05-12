@@ -60,7 +60,7 @@ install_caveman_skills() {
   echo "Skills Caveman copiadas para $repo_root/skills (ficheiros ignorados pelo Git)."
 }
 
-# Decide e executa instalação Caveman após os symlinks (ou só no modo --upgrade).
+# Decide e executa instalação Caveman após a cópia/sync principal (ou só no modo --upgrade).
 # Args: repo_root, dry_run (true/false), for_upgrade (true/false) — se true, prompt fala em "Atualizar".
 maybe_install_caveman() {
   local repo_root="$1"
@@ -71,7 +71,7 @@ maybe_install_caveman() {
   if [[ "$dry_run" == true ]]; then
     echo
     if [[ "$for_upgrade" == true ]]; then
-      echo "[dry-run] Caveman: pergunta ou INSTALL_CAVEMAN / --with-caveman (modo upgrade não altera symlinks)."
+      echo "[dry-run] Caveman: pergunta ou INSTALL_CAVEMAN / --with-caveman (modo upgrade não altera cópias Cursor)."
     else
       echo "[dry-run] No fim seria perguntado se queres instalar Caveman (ou usar --with-caveman / INSTALL_CAVEMAN=yes)."
     fi

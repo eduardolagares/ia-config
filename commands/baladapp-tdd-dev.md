@@ -2,19 +2,19 @@
 description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
 ---
 
-# tdd-dev — implementação TDD
+# baladapp-tdd-dev — implementação TDD
 
-Você foi invocado pelo **comando `/tdd-dev`**. Aplique as regras abaixo por completo.
+Você foi invocado pelo **comando `/baladapp-tdd-dev`**. Aplique as regras abaixo por completo.
 
 ## Caveman (início)
 
 Se a skill **caveman** existir no ambiente (ex.: `~/.agents/skills/caveman/SKILL.md`), **carregue-a e aplique o modo `full`** antes de iniciar o fluxo deste comando (incluindo a seção 1 — escolha por RF ou por fase). Intensidade **full** conforme a própria skill; manter ativa durante a sessão salvo exceções que a skill definir. Se a skill não existir, ignore este bloco.
 
-## Relação com tdd-doc
+## Relação com baladapp-tdd-doc
 
 Seguir o spec ativo em `docs/specs/tdd/AAAA-MM-DD-nome.md` (ou path indicado).
-A especificação é produzida pelo comando **`/tdd-doc`** (`~/.cursor/commands/tdd-doc.md`).
-**tdd-doc** especifica; **tdd-dev** implementa e atualiza status no mesmo arquivo.
+A especificação é produzida pelo comando **`/baladapp-tdd-doc`** (`~/.cursor/commands/baladapp-tdd-doc.md`).
+**baladapp-tdd-doc** especifica; **baladapp-tdd-dev** implementa e atualiza status no mesmo arquivo.
 
 ---
 
@@ -23,9 +23,9 @@ A especificação é produzida pelo comando **`/tdd-doc`** (`~/.cursor/commands/
 Após **Caveman (início)** quando aplicável, apresentar a pergunta de modo **sempre com opções numeradas** (ex.: **1** Por RF, **2** Por fase) antes de qualquer outro passo — em toda ativação,
 início ou retomada. Aguardar resposta por **número** ou pelo rótulo explícito correspondente; nunca inferir pelo histórico.
 
-**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o tdd-dev*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
+**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o `/baladapp-tdd-dev`*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
 
-**Ativação que não é retomada** — primeira invocação de `/tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
+**Ativação que não é retomada** — primeira invocação de `/baladapp-tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
 
 | | Por RF | Por fase |
 |---|---|---|
