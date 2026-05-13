@@ -1,5 +1,5 @@
 ---
-VERSION: "1.0.0"
+VERSION: "1.0.1"
 description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 ---
 
@@ -12,6 +12,8 @@ description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 Senior full-stack. Check: correctness, flows, security, API/UI contracts, persistence, concurrency/errors, observability when relevant.
 
 **Skip:** aesthetics, formatting taste, micro-refactors with zero impact.
+
+**Do not list:** findings already fixed in the reviewed diff/snapshot, or issues clearly neutralized by another in-scope path (guard, validation, complementary flow) once verified end-to-end. No redundant flags.
 
 ## Read-only
 
