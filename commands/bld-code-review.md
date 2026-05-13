@@ -1,5 +1,5 @@
 ---
-VERSION: "1.0.1"
+VERSION: "1.0.2"
 description: "FS senior review: read-only, pt-BR report, blocks 1–4."
 ---
 
@@ -65,13 +65,15 @@ Block **4** → always something useful (bullets and/or stock lines). Max ~4 bul
 
 No long paragraphs. No pasted diff.
 
-**1 - Crítico** — Each item: **onde** + **problema** + **correção** + **Hipótese de falha:** (one line). Match **Crítico** def.
+**Item IDs (required):** Every review line or bullet under blocks **1–4** starts with a stable `N.M` token (`N` = block 1–4, `M` = 1-based sequence within that block only), e.g. `1.1`, `1.2`, `2.1`, `3.1`, `4.1`. Chat references use that id. Blocks that show only `Nenhum.` have no ids.
 
-**2 - Grave** — Same shape. Match **Grave** def.
+**1 - Crítico** — Each item: `1.M` + **onde** + **problema** + **correção** + **Hipótese de falha:** (one line). Match **Crítico** def.
 
-**3 - Outros** — One line per idea. Match **Outros** def.
+**2 - Grave** — Same shape with `2.M`. Match **Grave** def.
 
-**4 - Testes e cobertura** — Merge testability + test presence/update + per-file coverage. Stocks when tests/coverage not verified.
+**3 - Outros** — One line per idea, each prefixed `3.M`. Match **Outros** def.
+
+**4 - Testes e cobertura** — Merge testability + test presence/update + per-file coverage. Stocks when tests/coverage not verified; each bullet/line of substance prefixed `4.M`.
 
 Item in **1** or **2** without **Hipótese de falha:** → move to **3 - Outros** or mark **não verificável**.
 
