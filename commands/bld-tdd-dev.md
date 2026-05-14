@@ -1,167 +1,106 @@
 ---
-VERSION: "1.0.2"
-description: "TDD a partir do spec: ciclo RED/GREEN, modos por RF ou por fase, menu 1-7; guia de sincronização do spec com /bld-tdd-doc; pedido explícito (menu, menu 1-7, menu iteração, etc.) → exibir menu completo; retomada (resume etc.): só pergunta de modo na primeira resposta, sem menu na mesma mensagem; commit apenas após escolha explícita no menu (itens 1 ou 5)."
+VERSION: "1.0.3"
+description: "Protocolo agente: TDD RED/GREEN; modos Por RF / Por fase; spec↔bld-tdd-doc; modo obrigatório por ativação; retomada→1ª msg só modo; menu 1–7 nos marcos; commit só 1|5; skills tdd-red-guard, tdd-test-naming, tdd-minitest-red; sem tester-rails."
 ---
 
-# bld-tdd-dev — implementação TDD
+# `/bld-tdd-dev` — protocolo (agente)
 
-Você foi invocado pelo **comando `/bld-tdd-dev`**. Aplique as regras abaixo por completo.
+## Preconditions
 
-## Caveman (início)
+- `IF` exists `~/.agents/skills/caveman/SKILL.md` `THEN` load; apply caveman intensity `full`; keep until skill exceptions; `ELSE` skip.
+- `THEN` execute remainder in order.
 
-Se a skill **caveman** existir no ambiente (ex.: `~/.agents/skills/caveman/SKILL.md`), **carregue-a e aplique o modo `full`** antes de iniciar o fluxo deste comando (incluindo a seção 1 — escolha por RF ou por fase). Intensidade **full** conforme a própria skill; manter ativa durante a sessão salvo exceções que a skill definir. Se a skill não existir, ignore este bloco.
+## Spec binding
 
-## Relação com bld-tdd-doc
+- Active spec: `docs/specs/tdd/NNNN-AAAA-MM-DD-slug.md` or user path. Filename pattern from `/bld-tdd-doc`.
+- `bld-tdd-doc` (`~/.cursor/commands/bld-tdd-doc.md`) authors spec; this command implements + updates status **in that same file**.
 
-Seguir o spec ativo em `docs/specs/tdd/0001-AAAA-MM-DD-nome-do-documento.md` (ou path indicado; o comando **`/bld-tdd-doc`** define o padrão `NNNN-AAAA-MM-DD-slug.md`).
-A especificação é produzida pelo comando **`/bld-tdd-doc`** (`~/.cursor/commands/bld-tdd-doc.md`).
-**bld-tdd-doc** especifica; **bld-tdd-dev** implementa e atualiza status no mesmo arquivo.
+## Spec sync (non-negotiable)
 
-## Guia — spec como fonte da verdade da sessão
+- `MUST` persist to active spec any session change affecting understanding: decisions, added/reframed requirements, rules/acceptance criteria, discoveries elevated to requirement, equivalents.
+- `FORBIDDEN`: exclusive chat-only record for above; spec markdown = traceable contract.
+- Spec edits `MUST` follow `bld-tdd-doc` rules: section order (decisions → phases → flowchart → `## Registros` **only** if **PC1+**); **RF1**, **RF2**, … aligned to phase TDD table; `## Decisões tomadas` with **D1**, **D2**, …; prefer **append** new RF/D/PC + new table rows vs rewriting history unless explicit fix or unsustainable contradiction; **Pós-implementação** phase for implementation-cycle findings; `## Registros pós-conclusão do spec` (**PC1**, **PC2**, …) **only** for maintenance after spec `concluído`; phase headers: checklist + RED/GREEN markers coherent with `concluídos/total`; before save: re-check `bld-tdd-doc` checklist on touched regions.
+- Routing: process/product decision → **D**; new testable behavior → **RF** + TDD table row + RED/GREEN alignment; QA/manual finding same delivery cycle → **Pós-implementação**; after spec **concluído**, maintenance/bug outside original cycle → **PC** (create `## Registros` + **PC1** if missing).
+- Spec **text-only** changes may be emitted in chat; all other command rules (incl. menu 1–7, commit gates) still apply.
 
-Tudo o que for **decidido** durante o uso deste comando e que altere o entendimento do trabalho — **decisões** (desenho, escopo, trade-offs), **requisitos acrescidos** ou reformulados, **regras** ou critérios de aceite ajustados, descobertas que viram requisito, ou equivalente — **deve** ser refletido no **spec ativo** (`docs/specs/tdd/NNNN-AAAA-MM-DD-…` ou path indicado). **Proibido** deixar isso só na conversa: o markdown do spec permanece o contrato rastreável.
+## §1 Mode gate (every activation)
 
-**Como alterar o spec** — aplicar as **mesmas diretrizes** do comando **`/bld-tdd-doc`** (`~/.cursor/commands/bld-tdd-doc.md`), em particular: ordem das seções (decisões → fases → fluxograma → **Registros** só com **PC1** em diante); **RF1**, **RF2**, … alinhados à tabela TDD da fase; **`## Decisões tomadas`** com **D1**, **D2**, …; preferir **novos** RF/D/PC e **novas linhas** na tabela em vez de reescrever histórico, salvo correção explícita ou contradição insustentável; fase **Pós-implementação** para achados do ciclo de implementação; **`## Registros pós-conclusão do spec`** (**PC1**, **PC2**, …) só quando existir manutenção pós-**`concluído`**; checklist e coerência de marcadores RED/GREEN com `concluídos/total` nos cabeçalhos de fase; antes de gravar, rever o checklist desse comando no trecho afetado.
+- After caveman block when applicable: output **numbered** mode question **before** any other step. **Every** activation: cold start or resume.
+- Accept user reply **only** as explicit number or explicit matching label. **Never** infer mode from history/thread.
+- **Explicit resume** triggers (non-exhaustive PT/EN): resume, resumir, reabrir, retomar, continue `/bld-tdd-dev`, seguir de onde parou, equivalents meaning “continue process after pause/new conversation”.
+- **On first agent message after explicit resume:** output **only** numbered mode question. **Same message `FORBIDDEN`:** menu 1–7, menu choice prompt, milestone advance, commit suggestion. After mode answered: resume from correct spec point; menu 1–7 auto **only** at §3–§4 milestones (full reprint **only** on explicit menu request per §4); **never** stack menu with mode question on resume.
+- **Not** explicit resume: first `/bld-tdd-dev` in thread **or** continuation with mode already answered this session → normal flow; “mode-only first message” binds **first** turn after explicit resume, not each micro-step.
 
-**Encaixe rápido** — decisão de processo ou produto → **D**; novo comportamento a testar → **RF** + linha na tabela TDD (e alinhar RED/GREEN); achado durante QA/manual no mesmo ciclo de entrega → fase **Pós-implementação**; após spec **concluído**, manutenção ou bug fora do ciclo original → **PC** (criar a seção **Registros** com **PC1** se ainda não existir). Se a mudança for só de texto do spec, pode ser gravada neste chat; continua a valer o restante deste comando (por exemplo, **menu 1–7** e **commit** de código só nas rotas já definidas).
+| Dimension | Por RF | Por fase |
+|-----------|--------|----------|
+| Unit | one table row / iteration | all rows of phase batch |
+| Menu 1–7 | after each Confirm RED, each Confirm GREEN, phase end | after RED package closes milestone **(1)**; after GREEN package closes **(2)** |
+| Intra-phase pause | — | zero inside write waves; zero between lines in Confirm waves; execute **Por fase** sequence with **no** authorization stops between lines |
 
----
+## §2 Four-step cycle (per row; total order; no skip/invert)
 
-## 1. Escolha de modo (obrigatória a cada ativação)
+1. **Escrever RED**
+   - `FORBIDDEN` mutating project implementation: production code, `app/`, `lib/`, jobs, migrations, user-facing views/routes/handlers, app runtime config, etc.
+   - `ALLOWED` minimal edits so target test **exists + runs**: test file, test-only factories/fixtures/helpers, test `require`/`import` if project requires.
+   - `FORBIDDEN` during RED: refactor outside test, pre-implement GREEN, touch any file not strictly required.
+   - Before **and** after each write: apply `~/.cursor/commands/skills/tdd-red-guard.md`.
+   - On any test identifier: apply `~/.cursor/commands/skills/tdd-test-naming.md`.
+   - Minitest projects: also apply `~/.cursor/commands/skills/tdd-minitest-red.md`.
 
-Após **Caveman (início)** quando aplicável, apresentar a pergunta de modo **sempre com opções numeradas** (ex.: **1** Por RF, **2** Por fase) antes de qualquer outro passo — em toda ativação,
-início ou retomada. Aguardar resposta por **número** ou pelo rótulo explícito correspondente; nunca inferir pelo histórico.
+2. **Confirmar RED** — run **only** target test; paste output proving **failure**; lead agent reviews RF adherence inline.
 
-**Retomada explícita** — quando o usuário indicar que deseja **continuar o processo** após pausa ou nova conversa (ex.: *resume*, *resumir*, *reabrir*, *retomar*, *continuar o `/bld-tdd-dev`*, *seguir de onde parou*, equivalentes em PT/EN): na **primeira** resposta do agente a esse pedido, apresentar **somente** a pergunta de modo (numerada). **Proibido** na mesma mensagem (ou antes da resposta ao modo) apresentar também o **menu 1–7**, pedir escolha do menu, avançar marcos ou sugerir commit. Depois que o modo for escolhido, retomar o fluxo a partir do ponto correto do spec; o menu 1–7 é oferecido **automaticamente** só nos marcos das seções 3 e 4 (e **republicado na íntegra** se o usuário pedir explicitamente — seção 4), nunca empilhado com a pergunta de modo em retomada.
+3. **Escrever GREEN** — minimal production to satisfy RED; no premature abstraction, no refactor, no extra code beyond target test.
+   - If writing/renaming tests during GREEN: reapply `~/.cursor/commands/skills/tdd-test-naming.md`.
 
-**Ativação que não é retomada** — primeira invocação de `/bld-tdd-dev` na thread ou continuação **já** com modo respondido na mesma sessão: seguir fluxo normal; a regra “só modo” acima vale para o **primeiro** turno após pedido de retomada, não para cada micro-passo do trabalho.
+4. **Confirmar GREEN** — run **same** target test only; paste output proving **pass**; lead agent reviews inline; update spec: status, test path, `n/m`.
 
-| | Por RF | Por fase |
-|---|---|---|
-| Granularidade | Uma linha por vez | Todas as linhas da fase em lote |
-| Menus 1–7 | Após Confirmar RED e após Confirmar GREEN de cada linha; fim de fase | Após fechar o pacote RED (marco **(1)**) e após fechar o pacote GREEN (marco **(2)**) |
-| Pausa entre linhas | — | Nenhuma *dentro* de cada onda de escrita nem *entre* linhas nas ondas Confirmar; seguir a sequência **Por fase** abaixo sem paradas para autorização |
-
----
-
-## 2. Ciclo de quatro passos (por linha)
-
-Ordem obrigatória; nunca inverter nem pular:
-
-1. **Escrever RED** — **nenhum arquivo de implementação do projeto pode ser alterado**
-   (código de produção, app, lib, jobs, migrations, views/rotas/handlers de entrega ao
-   usuário, config de runtime da aplicação, etc.). Criar/ajustar **apenas** o que for
-   indispensável para o teste **existir e ser executável** (arquivo de teste,
-   factories/fixtures/helpers de teste, `require`/`import` de suporte ao teste se o
-   projeto assim exigir). **Proibido** refatorar fora do teste, "preparar" implementação
-   ou tocar em qualquer arquivo que não seja estritamente necessário para esse fim.
-   **Zero produção.**
-   → Antes e após qualquer escrita: aplicar `~/.cursor/commands/skills/tdd-red-guard.md`
-   → Ao definir qualquer identificador de teste: aplicar `~/.cursor/commands/skills/tdd-test-naming.md`
-   → Em projetos Minitest: aplicar `~/.cursor/commands/skills/tdd-minitest-red.md`
-
-2. **Confirmar RED** — rodar só esse teste; saída colada mostrando **falha**;
-   o agente principal revisa aderência ao RF inline.
-
-3. **Escrever GREEN** — produção mínima: apenas o exigido pelo RED; sem abstrações
-   antecipadas, refatoração ou código além do teste alvo.
-   → Ao escrever ou renomear testes durante GREEN: reaplicar `~/.cursor/commands/skills/tdd-test-naming.md`
-
-4. **Confirmar GREEN** — rodar mesmo teste; saída colada mostrando **aprovação**;
-   o agente principal revisa inline; atualizar spec (status, path do teste, `n/m`).
-
----
-
-## 3. Fluxo por modo
+## §3 Mode flows
 
 ### Por RF
 
-```
-Escrever RED → Confirmar RED → menu 1–7
-→ Escrever GREEN → Confirmar GREEN → menu 1–7
-→ próxima linha
-```
+`Escrever RED → Confirmar RED → menu 1–7 → Escrever GREEN → Confirmar GREEN → menu 1–7 → próxima linha`
 
-Ao encerrar a fase: **revisão sênior** (code review em nível sênior) do pacote da fase na mesma sessão — continua obrigatória; não apontar arquivo ou skill específicos para esse passo → menu 1–7.
+- Phase end: mandatory same-session **senior code review** of phase package; **do not** cite named skills/files for this step → then menu 1–7.
 
 ### Por fase
 
-**Pacote RED** (em todo o pacote: **nenhum arquivo de implementação do projeto pode ser
-alterado**; vale a mesma regra da etapa **Escrever RED** na seção 2 — **só** mudanças
-indispensáveis para os testes existirem; **zero produção**):
+**RED package** (whole package: same RED write rules as §2 — **zero** production; only minimal test-enabling edits):
 
-1. **Onda Escrever RED** — cobrir todas as linhas; sem perguntas *entre* linhas
-   *dentro* da onda.
-   → Antes e após cada escrita: aplicar `~/.cursor/commands/skills/tdd-red-guard.md`
-   → Ao definir identificadores: aplicar `~/.cursor/commands/skills/tdd-test-naming.md`
+1. **Onda Escrever RED** — all lines; **no** questions between lines inside wave. Per write: `tdd-red-guard.md`; per identifiers: `tdd-test-naming.md`.
+2. **Onda Confirmar RED** — sequential; **no** questions between lines; each line: run **only** target test; paste **failure**; lead agent RF adherence inline.
+3. **Revisão sênior** — lead agent senior review of RED package (tests + adherence from confirmations); scope = RED; mandatory; **no** named skill/file. `IF` verdict **REPROVADO** `THEN` block milestone **(1)** until blockers fixed.
+4. Menu 1–7 = milestone **(1)**.
 
-2. **Onda Confirmar RED** — sequencial, sem perguntas entre linhas; para cada linha,
-   rodar **só** o teste alvo; saída colada com **falha**; o agente principal revisa aderência
-   ao RF inline.
+**GREEN package** (`ONLY` after RED package valid + **(1)** authorized):
 
-3. **Revisão sênior** — o agente principal realiza code review em nível sênior do pacote RED (testes + aderência observada nas confirmações); escopo RED; passo obrigatório, sem skill ou arquivo nomeado.
-   → Veredicto REPROVADO bloqueia o marco **(1)**; resolver bloqueantes antes de prosseguir.
+1. **Onda Escrever GREEN** — all lines; **no** questions between lines.
+2. **Onda Confirmar GREEN** — sequential; **no** questions between lines; each line: run **only** target test; paste **pass**; lead agent inline review; update spec per line (`n/m`, status, path).
+3. **Revisão sênior** — lead agent senior review GREEN package; scope = GREEN; mandatory; **no** named skill/file. `IF` **REPROVADO** `THEN` block **(2)** until fixed.
+4. Menu 1–7 = milestone **(2)**.
 
-4. Menu 1–7 (marco **(1)**).
+## §4 Menu 1–7 (sole commit / milestone-advance channel)
 
-**Pacote GREEN** (só após pacote RED validado e marco **(1)** autorizar):
+- Show **only** at iteration-end milestones per §3. **Explicit resume (§1):** **do not** show this menu in same message as mode question; show **only** after mode chosen **and** flow reaches milestone.
+- **Explicit menu request** (dedicated or clearly primary message; PT/EN patterns include: menu, menu 1-7, menu 1–7, menu iteração, mostrar menu, opções do menu, obvious equivalents): print **full** numbered menu 1–7 below; **does not** substitute numeric **1–7** choice for advance/commit; await explicit number/label. **Exception:** first message after explicit resume → mode-only; after mode set, `menu` at valid milestone prints full 1–7.
+- `git commit` `FORBIDDEN` until user picks **1** or **5** from this menu after menu shown. **Forbidden:** infer “yes”, end-of-message commit, convenience commit. No **1|5** → **zero** commits.
 
-1. **Onda Escrever GREEN** — cobrir todas as linhas; sem perguntas entre linhas.
+| # | Action |
+|---|--------|
+| 1 | **Comitar e continuar** — `IF` user chose **1** `THEN` `git add` full round artifacts + `git commit` descriptive; show command output; advance next milestone. `IF` clean working tree `THEN` report + advance without commit. |
+| 2 | **Revisar manualmente** — stop; await input; no commit. On return: `IF` explicit resume `THEN` first reply mode-only (§1); `ELSE` at menu milestone re-show 1–7. |
+| 3 | **Revisão sênior extra** — second same-session senior review; scope per user; no named skill/file; show findings; no auto-commit; re-show 1–7. |
+| 4 | **Discutir requisito** — adjust spec; ask implement-before-code; no commit; when choosing version/advance/reviewer suggestions map to numeric menu (e.g. 1, 5, 6, 7). |
+| 5 | **Só comitar** — `IF` user chose **5** `THEN` descriptive `git commit` only; **do not** advance milestone. Next return: explicit resume → mode-only first (§1); else re-show 1–7 at milestone. |
+| 6 | **Continuar sem comitar** — advance next milestone immediately; no commit. |
+| 7 | **Aceitar sugestões do revisor sênior** — apply code/spec per **latest** senior review this session (incl. extra if newest); no auto-commit; end → re-show 1–7 at milestone (explicit resume: §1 non-stack with mode). |
 
-2. **Onda Confirmar GREEN** — sequencial, sem perguntas entre linhas; para cada linha,
-   rodar **só** o teste alvo; saída colada com **aprovação**; o agente principal revisa inline;
-   atualizar spec por linha (`n/m`, status, path do teste).
+- `FORBIDDEN`: `tester-rails`.
 
-3. **Revisão sênior** — o agente principal realiza code review em nível sênior do pacote GREEN; escopo GREEN; passo obrigatório, sem skill ou arquivo nomeado.
-   → Veredicto REPROVADO bloqueia o marco **(2)**; resolver bloqueantes antes de prosseguir.
+## §5 Hard constraints
 
-4. Menu 1–7 (marco **(2)**).
-
----
-
-## 4. Menu 1–7 (única trilha para commit e avanço)
-
-Apresentar exatamente nos marcos de fim de iteração. Em **retomada explícita** (seção 1), **não** apresentar este menu na mesma mensagem que a pergunta de modo; só depois da escolha do modo e quando o fluxo chegar de fato ao marco.
-
-**Pedido explícito de menu** — Quando o usuário pedir o menu de iteração em mensagem dedicada ou claramente principal (ex.: *menu*, *menu 1-7*, *menu 1–7*, *menu iteração*, *mostrar menu*, *opções do menu*, equivalentes óbvios em PT/EN), **exibir na íntegra** o menu 1–7 abaixo (todos os itens numerados). Isso **não** substitui escolha **1**–**7** para avanço ou `git commit`; só republica o texto do menu e aguarda número ou rótulo explícito. **Exceção:** na **primeira** resposta após **retomada explícita** (seção 1), prevalece *só* a pergunta de modo — não empilhar este menu na mesma mensagem; após o modo escolhido, um pedido *menu* no marco adequado exibe 1–7 completo.
-
-Nenhum atalho substitui a **escolha numerada** para commit ou avanço de marco. **`git commit` é proibido** até o usuário **confirmar por escolha explícita no menu** (número **1** ou **5**). Não inferir "sim", não comitar no fim da mensagem, não comitar por conveniência. Sem escolha **1** ou **5**, **zero** `git commit`.
-
-1. **Comitar e continuar** — somente após o usuário escolher **1** neste menu:
-   stage completo dos artefatos da rodada + `git commit` com mensagem descritiva;
-   exibir saída; avançar para o próximo marco. Se working tree vazio, informar e
-   avançar sem commit.
-2. **Revisar manualmente** — parar; aguardar próximo input; sem commit;
-   ao voltar, se o input for de **retomada explícita** (seção 1), **só** pergunta de modo na primeira resposta; caso contrário, quando o fluxo estiver no marco do menu, reapresentar 1–7.
-3. **Revisão sênior extra** — segunda passagem de code review em nível sênior na mesma sessão; escopo conforme solicitado; sem skill ou arquivo nomeado;
-   exibir achados; sem commit automático; reapresentar 1–7.
-4. **Discutir requisito** — ajustar spec; perguntar se deseja implementar antes de
-   codar; sem commit; ao decidir versionar, avançar ou aplicar sugestões do revisor,
-   escolher a opção numerada correspondente (ex.: 1, 5, 6 ou 7).
-5. **Só comitar** — somente após o usuário escolher **5** neste menu: `git commit`
-   descritivo; não avançar para o próximo marco; na volta, **retomada explícita** (seção 1) → só pergunta de modo primeiro; senão, reapresentar 1–7 no marco.
-6. **Continuar sem comitar** — avançar imediatamente para o próximo marco sem commit.
-7. **Aceitar sugestões do revisor sênior** — aplicar no código e/ou no spec as
-   sugestões e achados da **última** revisão sênior desta sessão (inclui revisão
-   extra, se for a mais recente); sem `git commit` automático; ao terminar,
-   reapresentar 1–7 no marco (retomada explícita: seção 1 — não empilhar com pergunta de modo).
-
-Não usar `tester-rails`.
-
----
-
-## 5. Regras
-
-- **Commit** — `git commit` apenas depois do menu 1–7 apresentado e do usuário
-  escolher **1** ou **5**. Nenhuma outra rota.
-- **Escrever RED** — durante a escrita do RED, **nenhum arquivo de implementação do
-  projeto** pode ser alterado; em qualquer modo, nenhum arquivo ou linha fora do
-  estritamente necessário para o(s) teste(s) existir(em) e rodar(em): sem produção, sem
-  refatoração colateral, sem "adiantar" GREEN. Se houver dúvida, não alterar.
-  → Dúvida sobre escopo de um arquivo: consultar `~/.cursor/commands/skills/tdd-red-guard.md`
-  antes de escrever.
-- **Um teste por vez** — nunca rodar suite completa; só o teste alvo.
-- **Novo requisito** — inserir no spec primeiro; confirmar antes de implementar.
-- **Nomes de testes** — português, comportamento observável, sem abreviações, referência
-  ao RF obrigatória. Critérios completos em `~/.cursor/commands/skills/tdd-test-naming.md`.
-- **Progresso** — manter `n/m` na tabela do spec e no chat.
+- Commit: `git commit` **only** path = menu 1–7 shown + user **1** or **5**.
+- RED: no project implementation files touched; no line beyond strict test necessity; no collateral refactor; no GREEN prep. Uncertain file scope → read `tdd-red-guard.md` **before** write; if still uncertain → **do not** change.
+- Tests: **never** full suite; **only** target test per step.
+- New requirement: spec first; user confirm before implement.
+- Test names: PT; observable behavior; no abbreviations; RF reference mandatory; full rules in `tdd-test-naming.md`.
+- Progress: mirror `n/m` in spec table **and** chat.
