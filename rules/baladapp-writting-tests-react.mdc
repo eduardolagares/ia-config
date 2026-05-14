@@ -1,0 +1,51 @@
+---
+VERSION: "0.0.8"
+description: Vitest + Testing Library — js-tests/ layout (specs + fixtures/), naming, root config vs submodule
+globs: "**/js-tests/**/*.vitest.{ts,tsx}"
+---
+# Tests (React — Vitest)
+
+- Scope: authoring Vitest + React Testing Library under **`js-tests/**`** — structure, naming, assertions (not CI wiring unless the team extends this doc). Use **`js-tests/`** for this tree everywhere (host repo and **`baladapp-react-components`** submodule); do not use Rails’ **`test/`** (Minitest) for these files.
+- Stack: **Vitest**, **`@testing-library/react`**, **`jsdom`** (or the environment the project standardizes). Prefer `describe` / `it` with readable strings — not cryptic abbreviations. **`test.globals: true`** is the team default (no need to import `describe`/`it`/`expect` from `vitest` unless you prefer explicit imports).
+
+## What lives where (submodule vs host root)
+
+- **At the host app root** (the Rails / Shakapacker repo that owns the workspace): **tooling only** — `package.json` with `vitest`, `vite`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/*`, and **all** runner config artifacts: `vitest.config.*`, `vitest.setup.*`, `vitest-env.d.ts` (or an equivalent global-types setup). `yarn test:…` / `npm run test:…` scripts that invoke `vitest` also live here. **Never** add those dependencies or config files **inside** `baladapp-react-components` when it is a submodule.
+- **In the same repository as the React code** (including **`baladapp-react-components`**): **production code + test files** (`*.vitest.ts(x)`), fixtures, and test helpers. Most tests are expected to live directly under `baladapp-react-components/js-tests/<name>/` (same folder as the specs), with a **`fixtures/`** subfolder under that `<name>/` for test-only data and helpers, when components live in that package; the monolith root may keep `js-tests/…` only for React that lives outside the submodule.
+- **How to run:** always from the host root (`yarn test:baladapp`, etc.), with `--config` pointing at the root **`vitest.config.ts`**. That config uses `include` / aliases so Vitest picks up `baladapp-react-components/js-tests/**` (and root `js-tests/**`, if present).
+
+## Greenfield Vitest setup (checklist at the host root)
+
+1. At the **Rails app root** (not in the submodule): `yarn add -D vitest vite @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom` (versions aligned with CI Node).
+2. Create **`vitest.config.ts`** at the root with `environment: "jsdom"`, `test.globals: true`, and `resolve.alias` mirroring the `src` alias (or whatever webpack already uses) to the real source tree — usually `baladapp-react-components/src`. Set **`test.include`** (or equivalent) so Vitest discovers **`**/js-tests/**/*.vitest.{ts,tsx}`** in both the host repo and **`baladapp-react-components`** (adjust if you use a narrower glob).
+3. Create **`vitest.setup.ts`** at the root (`import "@testing-library/jest-dom/vitest"`, global mocks if needed).
+4. **`vitest-env.d.ts`** at the root with `/// <reference types="vitest/globals" />` (or add `vitest/globals` to `compilerOptions.types` on a `tsconfig` that covers tests).
+5. In the root **`package.json`**: scripts such as `vitest run --config vitest.config.ts` / `vitest --config vitest.config.ts`.
+6. Place **`*.vitest.ts(x)`** in the repos that own the code at the **root** of **`js-tests/<component-or-feature-name>/`** (alongside each other), and test-only data/helpers under **`js-tests/<component-or-feature-name>/fixtures/`**. Do not put `vitest.config` or `vitest.setup` in the submodule.
+
+- **Test file location:** at the **root** of **`js-tests/<component-or-feature-name>/`** in the repo that owns the code (`js-tests/` beside `src/` or `app/javascript`). Prefer not to add new suites under `src/.../__tests__/`; migrate legacy when touching an area.
+- **Layout inside each component/feature folder:** under **`js-tests/<component-or-feature-name>/`**, keep **`*.vitest.ts(x)`** in that folder’s **root** (no **`tests/`** subfolder). Use a single subfolder **`fixtures/`** for static payloads, builders, sample JSON, MSW handlers scoped to that area, and other test artifacts that are not spec files. For new or moved suites, follow this tree; legacy `tests/` subfolders can be flattened when a folder is touched.
+
+## Grouping scenarios into `*.vitest` files
+
+- Prefer **one file per test context** (the decision or slice of UI/flow under test), **not** one file per requirement ticket, RF code, or feature label. When the **same decision** is exercised with **different inputs or mocked responses**, keep those cases together.
+- **Same decision, different inputs — prefer one file:** If scenarios share the **same trigger** (same user action or same entry point in the flow) and only differ in **inputs or mocked responses**, group them in a **single** `*.vitest` file: one `describe` named after the decision and **one `it` per distinct outcome**. Do **not** add a separate file solely to mirror an RF or issue ID; mention the requirement in the `describe` / `it` title or a **short** comment instead.
+- **A second file only when:** flows are **different features or triggers**, a single `beforeEach` cannot reconcile incompatible setup, you must run **only one path** in CI in isolation, or the file stays **unreadable** even after extracting helpers into **`fixtures/`**.
+
+- Each **`it`** stays **short** and proves **one** outcome; **`describe`** groups one behavior cluster.
+- **Naming — files:** the filename must signal **which behavior** is covered (e.g. `shows-error-when-store-fetch-fails.vitest.tsx`). Do not use phase/RF codes alone as the primary filename.
+- **Naming — `describe` / `it`:** human sentence: scenario + expectation.
+- TDD: **RED → GREEN → REFACTOR**; avoid changing prod + assertions in one step when proving new behavior.
+- No `sleep`; use `waitFor` / fake timers. Reset RTL (`cleanup`) and shared stores in `afterEach` when needed.
+- **HTTP:** no real network in CI. On the **Rails** side use **WebMock** / **VCR** as the project already does. On the **Vitest** side use **MSW**, **axios-mock-adapter**, `vi.stubGlobal("fetch", …)`, or equivalent — never hit real hosts in CI.
+- **Order:** where **Minitest** runs, rely on random order and **never** call `i_suck_and_my_tests_are_order_dependent!`. For **Vitest**, do not rely on file order or `describe` order for correctness; keep tests isolated (no cross-test mutable singletons unless reset every time).
+- **Fixtures xor factories** per project convention — not both mixed without reason (static JSON/builders vs factory helpers: pick one style unless there is a deliberate, documented exception).
+- **`beforeEach` / setup data** must not become **shared mutable state** across unrelated tests; each test should see a predictable world (reset stores, query client, timers, and mocks in `afterEach` when the test mutates them).
+- **Mock/stub external boundaries** only (HTTP, mail, queue, clock, RNG, `window`/browser APIs) — not your own application modules as a default substitute for design; if you mock internals, keep it narrow and justified (true boundary or unavoidable seam).
+
+```ts
+// bad file: phase4-rf16.vitest.tsx
+// good file: footer-shows-hybrid-total-store-plus-tickets.vitest.tsx
+// bad it: it("works", …)
+// good it: it("shows hybrid label when cart mixes store + ticket items", …)
+```
