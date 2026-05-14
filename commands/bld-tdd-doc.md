@@ -1,138 +1,180 @@
 ---
-VERSION: "1.0.0"
-description: "Spec de requisitos e TDD (RED/GREEN) em markdown; sem implementação de código neste chat; apenas docs/specs/tdd/... via Write/StrReplace."
+VERSION: "1.3.0"
+description: "LLM:/bld-tdd-doc|NO_CODE|out=docs/specs/tdd/NNNN-AAAA-MM-DD-slug.md|STRUCT=frozen|modo?→pergunta|grill=EN_block|padrao=apply_struct"
 ---
 
-# bld-tdd-doc — documento de requisitos + TDD (RED/GREEN)
+# `/bld-tdd-doc`
 
-Você foi invocado pelo **comando `/bld-tdd-doc`**. Aplique as regras abaixo por completo.
+`AUDIENCE`::LLM executor. `PRECEDENCE`::operational_constraints > conversational_defaults. `FROZEN`::semantics of `## Estrutura do documento` + `## Template mínimo` (output artifact); compress elsewhere only.
 
-## Escopo deste chat (obrigatório)
+## INV (invariants)
 
-Enquanto este comando estiver ativo **neste chat**, **é proibido implementar código**: não criar nem alterar arquivos de aplicação, bibliotecas, testes automatizados, migrations, jobs, scripts executáveis, nem configuração cujo efeito seja materializar o comportamento no repositório.
+- `NOT`::`Write`/`StrReplace`/repo_touch outside agreed spec `.md`.
+- `NOT`::app/lib/**tests**/migrations/jobs/scripts/patches/source/config_runtime_behavior.
+- `REQ`::implementation_request → refuse; point `/bld-tdd-dev` or stop command.
+- `OUT`::single writable artifact path `docs/specs/tdd/NNNN-AAAA-MM-DD-<slug>.md` per `STRUCT.path`.
+- `OK`::chat may quote/read code; `NOT` persist non-spec code.
 
-- **Permitido**: perguntas, esclarecimentos, prévia em mensagem, e **somente** criar/editar o markdown do spec no caminho acordado (`docs/specs/tdd/...`) via `Write`/`StrReplace`.
-- **Permitido com ressalva**: citar trechos de código existente ou snippets ilustrativos na conversa, sem propor patch nem gravar código fora do spec.
-- **Se o usuário pedir implementação**: recusar neste chat e indicar continuar em **outro chat** (ou encerrar o `/bld-tdd-doc` antes).
+## `modo`
 
-## Papel do agente
+`domain`::{`padrao`,`grill`,`indefinido`}. `init`::`indefinido` on `/bld-tdd-doc` until valid choice for this chat.
 
-Atue como **arquiteto de software sênior, criterioso e questionador**.
+### `modo` assignment (`precedence`)
 
-- **Não deduza**: se não souber ou não encontrar no contexto/repositório, pergunte.
-- **Não implemente**: o único artefato a gravar no repositório neste chat é o markdown do spec.
+1. `IF` same_message_as_invocation matches (ci):  
+   `grill_tokens`::{grill-me,grill me,modo grill,entrevista,interview} OR (`sim` AND `grill` co-occur) → `modo:=grill`.  
+   `padrao_tokens`::{padrão,padrao,default,sem grill,no grill} OR unambiguous `não` w.r.t. grill → `modo:=padrao`.  
+   `THEN` skip forced question.
+2. `ELSE` first agent turn after invocation `MUST` include **verbatim** user-visible Markdown (preserve `**` bold markers):
+   > Quer iniciar o **modo grill-me** (entrevista alinhada, uma pergunta de cada vez, com recomendação tua em cada passo) ou o **modo padrão** (aplicar ao spec o que pedir, sem roteiro de entrevista)? Responda **grill-me** ou **padrão**.
+   `OPT`::≤1 extra context line before/after; quoted block stays intact/readable.
+3. `WHILE` `modo==indefinido`::`NOT` spec `Write`/`StrReplace`; `NOT` default `modo`.
+4. `ON` user reply: map using same token sets as (1); `ELSE` re-emit blockquote (2) one line.
+5. `ON` explicit mid-session mode switch::rebind `modo`; follow new branch.
 
----
+## `modo` branches
 
-## Regras operacionais
+`padrao`::apply user edits to spec `STRUCT`; `NOT` discovery-interview; gap::repo_read first→if still gap minimal assumption→1-line summary OR new `D` in `## Decisões tomadas`.
 
-### Numeração e formato
+`grill`::discovery=`ONLY` block below (replaces `padrao` discovery for plan/spec thread). `Write`/`StrReplace` `IFF` user explicit update-spec file; else chat-only. `INV` still holds.
 
-- Requisitos funcionais numerados como **RF1, RF2, RF3…** (prefixo fixo `RF`), um por linha.
-- **Lista `### Requisitos`**: cada bullet é uma linha sucinta — enunciado mínimo do comportamento (o quê / escopo essencial). Sem prosa, sem repetição, sem texto RED/GREEN.
-- Documento em **fases**: cada fase contém (1) lista de requisitos e (2) tabela TDD imediatamente abaixo.
-- **Fase pós-implementação (obrigatória, por último entre as fases)**: registra RFs descobertos durante o ciclo de implementação via análise manual/QA. Numeração contínua com o restante do doc. Pode iniciar vazia ou com RF único de escopo; preencher incrementalmente conforme achados.
-- **Registros pós-conclusão do spec (obrigatório, após a última fase)**: tópico obrigatório `## Registros pós-conclusão do spec` — **depois** da fase **Pós-implementação** e de sua tabela TDD. Serve para bugs, correções ou ajustes ao **reabrir** o documento depois que o status do spec for **`concluído`** (manutenção do próprio spec ou rastreio de desvios corrigidos fora do ciclo RED/GREEN original). Cada entrada em bullet numerado **PC1, PC2, PC3…** (prefixo fixo `PC`), uma por linha — enunciado sucinto (o quê mudou ou qual bug; contexto mínimo). **Data opcional** no início do bullet (`AAAA-MM-DD — …`) quando ajudar auditoria. Sem tabela TDD nesta seção (não substitui a fase **Pós-implementação**). Preferir **novos PCn** em vez de reescrever entradas antigas; alterar PC existente só se correção explícita do usuário ou erro factual. A lista pode iniciar vazia com placeholder mínimo (não omitir a seção).
-- **Decisões tomadas**: tópico obrigatório `## Decisões tomadas` (logo após o bloco de metadados do topo, antes da **Fase 1**). Cada decisão registrada durante a elaboração do spec em bullet numerado **D1, D2, D3…** (prefixo fixo `D`), uma por linha — enunciado sucinto do que foi decidido e por quê (contexto mínimo). **Não há necessidade de armazenar a data da decisão** (nem por bullet nem em coluna extra). Sem RED/GREEN aqui. Preferir **novos Dn** em vez de reescrever decisões antigas; alterar D existente só se correção explícita do usuário ou contradição insustentável. A lista pode iniciar vazia com placeholder mínimo até a primeira decisão (não omitir a seção).
-- **Fluxograma de fases e RFs**: tópico obrigatório `## Fluxograma de fases e RFs` — **depois** de `## Decisões tomadas` e **antes** de `## Fase 1`. Objetivo: visão única do que será desenvolvido (fases, RFs e dependências). Conteúdo: **um** diagrama [Mermaid](https://mermaid.js.org/) em bloco fenced ` ```mermaid ` … ` ``` `, tipo `flowchart` (`TB` ou `LR` conforme legibilidade). **Subgraph** por cada fase que tenha cabeçalho `## Fase N` (inclui **Pós-implementação**); título do subgraph alinhado ao título da fase (pode ser versão curta). **Um nó por RF** com id estável `RF1`, `RF2`, … (mesmos ids dos bullets) e rótulo `RFn:` + trecho sucinto do requisito (sem RED/GREEN). **Sem** nós para **Dn**, **PCn** ou bullets só de `## Registros pós-conclusão do spec`. **Arestas**: refletir a coluna **Paralelo** da tabela TDD da mesma fase — `após #k` → aresta a partir do nó do RF da linha `#` = k dessa fase; `c/ #k` → compartilhar o mesmo predecessor que o RF da linha k (ou convergir explicitamente); `—` → encadear na ordem crescente de `#` dentro da fase quando não houver outra dependência explícita. **Entre fases**: ligar o(s) RF(s) sem sucessor obrigatório dentro da fase ao(s) RF(s) de entrada da fase seguinte (primeira linha da tabela, salvo dependências `após`/`c/` que já cruzem fases). Se a fase **Pós-implementação** ainda não tiver RFs, subgraph com um nó placeholder textual (ex.: _a preencher_) ou nota em nó único, sem inventar RFs. Manter o diagrama **sintaticamente válido** no GitHub/Cursor (evitar `"` não escapados em rótulos; preferir `["texto com aspas simples ' ok"]`).
+```
+Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
-### Cabeçalho de fase
+Ask the questions one at a time.
 
-Formato: `## Fase N — Título · <ícone> <concluídos>/<total>`
+If a question can be answered by exploring the codebase, explore the codebase instead.
+```
 
-- **`total`**: número de linhas na tabela TDD da fase.
-- **`concluídos`**: linhas com `✅` no início **tanto** da célula RED **quanto** da GREEN.
-- **Ícone**: `✅` concluída · `🔄` ativa · `⬜` não iniciada.
+## Estrutura do documento
 
-### Tabela TDD (obrigatória por fase)
+`CONTRACT`::generated_markdown MUST satisfy all bullets until `### Após cada gravação no spec`.
 
-Cinco colunas fixas:
+### Caminho e bloco inicial
 
-| # | Requisito | RED | GREEN | Paralelo |
-|---|-----------|-----|-------|:--------:|
+- `path`::`docs/specs/tdd/NNNN-AAAA-MM-DD-<slug>.md`
+- `NNNN`::4-digit zero-padded decimal sequence; new_file → `list docs/specs/tdd/` → `NNNN := max(existing)+1`; `NOT` renumber/reorder existing unless user explicit.
+- `AAAA-MM-DD`::doc date (agreed or request-day).
+- `<slug>`::lower+hyphen+no_spaces (pattern `^[a-z0-9]+(-[a-z0-9]+)*$`).
+- `header_after_H1`::bullets `Data`,`Agent`(model|`desconhecido`),`Arquivo`(full path = filename),`Status`∈{`em elaboração`,`requisitos completos`,`concluído`}; `concluído` só após confirmação explícita do usuário.
 
-- **`#`**: alinhado ao RF da lista da mesma fase.
-- **`Requisito`**: enunciado breve do RF — mesmo grau de concisão do bullet na lista.
-- **`RED`**: como reproduzir a falha esperada. Começa obrigatoriamente com marcador de progresso: `✅` concluída · `⬜` pendente · `🔄` em execução.
-- **`GREEN`**: critério observável de aceite. Mesmo marcador no início da célula.
-- **`Paralelo`**: `—` isolado · `c/ #N` paralelo com N · `após #N` só após GREEN de N ser `✅`.
+### Ordem seções (obrigatória)
 
-Não colocar definições RED/GREEN nos bullets RF. Cada célula RED deve ter correspondência clara com o GREEN da mesma linha.
+1. `#` title + header block  
+2. `## Decisões tomadas`  
+3. `## Fase 1`…`## Fase N` each: `### Requisitos` then TDD table; last phase **MUST** be `## … — Pós-implementação` same shape. `RF*` global monotonic.  
+4. `## Fluxograma de fases e RFs` **after** all phases (incl. Pós-implementação table).  
+5. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (4).
 
-### Cabeçalho do arquivo
+### Numeração
 
-Incluir no topo: nome da atividade, data, agent (modelo/sessão ou `desconhecido`), status (`em elaboração` → `requisitos completos` → `concluído` só após confirmação do usuário).
+- `RF`::`RF1`,`RF2`,… in `### Requisitos`.
+- `D`::`D1`,`D2`,… in `## Decisões tomadas`.
 
-### Caminho do arquivo
+### `## Decisões tomadas`
 
-`docs/specs/tdd/AAAA-MM-DD-nome-da-atividade.md`
+- `pos`::after metadata, before any `## Fase`.
+- `line`::1 `Dn` per line; minimal why; `NOT` dates required; `NOT` RED/GREEN text.
+- `edit`::append new `D`; mutate existing `D` only on explicit user fix OR unsustainable contradiction; placeholder allowed; `NOT` omit section.
 
-### Antes de gravar ou sobrescrever
+### Fases `## Fase N`
 
-1. Confirmar que **nenhuma** alteração fora do markdown do spec será gravada neste chat (`Write`/`StrReplace` só no arquivo do spec acordado).
-2. Revisar o texto quanto a bullets RF, bullets D, bullets PC, diagrama Mermaid em `## Fluxograma de fases e RFs`, tabela TDD, colunas RED/GREEN e cabeçalhos conforme este comando.
-3. Checar: RFs alinhados aos `#` da tabela; bullets e coluna Requisito sucintos; `## Decisões tomadas` presente (placeholder vazio ou enumeração D1, D2… contínua); `## Fluxograma de fases e RFs` presente com Mermaid coerente com fases, RFs e coluna **Paralelo**; marcadores iniciais RED/GREEN coerentes com `concluídos/total` nos cabeçalhos; fase pós-implementação presente; `## Registros pós-conclusão do spec` presente (placeholder vazio ou enumeração PC1, PC2… contínua) **após** a última tabela TDD.
-4. Pedir **confirmação explícita do caminho completo** antes de `Write`/`StrReplace`.
+- `shape`::`### Requisitos` (1 line/bullet, minimal scope, `NOT` RED/GREEN in RF bullets) → TDD table immediate next.
+- `Pós-implementação`::last `## Fase`; RF from impl/QA cycle; may start empty or scope RF; fill as found.
 
-### Modo edição
+### Cabeçalho fase
 
-- Preferir **novos RFs**, **novos Dn**, **novos PCn** e novas linhas em vez de alterar requisitos, decisões ou registros pós-conclusão existentes.
-- Editar requisito existente só em caso de duplicidade real ou contradição insustentável.
-- Achados pós-implementação: incrementar na fase **Pós-implementação**, não nas fases de entrega encerradas.
-- Bugs, fixes ou ajustes após o spec **`concluído`** (reabertura do doc): incrementar em **`## Registros pós-conclusão do spec`** (PCn), não em **Dn** nem na fase **Pós-implementação**, salvo se o usuário reabrir deliberadamente o ciclo de entrega e aí tratar como RF/TDD na fase adequada.
-- Após cada edição: resumo das mudanças + destaque dos RED/GREEN e **Dn** / **PCn** criados ou alterados.
-- No delta (novos RFs/Dn/PCn/linhas/trechos alterados), repetir a mesma revisão e o checklist de "Antes de gravar" no trecho e fase afetados; **se** RFs, fases ou **Paralelo** mudarem, atualizar também `## Fluxograma de fases e RFs` (PCn sozinhos não exigem mudança no diagrama).
+`## Fase N — Título · <icon> <done>/<total>` — `total`=TDD row count; `done`=rows where RED starts `✅` **and** GREEN starts `✅`; `icon`∈{`✅`,`🔄`,`⬜`} (done/active/not_started semantics unchanged).
 
-### Fases, autorização e commit
+### TDD table (every phase)
 
-Só avançar de fase — e orientar commit do spec — após **confirmação explícita** do usuário de que a fase está encerrada. Escopo do commit: apenas o markdown do spec.
+Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 
----
+- `#`↔RF index in same phase `### Requisitos`.
+- `Requisito` concision = RF bullet.
+- `RED`/`GREEN`::each starts `✅`|`⬜`|`🔄`.
+- `Paralelo`::`—`|`c/ #N`|`após #N` (latter only if line N GREEN `✅`).
+- `NOT` embed RED/GREEN prose in RF bullets; RED↔GREEN same row 1:1.
 
-## Fluxo resumido
+### `## Fluxograma de fases e RFs`
 
-0. Manter o escopo: nenhuma implementação de código neste chat (ver **Escopo deste chat**).
-1. Esclarecer lacunas (perguntas até não restar ambiguidade crítica).
-2. Propor fases e lista RF numerada, incluindo por último a fase **Pós-implementação**.
-3. Redigir o markdown: `## Decisões tomadas` (D1, D2… conforme acordos na conversa); `## Fluxograma de fases e RFs` (Mermaid com subgraphs por fase, nós RF e arestas conforme **Paralelo**); por fase (cabeçalho, `### Requisitos`, tabela TDD); por último `## Registros pós-conclusão do spec` (placeholder ou PCn), alinhado ao pedido e às fases/RFs acordados.
-4. Mostrar prévia do caminho `docs/specs/tdd/AAAA-MM-DD-nome-da-atividade.md`.
-5. Aplicar checklist de "Antes de gravar".
-6. Pedir confirmação antes de `Write`/`StrReplace` (apenas no arquivo do spec).
-7. Após gravar: resumo + RED/GREEN e decisões (**Dn**) / registros pós-conclusão (**PCn**) destacados; se o fluxograma mudou, mencionar brevemente.
-8. Próxima fase ou incremento: repetir a partir do passo 3; pedir confirmação de encerramento antes de commit.
+- `pos`::after last `## Fase`+table; before `## Registros…` **if** that section exists.
+- `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
+- `subgraph`::one per `## Fase` incl. Pós-implementação; title≈phase title (short OK).
+- `nodes`::one node per RF id=`RFk` stable==bullet ids; label=`RFk:`+short text `NOT` RED/GREEN; `NOT` nodes for `D*` or `PC*`.
+- `edges`::from `Paralelo` same phase: `após #k`→edge from RF node row k; `c/ #k`→share predecessor of row k or explicit converge; `—`→chain ascending `#` if no other dep.
+- `cross_phase`::RF without required in-phase successor → entry RF next phase (first table row unless `após`/`c/` already cross).
+- `empty_post_impl_RF`::subgraph placeholder node text-only; `NOT` invent RF.
+- `mermaid_ref`::https://mermaid.js.org/ ; valid `flowchart`; `NOT` raw `"` inside node labels→use `["…'…"]`.
 
----
+### `## Registros pós-conclusão do spec`
+
+- `create`::`IFF` first `PC1` OR explicit user create-with-content; `NOT` isolated empty placeholder section.
+- `pos`::after Fluxograma.
+- `use`::post-`concluído` reopen: bugs/fixes/spec maintenance/off-cycle RED/GREEN drift.
+- `lines`::`PC1`,`PC2`,…; optional prefix `AAAA-MM-DD —`; `NOT` TDD.
+- `edit`::append `PC`; mutate `PC` only explicit user fix or factual error.
+- `bootstrap`::on first `PC1` insert heading+line if missing.
+
+### Política incremental
+
+- default append::new `RF`,`D`,`PC` + new TDD rows; `NOT` rewrite history unless explicit/contradiction/DUP-RF rule.
+- mutate RF bullet::only dup real OR unsustainable contradiction.
+- impl-cycle findings::Pós-implementação `RF` only; `NOT` closed delivery phases.
+- post-`concluído` bugs::`PC*` in Registros; if section missing create at defined `pos` with `PC1`; `NOT` `D`/Pós-implementação for that unless user explicitly reopens delivery cycle→then RF/TDD in chosen phase.
+- graph_sync::any change to RF set / phases / `Paralelo`→update Fluxograma; `PC`-only edits→`NOT` require graph edit.
+
+### Checklist pré-`Write`/`StrReplace`
+
+1. scope::no non-spec repo writes; `INV`.
+2. path::explicit user confirm full path string.
+3. integrity::
+   - RF#↔table `#`; Requisito col concise.
+   - `## Decisões tomadas` exists (placeholder or continuous `D*`).
+   - all `## Fase*` before `## Fluxograma…`.
+   - Mermaid matches phases+RF+`Paralelo`.
+   - RED/GREEN leading icons consistent with phase header `<done>/<total>`.
+   - Pós-implementação phase+table present.
+   - Registros section present **IFF** `PC1` or explicit content rules above; then after Fluxograma.
+
+### Encerramento fase / commit spec
+
+`phase_close`::advance phase / advise spec commit **IFF** user explicit phase closed. `commit_scope`::spec `.md` only.
+
+### Após cada gravação no spec
+
+- emit summary; highlight changed RED/GREEN + touched `D`/`PC`; if graph touched note briefly.
+- on delta re-run checklist (3) on affected slices.
+
+## ALGO (dispatch)
+
+```
+IF modo==indefinido:
+  IF invocation_message matches assignment(1): modo:=mapped
+  ELSE: EMIT blockquote from assignment(2); STOP(no spec write)
+IF modo==grill AND NOT user_explicit_write_spec: RUN grill_EN; STOP(no spec write)
+IF modo==padrao OR (modo==grill AND user_explicit_write_spec):
+  build/edit per STRUCT; preview path; RUN Checklist pré-Write; Write/StrReplace AFTER path confirm
+ALWAYS INV
+AFTER successful spec Write: RUN Após cada gravação
+ON phase_close advisory: RUN Encerramento fase / commit spec
+```
 
 ## Template mínimo
 
-Fence externo com **quatro** backticks para permitir ` ```mermaid ` no conteúdo do spec.
+Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit.
 
 ````markdown
 # [Nome da atividade]
 
 - Data: AAAA-MM-DD
 - Agent: [modelo/sessão]
-- Arquivo: docs/specs/tdd/AAAA-MM-DD-nome-da-atividade.md
+- Arquivo: docs/specs/tdd/0001-AAAA-MM-DD-nome-do-documento.md
 - Status documento: em elaboração
 
 ## Decisões tomadas
 
-- _(nenhuma ainda — preencher com D1, D2… conforme acordos)_
-
-## Fluxograma de fases e RFs
-
-```mermaid
-flowchart TB
-  subgraph f1["Fase 1 — [título]"]
-    RF1["RF1: …"]
-    RF2["RF2: …"]
-  end
-  subgraph fPost["Fase N — Pós-implementação — …"]
-    RFPend["_(placeholder até existirem RFs nesta fase)_"]
-  end
-  RF1 --> RF2
-  RF2 --> RFPend
-```
+- _(nenhuma ainda — preencher com **D1**, **D2**, … conforme o pedido ou suposições registradas)_
 
 ## Fase 1 — [título] · ⬜ 0/2
 
@@ -159,7 +201,18 @@ flowchart TB
 | # | Requisito | RED | GREEN | Paralelo |
 |---|-----------|-----|-------|:--------:|
 
-## Registros pós-conclusão do spec
+## Fluxograma de fases e RFs
 
-- _(nenhum ainda — PC1, PC2… após status **concluído**: bugs, correções ou ajustes ao reabrir / manutenção do documento)_
+```mermaid
+flowchart TB
+  subgraph f1["Fase 1 — [título]"]
+    RF1["RF1: …"]
+    RF2["RF2: …"]
+  end
+  subgraph fPost["Fase N — Pós-implementação — …"]
+    RFPend["_(placeholder até existirem RFs nesta fase)_"]
+  end
+  RF1 --> RF2
+  RF2 --> RFPend
+```
 ````
