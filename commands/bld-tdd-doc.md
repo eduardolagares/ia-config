@@ -1,11 +1,17 @@
 ---
-VERSION: "1.3.0"
-description: "LLM:/bld-tdd-doc|NO_CODE|out=docs/specs/tdd/NNNN-AAAA-MM-DD-slug.md|STRUCT=frozen|modo?→pergunta|grill=EN_block|padrao=apply_struct"
+VERSION: "1.6.0"
+description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + UC flow + RF flow; cohesion edit rule."
 ---
 
 # `/bld-tdd-doc`
 
-`AUDIENCE`::LLM executor. `PRECEDENCE`::operational_constraints > conversational_defaults. `FROZEN`::semantics of `## Estrutura do documento` + `## Template mínimo` (output artifact); compress elsewhere only.
+## Maintainer note (for editors)
+
+- **Instructions** in this file stay **English-only** (prose, contracts, checklist, ALGO).
+- The **generated** TDD spec (`docs/specs/tdd/…`) stays **Portuguese (PT)** for substantive prose; keep frozen PT headings/columns/status tokens; the mode **blockquote** stays verbatim PT.
+- **Cohesion:** any edit must stay consistent across Document structure, Minimum template, checklist, incremental policy, ALGO, and `description`; align duplicated rules; bump **`VERSION`** per repo rules.
+
+`AUDIENCE`::LLM executor. `PRECEDENCE`::operational_constraints > conversational_defaults. `FROZEN`::semantics of `## Document structure` + `## Minimum template` (output artifact); compress elsewhere only.
 
 ## INV (invariants)
 
@@ -25,7 +31,7 @@ description: "LLM:/bld-tdd-doc|NO_CODE|out=docs/specs/tdd/NNNN-AAAA-MM-DD-slug.m
    `grill_tokens`::{grill-me,grill me,modo grill,entrevista,interview} OR (`sim` AND `grill` co-occur) → `modo:=grill`.  
    `padrao_tokens`::{padrão,padrao,default,sem grill,no grill} OR unambiguous `não` w.r.t. grill → `modo:=padrao`.  
    `THEN` skip forced question.
-2. `ELSE` first agent turn after invocation `MUST` include **verbatim** user-visible Markdown (preserve `**` bold markers):
+2. `ELSE` first agent turn after invocation `MUST` include **verbatim** user-visible Markdown (preserve `**` bold markers). **Language:** Portuguese (PT) copy for end users — emit exactly:
    > Quer iniciar o **modo grill-me** (entrevista alinhada, uma pergunta de cada vez, com recomendação tua em cada passo) ou o **modo padrão** (aplicar ao spec o que pedir, sem roteiro de entrevista)? Responda **grill-me** ou **padrão**.
    `OPT`::≤1 extra context line before/after; quoted block stays intact/readable.
 3. `WHILE` `modo==indefinido`::`NOT` spec `Write`/`StrReplace`; `NOT` default `modo`.
@@ -46,43 +52,57 @@ Ask the questions one at a time.
 If a question can be answered by exploring the codebase, explore the codebase instead.
 ```
 
-## Estrutura do documento
+## Document structure
 
-`CONTRACT`::generated_markdown MUST satisfy all bullets until `### Após cada gravação no spec`.
+`CONTRACT`::generated_markdown MUST satisfy all bullets until `### After each spec write`.
 
-### Caminho e bloco inicial
+**Language (generated spec):** All substantive prose in the written spec file is **Portuguese (PT)** — RF bullets, **D**/**UC**/**PC** lines, free-text table cells, diagram labels where they are user-facing narrative, and header metadata values (`Status documento`, etc.). Keep **section headings and table column headers** exactly as in this command’s template (PT literals). Mermaid **node ids** may stay ASCII (`UC1`, `RF1`, …); node **display labels** inside `["…"]` are **PT** when they carry meaning to readers.
+
+### Path and initial block
 
 - `path`::`docs/specs/tdd/NNNN-AAAA-MM-DD-<slug>.md`
 - `NNNN`::4-digit zero-padded decimal sequence; new_file → `list docs/specs/tdd/` → `NNNN := max(existing)+1`; `NOT` renumber/reorder existing unless user explicit.
 - `AAAA-MM-DD`::doc date (agreed or request-day).
 - `<slug>`::lower+hyphen+no_spaces (pattern `^[a-z0-9]+(-[a-z0-9]+)*$`).
-- `header_after_H1`::bullets `Data`,`Agent`(model|`desconhecido`),`Arquivo`(full path = filename),`Status`∈{`em elaboração`,`requisitos completos`,`concluído`}; `concluído` só após confirmação explícita do usuário.
+- `header_after_H1`::bullets `Data`,`Agent`(model|`desconhecido`),`Arquivo`(full path = filename),`Status`∈{`em elaboração`,`requisitos completos`,`concluído`}; `concluído` only after explicit user confirmation.
 
-### Ordem seções (obrigatória)
+### Mandatory section order
 
 1. `#` title + header block  
 2. `## Decisões tomadas`  
-3. `## Fase 1`…`## Fase N` each: `### Requisitos` then TDD table; last phase **MUST** be `## … — Pós-implementação` same shape. `RF*` global monotonic.  
-4. `## Fluxograma de fases e RFs` **after** all phases (incl. Pós-implementação table).  
-5. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (4).
+3. `## Casos de uso` — catalog **UC1**, **UC2**, … (dedicated list); **before** first `## Fase`.  
+4. `## Fase 1`…`## Fase N` each: `### Requisitos` then TDD table; last phase **MUST** be `## … — Pós-implementação` same shape. `RF*` globally monotonic.  
+5. `## Fluxograma de casos de uso` **after** all phases (incl. Pós-implementação table); **before** (6). Content = **runtime execution** (journey); `NOT` implementation phases nor delivery plan.  
+6. `## Fluxograma de fases e RFs` **after** (5).  
+7. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (6).
 
-### Numeração
+### Numbering
 
 - `RF`::`RF1`,`RF2`,… in `### Requisitos`.
 - `D`::`D1`,`D2`,… in `## Decisões tomadas`.
+- `UC`::`UC1`,`UC2`,… in `## Casos de uso`; monotonic; `NOT` renumber/reorder unless user explicit (same spirit as `D`/`RF`).
 
 ### `## Decisões tomadas`
 
-- `pos`::after metadata, before any `## Fase`.
-- `line`::1 `Dn` per line; minimal why; `NOT` dates required; `NOT` RED/GREEN text.
+- `pos`::after metadata, before `## Casos de uso`.
+- `line`::1 `Dn` per line; minimal why; `NOT` dates required; `NOT` RED/GREEN text; **MAY** cite **`UCk`** inline to tie a decision to execution.
 - `edit`::append new `D`; mutate existing `D` only on explicit user fix OR unsustainable contradiction; placeholder allowed; `NOT` omit section.
 
-### Fases `## Fase N`
+### `## Casos de uso`
 
-- `shape`::`### Requisitos` (1 line/bullet, minimal scope, `NOT` RED/GREEN in RF bullets) → TDD table immediate next.
+- `pos`::after `## Decisões tomadas`; **before** first `## Fase`.
+- `shape`::dedicated list: **one line per `UCk`** (bullet `-`); line head = identifier **`UCk`** in bold plus short title or execution-scope phrase; line body **MAY** cite **`RF*`** and/or **`D*`** (cross-refs).
+- `cite_from_uc`::each **UCk** **MAY** reference **`RFj`**, **`Dn`** that covers or frames the case (including RFs still to be detailed in phases if the spec evolves in passes).
+- `cite_to_uc`::**`RF*`** bullets in `### Requisitos` and **`D*`** lines in `## Decisões tomadas` **MAY** reference **`UCk`** where the requirement/decision anchors to a use case.
+- `consistency`::every **`UCk`** used as **node id** (e.g. `UC1`) in the `## Fluxograma de casos de uso` mermaid **MUST** exist as a **`UCk`** entry in this section; the list **MAY** include **`UCk`** with no homonymous node in the diagram (text-only / cross-ref only).
+- `edit`::append new **`UC`**; mutate **`UCk`** line only on explicit user fix or unsustainable contradiction; placeholder allowed; `NOT` omit section.
+
+### Phases `## Fase N`
+
+- `shape`::`### Requisitos` (1 line/bullet, minimal scope, `NOT` RED/GREEN in RF bullets) → TDD table immediately next; **`RF`** bullets **MAY** cite **`UCk`** inline.
 - `Pós-implementação`::last `## Fase`; RF from impl/QA cycle; may start empty or scope RF; fill as found.
 
-### Cabeçalho fase
+### Phase header
 
 `## Fase N — Título · <icon> <done>/<total>` — `total`=TDD row count; `done`=rows where RED starts `✅` **and** GREEN starts `✅`; `icon`∈{`✅`,`🔄`,`⬜`} (done/active/not_started semantics unchanged).
 
@@ -96,9 +116,19 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 - `Paralelo`::`—`|`c/ #N`|`após #N` (latter only if line N GREEN `✅`).
 - `NOT` embed RED/GREEN prose in RF bullets; RED↔GREEN same row 1:1.
 
+### `## Fluxograma de casos de uso`
+
+- `purpose`::**macro** view of **runtime execution** — what happens when someone (human, job, integration) **triggers and traverses** system behavior: journey, actors, business/event branches. Helps the reader before phase+`RF` detail. `NOT` a substitute for the phase/RF flowchart; `NOT` implementation plan, delivery milestones, dev order, nor “how we build”.
+- `pos`::after last `## Fase`+table; **before** `## Fluxograma de fases e RFs`.
+- `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
+- `nodes`::when node id is **`UCk`**, **MUST** match **`UCk`** in `## Casos de uso`; other nodes (e.g. start/end, join) **MAY** use free ids with short labels; labels describe **runtime-executable** behavior (actor+action, event+trigger, short verb); `NOT` `RF*` ids; `NOT` `## Fase N` titles as graph spine; `NOT` `subgraph` per implementation phase nor nodes that only rename deliverables; `NOT` RED/GREEN columns.
+- `edges`::order/branches of **execution flow** (success/error/alternatives when useful); `NOT` derived from `Paralelo`, TDD table, nor document phase order.
+- `alignment`::**coherent** with spec scope and **`UCk`** in `## Casos de uso`; no need to map 1:1 each `RF` (that belongs only in the phase/RF flowchart). Nodes whose id is **`UCk`** **MUST** mirror the same **`UCk`** from the list (same index).
+- `mermaid_ref`::https://mermaid.js.org/ ; valid `flowchart`; `NOT` raw `"` inside node labels→use `["…'…"]`.
+
 ### `## Fluxograma de fases e RFs`
 
-- `pos`::after last `## Fase`+table; before `## Registros…` **if** that section exists.
+- `pos`::after `## Fluxograma de casos de uso`; before `## Registros…` **if** that section exists.
 - `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
 - `subgraph`::one per `## Fase` incl. Pós-implementação; title≈phase title (short OK).
 - `nodes`::one node per RF id=`RFk` stable==bullet ids; label=`RFk:`+short text `NOT` RED/GREEN; `NOT` nodes for `D*` or `PC*`.
@@ -110,40 +140,43 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 ### `## Registros pós-conclusão do spec`
 
 - `create`::`IFF` first `PC1` OR explicit user create-with-content; `NOT` isolated empty placeholder section.
-- `pos`::after Fluxograma.
+- `pos`::after `## Fluxograma de fases e RFs` (i.e. after both flowchart sections).
 - `use`::post-`concluído` reopen: bugs/fixes/spec maintenance/off-cycle RED/GREEN drift.
 - `lines`::`PC1`,`PC2`,…; optional prefix `AAAA-MM-DD —`; `NOT` TDD.
 - `edit`::append `PC`; mutate `PC` only explicit user fix or factual error.
 - `bootstrap`::on first `PC1` insert heading+line if missing.
 
-### Política incremental
+### Incremental policy
 
-- default append::new `RF`,`D`,`PC` + new TDD rows; `NOT` rewrite history unless explicit/contradiction/DUP-RF rule.
+- default append::new `RF`,`D`,`PC`,`UC` + new TDD rows; `NOT` rewrite history unless explicit/contradiction/DUP-RF rule.
 - mutate RF bullet::only dup real OR unsustainable contradiction.
 - impl-cycle findings::Pós-implementação `RF` only; `NOT` closed delivery phases.
 - post-`concluído` bugs::`PC*` in Registros; if section missing create at defined `pos` with `PC1`; `NOT` `D`/Pós-implementação for that unless user explicitly reopens delivery cycle→then RF/TDD in chosen phase.
-- graph_sync::any change to RF set / phases / `Paralelo`→update Fluxograma; `PC`-only edits→`NOT` require graph edit.
+- graph_sync::any change to RF set / phases / `Paralelo`→update `## Fluxograma de fases e RFs`; `PC`-only edits→`NOT` require that graph edit.
+- uc_flow_sync::material change to **runtime execution** (actors, branches, macro behavior order, or **`UCk`** catalog)→update `## Fluxograma de casos de uso` and keep **`## Casos de uso`** aligned (stable **`UCk`** ids). Reordering phases/`RF`/delivery **without** changing observable runtime flow→`NOT` mandatory to touch UC charts (`graph_sync` enough).
 
-### Checklist pré-`Write`/`StrReplace`
+### Pre-`Write`/`StrReplace` checklist
 
 1. scope::no non-spec repo writes; `INV`.
 2. path::explicit user confirm full path string.
 3. integrity::
    - RF#↔table `#`; Requisito col concise.
    - `## Decisões tomadas` exists (placeholder or continuous `D*`).
-   - all `## Fase*` before `## Fluxograma…`.
-   - Mermaid matches phases+RF+`Paralelo`.
+   - `## Casos de uso` present; **`UC1`…`UCk`** contiguous in list; every **`UCk`** node id in the following mermaid has a matching **`UCk`** line in the list.
+   - all `## Fase*` after `## Casos de uso`; before `## Fluxograma de casos de uso`.
+   - `## Fluxograma de casos de uso` present; single Mermaid; no `RF*` nodes; reflects **execution**/journey; `NOT` implementation phases nor `subgraph` mirroring `## Fase*`; macro flow matches scope.
+   - `## Fluxograma de fases e RFs` immediately after use-case flowchart; Mermaid matches phases+RF+`Paralelo`.
    - RED/GREEN leading icons consistent with phase header `<done>/<total>`.
    - Pós-implementação phase+table present.
-   - Registros section present **IFF** `PC1` or explicit content rules above; then after Fluxograma.
+   - Registros section present **IFF** `PC1` or explicit content rules above; then after `## Fluxograma de fases e RFs`.
 
-### Encerramento fase / commit spec
+### Phase close / spec commit
 
 `phase_close`::advance phase / advise spec commit **IFF** user explicit phase closed. `commit_scope`::spec `.md` only.
 
-### Após cada gravação no spec
+### After each spec write
 
-- emit summary; highlight changed RED/GREEN + touched `D`/`PC`; if graph touched note briefly.
+- emit summary; highlight changed RED/GREEN + touched `D`/`PC`/`UC`; if use-case or phase/RF flowchart touched, note which briefly.
 - on delta re-run checklist (3) on affected slices.
 
 ## ALGO (dispatch)
@@ -154,15 +187,15 @@ IF modo==indefinido:
   ELSE: EMIT blockquote from assignment(2); STOP(no spec write)
 IF modo==grill AND NOT user_explicit_write_spec: RUN grill_EN; STOP(no spec write)
 IF modo==padrao OR (modo==grill AND user_explicit_write_spec):
-  build/edit per STRUCT; preview path; RUN Checklist pré-Write; Write/StrReplace AFTER path confirm
+  build/edit per STRUCT; preview path; RUN pre-Write checklist; Write/StrReplace AFTER path confirm
 ALWAYS INV
-AFTER successful spec Write: RUN Após cada gravação
-ON phase_close advisory: RUN Encerramento fase / commit spec
+AFTER successful spec Write: RUN After each spec write
+ON phase_close advisory: RUN Phase close / spec commit
 ```
 
-## Template mínimo
+## Minimum template
 
-Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit.
+Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit. In **Fluxograma de casos de uso**, mermaid describes **runtime execution** only; `NOT` duplicate per-phase structure of the second flowchart; **`UCk`** node ids **MUST** match **`UCk`** in `## Casos de uso`. **Body text inside the generated file = PT** (placeholders below show shape).
 
 ````markdown
 # [Nome da atividade]
@@ -176,11 +209,16 @@ Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Regist
 
 - _(nenhuma ainda — preencher com **D1**, **D2**, … conforme o pedido ou suposições registradas)_
 
+## Casos de uso
+
+- **UC1**: … _(pode citar **D1**, **RF1**, …)_
+- **UC2**: …
+
 ## Fase 1 — [título] · ⬜ 0/2
 
 ### Requisitos
 
-- RF1: …
+- RF1: … _(pode citar **UC1** …)_
 - RF2: …
 
 ### TDD (Fase 1)
@@ -200,6 +238,15 @@ Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Regist
 
 | # | Requisito | RED | GREEN | Paralelo |
 |---|-----------|-----|-------|:--------:|
+
+## Fluxograma de casos de uso
+
+```mermaid
+flowchart TB
+  Start(["Início jornada"]) --> UC1["UC1 — …"]
+  UC1 --> UC2["UC2 — …"]
+  UC2 --> End(["Fim / resultado"])
+```
 
 ## Fluxograma de fases e RFs
 

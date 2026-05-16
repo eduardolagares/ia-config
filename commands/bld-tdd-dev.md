@@ -1,5 +1,5 @@
 ---
-VERSION: "1.2.0"
+VERSION: "1.2.2"
 description: "Agent protocol EN; deliverable spec PT; TDD RED/GREEN; Per RF / Per phase; spec↔bld-tdd-doc; mandatory mode each activation; resume→first message mode-only; menu 1–7 at milestones; commit only 1|5; RED/GREEN parallelism in Per phase under spec hierarchy; post–RED package sets RED column in spec; skills tdd-red-guard, tdd-test-naming, tdd-minitest-red; no tester-rails."
 ---
 
@@ -8,7 +8,7 @@ description: "Agent protocol EN; deliverable spec PT; TDD RED/GREEN; Per RF / Pe
 ## Language split (mandatory)
 
 - **This command / agent behavior:** instructions, reasoning, procedures, and milestone prompts **in English** unless the user explicitly asks otherwise for chat.
-- **Deliverable spec** (`docs/specs/tdd/…` active file): **Portuguese (`PT`)** for all substantive prose the template allows you to author — RF bullets, **D**/**PC** lines, phase narrative/checklists, register notes, and any free-text cells — **without** translating stable template headings (`## Decisões tomadas`, `## Fase`, etc.) or breaking **bld-tdd-doc** structure. Do **not** switch the spec body to English unless the user **explicitly** requests it.
+- **Deliverable spec** (`docs/specs/tdd/…` active file): **Portuguese (`PT`)** for all substantive prose the template allows you to author — RF bullets, **D**/**PC**/**UC** lines, phase narrative/checklists, register notes, and any free-text cells — **without** translating stable template headings (`## Decisões tomadas`, `## Fase`, etc.) or breaking **bld-tdd-doc** structure. Do **not** switch the spec body to English unless the user **explicitly** requests it.
 - **Tests:** names and observable behavior wording **PT** per `tdd-test-naming.md`; code/comments follow project norms.
 
 ## Preconditions
@@ -25,7 +25,7 @@ description: "Agent protocol EN; deliverable spec PT; TDD RED/GREEN; Per RF / Pe
 
 - `MUST` persist to active spec any session change affecting understanding: decisions, added/reframed requirements, rules/acceptance criteria, discoveries elevated to requirement, equivalents — **in Portuguese** per **Language split**.
 - `FORBIDDEN`: exclusive chat-only record for above; spec markdown = traceable contract.
-- Spec edits `MUST` follow `bld-tdd-doc` rules: section order (decisions → phases → flowchart → `## Registros` **only** if **PC1+**); **RF1**, **RF2**, … aligned to phase TDD table; `## Decisões tomadas` with **D1**, **D2**, …; prefer **append** new RF/D/PC + new table rows vs rewriting history unless explicit fix or unsustainable contradiction; **Pós-implementação** phase for implementation-cycle findings; `## Registros pós-conclusão do spec` (**PC1**, **PC2**, …) **only** for maintenance after spec `concluído`; phase headers: checklist + RED/GREEN markers coherent with `concluídos/total`; before save: re-check `bld-tdd-doc` checklist on touched regions.
+- Spec edits `MUST` follow `bld-tdd-doc` rules: section order (decisions → `## Casos de uso` (**UC1+** catalog) → phases → `## Fluxograma de casos de uso` → `## Fluxograma de fases e RFs` → `## Registros` **only** if **PC1+**); **RF1**, **RF2**, … aligned to phase TDD table; `## Decisões tomadas` with **D1**, **D2**, …; prefer **append** new RF/D/PC/UC + new table rows vs rewriting history unless explicit fix or unsustainable contradiction; **Pós-implementação** phase for implementation-cycle findings; `## Registros pós-conclusão do spec` (**PC1**, **PC2**, …) **only** for maintenance after spec `concluído`; phase headers: checklist + RED/GREEN markers coherent with `concluídos/total`; before save: re-check `bld-tdd-doc` checklist on touched regions.
 - Routing: process/product decision → **D**; new testable behavior → **RF** + TDD table row + RED/GREEN alignment; QA/manual finding same delivery cycle → **Pós-implementação**; after spec **concluído**, maintenance/bug outside original cycle → **PC** (create `## Registros` + **PC1** if missing).
 - Spec **text-only** changes may be emitted in chat; all other command rules (incl. menu 1–7, commit gates) still apply.
 
