@@ -1,6 +1,6 @@
 ---
-VERSION: "1.0.4"
-description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severidade + 4 lacunas teste/diff; sem cobertura."
+VERSION: "1.0.5"
+description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severidade + 4 lacunas teste/diff; cruzamento diff↔spec TDD se existir; sem cobertura."
 ---
 
 # `/bld-code-review`
@@ -26,6 +26,15 @@ description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severid
 3. Convenções observáveis no código.
 
 - Evidência fraca para conclusão forte → no relatório uma linha com **suposição** ou **não verificável** (pt-BR).
+
+## Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade
+
+- **Quando:** existir no âmbito da análise/revisão um ficheiro `docs/specs/tdd/*.md` aplicável à atividade (ou o utilizador o tiver indicado).
+- **Obrigatório:** ler a spec; extrair escopo explícito (ficheiros/módulos mencionados, RF/fases, exclusões).
+- **Cruzamento:** cada path alterado no diff deve caber no escopo da spec. Paths fora desse conjunto (ou claramente não cobertos por RF/entregáveis da spec) → **sempre** **1 - Crítico** (`1.M`), não diluir em **2**/**3**.
+- **Citação (bloco 1):** path da spec + trecho curto ou secção onde o escopo está definido (equivale a “regra” violada: contrato de escopo da atividade).
+- **Hipótese de falha:** mistura de mudanças não previstas com risco de regressão, review parcial e rastreio de requisitos partido.
+- **Se a spec for ambígua** quanto a ficheiros → uma linha **suposição**/**não verificável** sobre o mapeamento; só elevar a **Crítico** quando o fora de escopo for inequívoco face ao texto.
 
 ## Citação de regras
 
@@ -81,7 +90,7 @@ description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severid
 
 ## Severidade (classificar aqui; texto do item ao utilizador em pt-BR sob o título numerado)
 
-- **Crítico:** regra de negócio errada; fluxo partido; dados inconsistentes; corrupção de estado; exposição de alto risco (auth, pagamentos, PII); regressão óbvia vs comportamento esperado.
+- **Crítico:** regra de negócio errada; fluxo partido; dados inconsistentes; corrupção de estado; exposição de alto risco (auth, pagamentos, PII); regressão óbvia vs comportamento esperado; **diff com ficheiros fora do escopo declarado** numa spec `docs/specs/tdd/*.md` quando essa spec integra a revisão (ver secção **Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade**).
 - **Grave:** violação clara de regra do projecto; contrato API/schema partido; N+1 ou bug de performance real; tratamento de erros em falta → estado inválido utilizador/sistema; testes que mentem sobre o comportamento.
 - **Outros:** sugestões com valor claro (clareza, consistência, dívida técnica pequena com ROI explícito).
 
