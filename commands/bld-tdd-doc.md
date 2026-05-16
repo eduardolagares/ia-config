@@ -1,6 +1,6 @@
 ---
-VERSION: "1.6.0"
-description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + UC flow + RF flow; cohesion edit rule."
+VERSION: "2.0.0"
+description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + use-case flowchart only; cohesion edit rule."
 ---
 
 # `/bld-tdd-doc`
@@ -72,9 +72,8 @@ If a question can be answered by exploring the codebase, explore the codebase in
 2. `## Decisões tomadas`  
 3. `## Casos de uso` — catalog **UC1**, **UC2**, … (dedicated list); **before** first `## Fase`.  
 4. `## Fase 1`…`## Fase N` each: `### Requisitos` then TDD table; last phase **MUST** be `## … — Pós-implementação` same shape. `RF*` globally monotonic.  
-5. `## Fluxograma de casos de uso` **after** all phases (incl. Pós-implementação table); **before** (6). Content = **runtime execution** (journey); `NOT` implementation phases nor delivery plan.  
-6. `## Fluxograma de fases e RFs` **after** (5).  
-7. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (6).
+5. `## Fluxograma de casos de uso` **after** all phases (incl. Pós-implementação table); **before** `## Registros pós-conclusão do spec` **if** that section exists. Content = **runtime execution** (journey); `NOT` implementation phases nor delivery plan.  
+6. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (5).
 
 ### Numbering
 
@@ -118,29 +117,18 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 
 ### `## Fluxograma de casos de uso`
 
-- `purpose`::**macro** view of **runtime execution** — what happens when someone (human, job, integration) **triggers and traverses** system behavior: journey, actors, business/event branches. Helps the reader before phase+`RF` detail. `NOT` a substitute for the phase/RF flowchart; `NOT` implementation plan, delivery milestones, dev order, nor “how we build”.
-- `pos`::after last `## Fase`+table; **before** `## Fluxograma de fases e RFs`.
+- `purpose`::**macro** view of **runtime execution** — what happens when someone (human, job, integration) **triggers and traverses** system behavior: journey, actors, business/event branches. Helps the reader before phase+`RF` detail. `NOT` implementation plan, delivery milestones, dev order, nor “how we build”.
+- `pos`::after last `## Fase`+table; **before** `## Registros pós-conclusão do spec` **if** that section exists.
 - `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
 - `nodes`::when node id is **`UCk`**, **MUST** match **`UCk`** in `## Casos de uso`; other nodes (e.g. start/end, join) **MAY** use free ids with short labels; labels describe **runtime-executable** behavior (actor+action, event+trigger, short verb); `NOT` `RF*` ids; `NOT` `## Fase N` titles as graph spine; `NOT` `subgraph` per implementation phase nor nodes that only rename deliverables; `NOT` RED/GREEN columns.
 - `edges`::order/branches of **execution flow** (success/error/alternatives when useful); `NOT` derived from `Paralelo`, TDD table, nor document phase order.
-- `alignment`::**coherent** with spec scope and **`UCk`** in `## Casos de uso`; no need to map 1:1 each `RF` (that belongs only in the phase/RF flowchart). Nodes whose id is **`UCk`** **MUST** mirror the same **`UCk`** from the list (same index).
-- `mermaid_ref`::https://mermaid.js.org/ ; valid `flowchart`; `NOT` raw `"` inside node labels→use `["…'…"]`.
-
-### `## Fluxograma de fases e RFs`
-
-- `pos`::after `## Fluxograma de casos de uso`; before `## Registros…` **if** that section exists.
-- `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
-- `subgraph`::one per `## Fase` incl. Pós-implementação; title≈phase title (short OK).
-- `nodes`::one node per RF id=`RFk` stable==bullet ids; label=`RFk:`+short text `NOT` RED/GREEN; `NOT` nodes for `D*` or `PC*`.
-- `edges`::from `Paralelo` same phase: `após #k`→edge from RF node row k; `c/ #k`→share predecessor of row k or explicit converge; `—`→chain ascending `#` if no other dep.
-- `cross_phase`::RF without required in-phase successor → entry RF next phase (first table row unless `após`/`c/` already cross).
-- `empty_post_impl_RF`::subgraph placeholder node text-only; `NOT` invent RF.
+- `alignment`::**coherent** with spec scope and **`UCk`** in `## Casos de uso`; no need to map 1:1 each `RF` (RFs live in phases + TDD tables). Nodes whose id is **`UCk`** **MUST** mirror the same **`UCk`** from the list (same index).
 - `mermaid_ref`::https://mermaid.js.org/ ; valid `flowchart`; `NOT` raw `"` inside node labels→use `["…'…"]`.
 
 ### `## Registros pós-conclusão do spec`
 
 - `create`::`IFF` first `PC1` OR explicit user create-with-content; `NOT` isolated empty placeholder section.
-- `pos`::after `## Fluxograma de fases e RFs` (i.e. after both flowchart sections).
+- `pos`::after `## Fluxograma de casos de uso`.
 - `use`::post-`concluído` reopen: bugs/fixes/spec maintenance/off-cycle RED/GREEN drift.
 - `lines`::`PC1`,`PC2`,…; optional prefix `AAAA-MM-DD —`; `NOT` TDD.
 - `edit`::append `PC`; mutate `PC` only explicit user fix or factual error.
@@ -152,8 +140,7 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 - mutate RF bullet::only dup real OR unsustainable contradiction.
 - impl-cycle findings::Pós-implementação `RF` only; `NOT` closed delivery phases.
 - post-`concluído` bugs::`PC*` in Registros; if section missing create at defined `pos` with `PC1`; `NOT` `D`/Pós-implementação for that unless user explicitly reopens delivery cycle→then RF/TDD in chosen phase.
-- graph_sync::any change to RF set / phases / `Paralelo`→update `## Fluxograma de fases e RFs`; `PC`-only edits→`NOT` require that graph edit.
-- uc_flow_sync::material change to **runtime execution** (actors, branches, macro behavior order, or **`UCk`** catalog)→update `## Fluxograma de casos de uso` and keep **`## Casos de uso`** aligned (stable **`UCk`** ids). Reordering phases/`RF`/delivery **without** changing observable runtime flow→`NOT` mandatory to touch UC charts (`graph_sync` enough).
+- uc_flow_sync::material change to **runtime execution** (actors, branches, macro behavior order, or **`UCk`** catalog)→update `## Fluxograma de casos de uso` and keep **`## Casos de uso`** aligned (stable **`UCk`** ids). Reordering phases/`RF`/delivery **without** changing observable runtime flow→`NOT` mandatory to touch the use-case flowchart.
 
 ### Pre-`Write`/`StrReplace` checklist
 
@@ -165,10 +152,9 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
    - `## Casos de uso` present; **`UC1`…`UCk`** contiguous in list; every **`UCk`** node id in the following mermaid has a matching **`UCk`** line in the list.
    - all `## Fase*` after `## Casos de uso`; before `## Fluxograma de casos de uso`.
    - `## Fluxograma de casos de uso` present; single Mermaid; no `RF*` nodes; reflects **execution**/journey; `NOT` implementation phases nor `subgraph` mirroring `## Fase*`; macro flow matches scope.
-   - `## Fluxograma de fases e RFs` immediately after use-case flowchart; Mermaid matches phases+RF+`Paralelo`.
    - RED/GREEN leading icons consistent with phase header `<done>/<total>`.
    - Pós-implementação phase+table present.
-   - Registros section present **IFF** `PC1` or explicit content rules above; then after `## Fluxograma de fases e RFs`.
+   - Registros section present **IFF** `PC1` or explicit content rules above; then after `## Fluxograma de casos de uso`.
 
 ### Phase close / spec commit
 
@@ -176,7 +162,7 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 
 ### After each spec write
 
-- emit summary; highlight changed RED/GREEN + touched `D`/`PC`/`UC`; if use-case or phase/RF flowchart touched, note which briefly.
+- emit summary; highlight changed RED/GREEN + touched `D`/`PC`/`UC`; if use-case flowchart touched, note briefly.
 - on delta re-run checklist (3) on affected slices.
 
 ## ALGO (dispatch)
@@ -195,7 +181,7 @@ ON phase_close advisory: RUN Phase close / spec commit
 
 ## Minimum template
 
-Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit. In **Fluxograma de casos de uso**, mermaid describes **runtime execution** only; `NOT` duplicate per-phase structure of the second flowchart; **`UCk`** node ids **MUST** match **`UCk`** in `## Casos de uso`. **Body text inside the generated file = PT** (placeholders below show shape).
+Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit. In **Fluxograma de casos de uso**, mermaid describes **runtime execution** only; `NOT` a per-phase RF delivery DAG; **`UCk`** node ids **MUST** match **`UCk`** in `## Casos de uso`. **Body text inside the generated file = PT** (placeholders below show shape).
 
 ````markdown
 # [Nome da atividade]
@@ -246,20 +232,5 @@ flowchart TB
   Start(["Início jornada"]) --> UC1["UC1 — …"]
   UC1 --> UC2["UC2 — …"]
   UC2 --> End(["Fim / resultado"])
-```
-
-## Fluxograma de fases e RFs
-
-```mermaid
-flowchart TB
-  subgraph f1["Fase 1 — [título]"]
-    RF1["RF1: …"]
-    RF2["RF2: …"]
-  end
-  subgraph fPost["Fase N — Pós-implementação — …"]
-    RFPend["_(placeholder até existirem RFs nesta fase)_"]
-  end
-  RF1 --> RF2
-  RF2 --> RFPend
 ```
 ````

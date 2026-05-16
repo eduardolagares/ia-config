@@ -1,5 +1,5 @@
 ---
-VERSION: "1.2.2"
+VERSION: "1.2.3"
 description: "Agent protocol EN; deliverable spec PT; TDD RED/GREEN; Per RF / Per phase; spec↔bld-tdd-doc; mandatory mode each activation; resume→first message mode-only; menu 1–7 at milestones; commit only 1|5; RED/GREEN parallelism in Per phase under spec hierarchy; post–RED package sets RED column in spec; skills tdd-red-guard, tdd-test-naming, tdd-minitest-red; no tester-rails."
 ---
 
@@ -25,7 +25,7 @@ description: "Agent protocol EN; deliverable spec PT; TDD RED/GREEN; Per RF / Pe
 
 - `MUST` persist to active spec any session change affecting understanding: decisions, added/reframed requirements, rules/acceptance criteria, discoveries elevated to requirement, equivalents — **in Portuguese** per **Language split**.
 - `FORBIDDEN`: exclusive chat-only record for above; spec markdown = traceable contract.
-- Spec edits `MUST` follow `bld-tdd-doc` rules: section order (decisions → `## Casos de uso` (**UC1+** catalog) → phases → `## Fluxograma de casos de uso` → `## Fluxograma de fases e RFs` → `## Registros` **only** if **PC1+**); **RF1**, **RF2**, … aligned to phase TDD table; `## Decisões tomadas` with **D1**, **D2**, …; prefer **append** new RF/D/PC/UC + new table rows vs rewriting history unless explicit fix or unsustainable contradiction; **Pós-implementação** phase for implementation-cycle findings; `## Registros pós-conclusão do spec` (**PC1**, **PC2**, …) **only** for maintenance after spec `concluído`; phase headers: checklist + RED/GREEN markers coherent with `concluídos/total`; before save: re-check `bld-tdd-doc` checklist on touched regions.
+- Spec edits `MUST` follow `bld-tdd-doc` rules: section order (decisions → `## Casos de uso` (**UC1+** catalog) → phases → `## Fluxograma de casos de uso` → `## Registros` **only** if **PC1+**); **RF1**, **RF2**, … aligned to phase TDD table; `## Decisões tomadas` with **D1**, **D2**, …; prefer **append** new RF/D/PC/UC + new table rows vs rewriting history unless explicit fix or unsustainable contradiction; **Pós-implementação** phase for implementation-cycle findings; `## Registros pós-conclusão do spec` (**PC1**, **PC2**, …) **only** for maintenance after spec `concluído`; phase headers: checklist + RED/GREEN markers coherent with `concluídos/total`; before save: re-check `bld-tdd-doc` checklist on touched regions.
 - Routing: process/product decision → **D**; new testable behavior → **RF** + TDD table row + RED/GREEN alignment; QA/manual finding same delivery cycle → **Pós-implementação**; after spec **concluído**, maintenance/bug outside original cycle → **PC** (create `## Registros` + **PC1** if missing).
 - Spec **text-only** changes may be emitted in chat; all other command rules (incl. menu 1–7, commit gates) still apply.
 
@@ -74,11 +74,11 @@ In **Per phase**, each **wave** may contain **parallel batches** of rows provide
 
 #### Parallelism and hierarchy (RED and GREEN)
 
-- **Hierarchy source:** order of `## Fase` sections; within the phase, TDD table (**`Paralelo`** column: `—`, `c/ #N`, `após #N`) and **`## Fluxograma de fases e RFs`** to resolve ambiguity.
+- **Hierarchy source:** order of `## Fase` sections; within the phase, TDD table (**`Paralelo`** column: `—`, `c/ #N`, `após #N`); cross-phase only when the spec’s **`Paralelo`** / table row references explicitly tie a row to another phase’s `#`.
 - **Rules:** `MAY` run **multiple rows in parallel** (e.g. concurrent edits and test commands, subagents) **iff** no row in the batch starts before dependencies from the doc for that step are satisfied.
-  - **Write RED / Confirm RED wave:** row **R** joins a parallel batch only after **every** predecessor **P** required by the hierarchy has finished **Confirm RED** in this package. E.g. `após #N` ⇒ **N** before **R** (unless cross-phase flowchart says otherwise). `c/ #N` ⇒ coordinate with **N** after shared predecessors are satisfied. `—` ⇒ ascending chain by `#` per **bld-tdd-doc** unless the flowchart contradicts.
+  - **Write RED / Confirm RED wave:** row **R** joins a parallel batch only after **every** predecessor **P** required by the hierarchy has finished **Confirm RED** in this package. E.g. `após #N` ⇒ **N** before **R** (including cross-phase when **`Paralelo`** references a row in another phase). `c/ #N` ⇒ coordinate with **N** after shared predecessors are satisfied. `—` ⇒ ascending chain by `#` per **bld-tdd-doc** within the phase unless **`Paralelo`** states otherwise.
   - **Write GREEN / Confirm GREEN wave:** same rule with **Confirm GREEN** as the gating predecessor wherever hierarchy between rows requires order (including when `após #N` in the spec binds RF order).
-- **RF text:** if the requirement clearly depends on behavior that exists only after another row’s GREEN, **do not** parallelize beyond what that dependency requires (spec graph + test common sense).
+- **RF text:** if the requirement clearly depends on behavior that exists only after another row’s GREEN, **do not** parallelize beyond what that dependency requires (`Paralelo`/phase order + test common sense).
 
 **RED package** (whole package: same RED write rules as §2 — **zero** production; only minimal test-enabling edits):
 
