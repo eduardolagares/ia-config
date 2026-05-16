@@ -1,6 +1,6 @@
 ---
-VERSION: "2.0.0"
-description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + use-case flowchart only; cohesion edit rule."
+VERSION: "2.0.1"
+description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + macro UC flowchart (subgraph/UC, 3–6 linear steps); cohesion edit rule."
 ---
 
 # `/bld-tdd-doc`
@@ -72,7 +72,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 2. `## Decisões tomadas`  
 3. `## Casos de uso` — catalog **UC1**, **UC2**, … (dedicated list); **before** first `## Fase`.  
 4. `## Fase 1`…`## Fase N` each: `### Requisitos` then TDD table; last phase **MUST** be `## … — Pós-implementação` same shape. `RF*` globally monotonic.  
-5. `## Fluxograma de casos de uso` **after** all phases (incl. Pós-implementação table); **before** `## Registros pós-conclusão do spec` **if** that section exists. Content = **runtime execution** (journey); `NOT` implementation phases nor delivery plan.  
+5. `## Fluxograma de casos de uso` **after** all phases (incl. Pós-implementação table); **before** `## Registros pós-conclusão do spec` **if** that section exists. Content = **macro** runtime journey only (`subgraph` per **`UCk`**, 3–6 linear steps each); `NOT` implementation phases, delivery plan, decisions, nor technical detail (those live in **`D*`** / **`RF*`**).  
 6. `## Registros pós-conclusão do spec` **IFF** `PC1` exists OR user explicit open-with-content; `NOT` empty-only/placeholder-only initial; `NOT` TDD there; **after** (5).
 
 ### Numbering
@@ -93,7 +93,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 - `shape`::dedicated list: **one line per `UCk`** (bullet `-`); line head = identifier **`UCk`** in bold plus short title or execution-scope phrase; line body **MAY** cite **`RF*`** and/or **`D*`** (cross-refs).
 - `cite_from_uc`::each **UCk** **MAY** reference **`RFj`**, **`Dn`** that covers or frames the case (including RFs still to be detailed in phases if the spec evolves in passes).
 - `cite_to_uc`::**`RF*`** bullets in `### Requisitos` and **`D*`** lines in `## Decisões tomadas` **MAY** reference **`UCk`** where the requirement/decision anchors to a use case.
-- `consistency`::every **`UCk`** used as **node id** (e.g. `UC1`) in the `## Fluxograma de casos de uso` mermaid **MUST** exist as a **`UCk`** entry in this section; the list **MAY** include **`UCk`** with no homonymous node in the diagram (text-only / cross-ref only).
+- `consistency`::every **`subgraph`** titled/id’d as **`UCk`** in `## Fluxograma de casos de uso` **MUST** match a **`UCk`** line here; the list **MAY** include **`UCk`** with no subgraph (text-only / cross-ref only).
 - `edit`::append new **`UC`**; mutate **`UCk`** line only on explicit user fix or unsustainable contradiction; placeholder allowed; `NOT` omit section.
 
 ### Phases `## Fase N`
@@ -117,12 +117,14 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 
 ### `## Fluxograma de casos de uso`
 
-- `purpose`::**macro** view of **runtime execution** — what happens when someone (human, job, integration) **triggers and traverses** system behavior: journey, actors, business/event branches. Helps the reader before phase+`RF` detail. `NOT` implementation plan, delivery milestones, dev order, nor “how we build”.
+- `purpose`::**macro** runtime journey only — who does what, in what coarse order, before **`D*`** / phase **`RF*`** detail. `NOT` implementation plan, delivery milestones, dev order, “how we build”, APIs, schemas, jobs, error matrices, nor policy/branching logic (those belong in **`## Decisões tomadas`** and **`RF*`** / TDD tables).
 - `pos`::after last `## Fase`+table; **before** `## Registros pós-conclusão do spec` **if** that section exists.
 - `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
-- `nodes`::when node id is **`UCk`**, **MUST** match **`UCk`** in `## Casos de uso`; other nodes (e.g. start/end, join) **MAY** use free ids with short labels; labels describe **runtime-executable** behavior (actor+action, event+trigger, short verb); `NOT` `RF*` ids; `NOT` `## Fase N` titles as graph spine; `NOT` `subgraph` per implementation phase nor nodes that only rename deliverables; `NOT` RED/GREEN columns.
-- `edges`::order/branches of **execution flow** (success/error/alternatives when useful); `NOT` derived from `Paralelo`, TDD table, nor document phase order.
-- `alignment`::**coherent** with spec scope and **`UCk`** in `## Casos de uso`; no need to map 1:1 each `RF` (RFs live in phases + TDD tables). Nodes whose id is **`UCk`** **MUST** mirror the same **`UCk`** from the list (same index).
+- `shape`::**one `subgraph` per `UCk`** from `## Casos de uso` (subgraph id/title **`UCk`** + short PT title); optional single **Start** / **End** (or equivalent) **outside** subgraphs to chain **`UCk`** blocks; `NOT` `subgraph` per `## Fase N` nor deliverable-only groupings.
+- `steps_per_uc`::inside each **`UCk`** subgraph, **3–6** nodes in a **single linear** chain (`A --> B --> C`); each label = one coarse actor+action or system outcome (PT, business language); `NOT` fewer than 3 nor more than 6 unless user explicit; split/merge **`UCk`** in the catalog instead of overloading one subgraph.
+- `linear`::**no decision nodes** — `NOT` `{id}{decision}`, diamond shapes, nor multi-outcome branches (success/error/alternative paths); exceptions, rules, and technical forks stay in **`D*`** / **`RF*`**; top-level flow between **`UCk`** subgraphs is **linear** (one sequence), `NOT` derived from `Paralelo`, TDD table, nor document phase order.
+- `nodes`::internal step ids **MAY** be free (e.g. `UC1s1`); **`NOT`** `RF*` ids; **`NOT`** `## Fase N` titles as graph spine; **`NOT`** RED/GREEN columns nor test/impl vocabulary in labels.
+- `alignment`::coherent with **`UCk`** list and spec scope; **no** 1:1 mapping to every **`RF*`**; detail depth matches **`D*`** / phases, not this diagram.
 - `mermaid_ref`::https://mermaid.js.org/ ; valid `flowchart`; `NOT` raw `"` inside node labels→use `["…'…"]`.
 
 ### `## Registros pós-conclusão do spec`
@@ -140,7 +142,7 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 - mutate RF bullet::only dup real OR unsustainable contradiction.
 - impl-cycle findings::Pós-implementação `RF` only; `NOT` closed delivery phases.
 - post-`concluído` bugs::`PC*` in Registros; if section missing create at defined `pos` with `PC1`; `NOT` `D`/Pós-implementação for that unless user explicitly reopens delivery cycle→then RF/TDD in chosen phase.
-- uc_flow_sync::material change to **runtime execution** (actors, branches, macro behavior order, or **`UCk`** catalog)→update `## Fluxograma de casos de uso` and keep **`## Casos de uso`** aligned (stable **`UCk`** ids). Reordering phases/`RF`/delivery **without** changing observable runtime flow→`NOT` mandatory to touch the use-case flowchart.
+- uc_flow_sync::material change to **macro runtime journey** (actors, coarse step order inside a **`UCk`**, **`UCk`** catalog, or linear order between **`UCk`** subgraphs)→update `## Fluxograma de casos de uso` (re-check 3–6 linear steps per **`UCk`**) and keep **`## Casos de uso`** aligned (stable **`UCk`** ids). Reordering phases/`RF`/delivery or adding **`D*`** / technical detail **without** changing the macro journey→`NOT` mandatory to touch the use-case flowchart.
 
 ### Pre-`Write`/`StrReplace` checklist
 
@@ -149,9 +151,9 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 3. integrity::
    - RF#↔table `#`; Requisito col concise.
    - `## Decisões tomadas` exists (placeholder or continuous `D*`).
-   - `## Casos de uso` present; **`UC1`…`UCk`** contiguous in list; every **`UCk`** node id in the following mermaid has a matching **`UCk`** line in the list.
+   - `## Casos de uso` present; **`UC1`…`UCk`** contiguous in list; every **`UCk`** `subgraph` in the following mermaid has a matching **`UCk`** line in the list.
    - all `## Fase*` after `## Casos de uso`; before `## Fluxograma de casos de uso`.
-   - `## Fluxograma de casos de uso` present; single Mermaid; no `RF*` nodes; reflects **execution**/journey; `NOT` implementation phases nor `subgraph` mirroring `## Fase*`; macro flow matches scope.
+   - `## Fluxograma de casos de uso` present; single Mermaid; **`subgraph` per `UCk`**; **3–6** linear steps inside each **`UCk`**; **no** decision/branch nodes; labels macro/PT only; no `RF*` nodes; `NOT` implementation-phase subgraphs; top-level **`UCk`** order linear; matches scope.
    - RED/GREEN leading icons consistent with phase header `<done>/<total>`.
    - Pós-implementação phase+table present.
    - Registros section present **IFF** `PC1` or explicit content rules above; then after `## Fluxograma de casos de uso`.
@@ -181,7 +183,7 @@ ON phase_close advisory: RUN Phase close / spec commit
 
 ## Minimum template
 
-Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit. In **Fluxograma de casos de uso**, mermaid describes **runtime execution** only; `NOT` a per-phase RF delivery DAG; **`UCk`** node ids **MUST** match **`UCk`** in `## Casos de uso`. **Body text inside the generated file = PT** (placeholders below show shape).
+Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Registros pós-conclusão do spec` until `PC1` or explicit. In **Fluxograma de casos de uso**, mermaid = **macro** journey: **`subgraph` per `UCk`**, **3–6** linear PT steps each, **no** decisions/technical detail; `NOT` per-phase RF DAG; each **`UCk`** subgraph **MUST** match **`UCk`** in `## Casos de uso`. **Body text inside the generated file = PT** (placeholders below show shape).
 
 ````markdown
 # [Nome da atividade]
@@ -229,8 +231,18 @@ Outer fence::4×`` ` `` (enables inner ` ```mermaid `). `NOT` include `## Regist
 
 ```mermaid
 flowchart TB
-  Start(["Início jornada"]) --> UC1["UC1 — …"]
-  UC1 --> UC2["UC2 — …"]
-  UC2 --> End(["Fim / resultado"])
+  Start(["Início jornada"]) --> UC1a
+  subgraph UC1["UC1 — título curto"]
+    direction TB
+    UC1a["Ator inicia pedido"] --> UC1b["Sistema valida entrada"]
+    UC1b --> UC1c["Utilizador vê resultado"]
+  end
+  UC1c --> UC2a
+  subgraph UC2["UC2 — título curto"]
+    direction TB
+    UC2a["Passo 1"] --> UC2b["Passo 2"]
+    UC2b --> UC2c["Passo 3"]
+  end
+  UC2c --> End(["Fim jornada"])
 ```
 ````
