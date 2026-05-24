@@ -67,6 +67,8 @@ Comandos slash (Markdown em `commands/`) que o instalador copia para a IDE; fica
 | `/bld-tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `/bld-tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF ou por fase, com menu de iteração; segue o spec criado por `/bld-tdd-doc`. |
 | `/bld-code-review` | Revisão sênior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
+| `/agendar-revisao-tarefa` | ST-0: agenda revisão (registro em `~/.cursor/revisao-tarefas/`); Monday opcional; sem GitLab. |
+| `/executar-revisao-tarefa` | ST-1→ST-6: Git local, GitLab API opcional, review `/bld-code-review`, update Monday manual ou API. |
 
 ---
 
