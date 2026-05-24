@@ -1,9 +1,13 @@
 ---
-VERSION: "2.0.1"
-description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen STRUCT + min template; modo; grill; UC list + macro UC flowchart (subgraph/UC, 3–6 linear steps); cohesion edit rule."
+name: tdd-doc
+description: >-
+  Elabora spec TDD em PT (docs/specs/tdd/); modo padrão ou grill; NO_CODE.
+  Use com /tdd-doc, "tdd-doc", ou para criar/atualizar spec de requisitos TDD.
+disable-model-invocation: true
+VERSION: "1.0.0"
 ---
 
-# `/bld-tdd-doc`
+# tdd-doc
 
 ## Maintainer note (for editors)
 
@@ -17,13 +21,13 @@ description: "EN instructions; LLM /bld-tdd-doc; NO_CODE; PT spec out; frozen ST
 
 - `NOT`::`Write`/`StrReplace`/repo_touch outside agreed spec `.md`.
 - `NOT`::app/lib/**tests**/migrations/jobs/scripts/patches/source/config_runtime_behavior.
-- `REQ`::implementation_request → refuse; point `/bld-tdd-dev` or stop command.
+- `REQ`::implementation_request → refuse; point `tdd-dev` or stop skill.
 - `OUT`::single writable artifact path `docs/specs/tdd/NNNN-AAAA-MM-DD-<slug>.md` per `STRUCT.path`.
 - `OK`::chat may quote/read code; `NOT` persist non-spec code.
 
 ## `modo`
 
-`domain`::{`padrao`,`grill`,`indefinido`}. `init`::`indefinido` on `/bld-tdd-doc` until valid choice for this chat.
+`domain`::{`padrao`,`grill`,`indefinido`}. `init`::`indefinido` on `tdd-doc` until valid choice for this chat.
 
 ### `modo` assignment (`precedence`)
 
@@ -56,7 +60,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 
 `CONTRACT`::generated_markdown MUST satisfy all bullets until `### After each spec write`.
 
-**Language (generated spec):** All substantive prose in the written spec file is **Portuguese (PT)** — RF bullets, **D**/**UC**/**PC** lines, free-text table cells, diagram labels where they are user-facing narrative, and header metadata values (`Status documento`, etc.). Keep **section headings and table column headers** exactly as in this command’s template (PT literals). Mermaid **node ids** may stay ASCII (`UC1`, `RF1`, …); node **display labels** inside `["…"]` are **PT** when they carry meaning to readers.
+**Language (generated spec):** All substantive prose in the written spec file is **Portuguese (PT)** — RF bullets, **D**/**UC**/**PC** lines, free-text table cells, diagram labels where they are user-facing narrative, and header metadata values (`Status documento`, etc.). Keep **section headings and table column headers** exactly as in this skill's template (PT literals). Mermaid **node ids** may stay ASCII (`UC1`, `RF1`, …); node **display labels** inside `["…"]` are **PT** when they carry meaning to readers.
 
 ### Path and initial block
 
@@ -93,7 +97,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 - `shape`::dedicated list: **one line per `UCk`** (bullet `-`); line head = identifier **`UCk`** in bold plus short title or execution-scope phrase; line body **MAY** cite **`RF*`** and/or **`D*`** (cross-refs).
 - `cite_from_uc`::each **UCk** **MAY** reference **`RFj`**, **`Dn`** that covers or frames the case (including RFs still to be detailed in phases if the spec evolves in passes).
 - `cite_to_uc`::**`RF*`** bullets in `### Requisitos` and **`D*`** lines in `## Decisões tomadas` **MAY** reference **`UCk`** where the requirement/decision anchors to a use case.
-- `consistency`::every **`subgraph`** titled/id’d as **`UCk`** in `## Fluxograma de casos de uso` **MUST** match a **`UCk`** line here; the list **MAY** include **`UCk`** with no subgraph (text-only / cross-ref only).
+- `consistency`::every **`subgraph`** titled/id'd as **`UCk`** in `## Fluxograma de casos de uso` **MUST** match a **`UCk`** line here; the list **MAY** include **`UCk`** with no subgraph (text-only / cross-ref only).
 - `edit`::append new **`UC`**; mutate **`UCk`** line only on explicit user fix or unsustainable contradiction; placeholder allowed; `NOT` omit section.
 
 ### Phases `## Fase N`
@@ -117,7 +121,7 @@ Cols **fixed** `|#|Requisito|RED|GREEN|Paralelo|`:
 
 ### `## Fluxograma de casos de uso`
 
-- `purpose`::**macro** runtime journey only — who does what, in what coarse order, before **`D*`** / phase **`RF*`** detail. `NOT` implementation plan, delivery milestones, dev order, “how we build”, APIs, schemas, jobs, error matrices, nor policy/branching logic (those belong in **`## Decisões tomadas`** and **`RF*`** / TDD tables).
+- `purpose`::**macro** runtime journey only — who does what, in what coarse order, before **`D*`** / phase **`RF*`** detail. `NOT` implementation plan, delivery milestones, dev order, "how we build", APIs, schemas, jobs, error matrices, nor policy/branching logic (those belong in **`## Decisões tomadas`** and **`RF*`** / TDD tables).
 - `pos`::after last `## Fase`+table; **before** `## Registros pós-conclusão do spec` **if** that section exists.
 - `count`::exactly one fenced ` ```mermaid ` … ` ``` ` `flowchart` TB|LR.
 - `shape`::**one `subgraph` per `UCk`** from `## Casos de uso` (subgraph id/title **`UCk`** + short PT title); optional single **Start** / **End** (or equivalent) **outside** subgraphs to chain **`UCk`** blocks; `NOT` `subgraph` per `## Fase N` nor deliverable-only groupings.

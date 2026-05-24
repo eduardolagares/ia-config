@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
-# Atualização: clona eduardolagares/ia-config (main) em /tmp, sincroniza ficheiros
-# com os destinos de instalação (novos ficheiros do repo são copiados; Cursor:
-# rules/skills/commands substituídos pelo conteúdo atual do repo).
-# Comandos antigos com prefixo baladapp-: Cursor/Claude/Antigravity — pasta commands
-# é reescrita por completo; Codex — remove pastas command-baladapp-* em ~/.agents/skills
-# antes de gerar command-bld-* (install/lib/ide-sync.sh).
+# Atualização: clona ia-config (main) em /tmp e re-sincroniza rules/skills eduardolagares.
 #
 # Uso:
-#   curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash -s -- --dry-run
+#   curl -fsSL …/install/upgrade.sh | bash
+#   curl -fsSL …/install/upgrade.sh | bash -s -- --dry-run
 set -euo pipefail
 
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
@@ -19,10 +14,8 @@ for arg in "$@"; do
   case "$arg" in
     --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
     -h | --help)
-      echo "Uso: curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/upgrade.sh | bash"
-      echo "     curl -fsSL …/install/upgrade.sh | bash -s -- --dry-run"
-      echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp; pergunta destino (global/projeto) e agentes;"
-      echo "sincroniza a partir do clone (Cursor: pastas rules/skills/commands; outros: mesmo fluxo que --upgrade)."
+      echo "Uso: curl -fsSL …/install/upgrade.sh | bash"
+      echo "Re-sync rules/skills eduardolagares (Cursor ou .agents; mesmas opções que install.sh)."
       exit 0
       ;;
     *)
@@ -62,22 +55,29 @@ if ! command -v curl >/dev/null 2>&1; then
   echo "Erro: curl é necessário." >&2
   exit 1
 fi
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Erro: python3 é necessário (conversão Karpathy → .mdc)." >&2
+  exit 1
+fi
 
 echo "=== ia-config — upgrade ==="
 echo "Fonte: ${REPO_URL} (${REPO_BRANCH})"
 echo
 
-echo "Onde estão as instalações a atualizar (Cursor + Claude no projeto)?"
-echo "  1) Global — ~/.cursor e ~/.claude (ou CLAUDE_CONFIG_DIR se já definido)"
-echo "  2) Projeto — <projeto>/.cursor e <projeto>/.claude"
-echo "     (Antigravity e Codex: sempre pastas globais.)"
+echo "Onde actualizar rules/skills eduardolagares?"
+echo "  1) Global — ~/.cursor"
+echo "  2) Projeto — <projeto>/.cursor"
+echo "  3) Global — ~/.agents"
+echo "  4) Projeto — <projeto>/.agents"
 echo
-MODE="global"
-read_tty -r -p "Escolha 1 ou 2 [1]: " in_mode || true
-in_mode="${in_mode:-1}"
-case "$in_mode" in
-  1) MODE="global" ;;
-  2) MODE="project" ;;
+DEST_MODE="cursor_global"
+read_tty -r -p "Escolha 1–4 [1]: " in_dest || true
+in_dest="${in_dest:-1}"
+case "$in_dest" in
+  1) DEST_MODE="cursor_global" ;;
+  2) DEST_MODE="cursor_project" ;;
+  3) DEST_MODE="agents_global" ;;
+  4) DEST_MODE="agents_project" ;;
   *)
     echo "Opção inválida." >&2
     exit 1
@@ -85,7 +85,7 @@ case "$in_mode" in
 esac
 
 PROJ=""
-if [[ "$MODE" == "project" ]]; then
+if [[ "$DEST_MODE" == "cursor_project" || "$DEST_MODE" == "agents_project" ]]; then
   while true; do
     read_tty -r -p "Caminho absoluto da raiz do projeto: " PROJ_RAW || true
     PROJ_RAW="${PROJ_RAW/#\~/$HOME}"
@@ -103,25 +103,27 @@ if [[ "$MODE" == "project" ]]; then
 fi
 
 echo
-echo "Quais agentes atualizar?"
 UP_CURSOR=false
-UP_CLAUDE=false
-UP_ANTI=false
-UP_CODEX=false
-prompt_yn "  Cursor?" "y" && UP_CURSOR=true
-prompt_yn "  Claude Code?" "y" && UP_CLAUDE=true
-prompt_yn "  Antigravity (Gemini)?" "y" && UP_ANTI=true
-prompt_yn "  Codex (OpenAI)?" "y" && UP_CODEX=true
+UP_AGENTS=false
 
-if [[ "$UP_CURSOR" != true && "$UP_CLAUDE" != true && "$UP_ANTI" != true && "$UP_CODEX" != true ]]; then
-  echo "Nenhum agente selecionado. A sair." >&2
-  exit 1
+if [[ "$DEST_MODE" == "agents_global" || "$DEST_MODE" == "agents_project" ]]; then
+  UP_AGENTS=true
+else
+  prompt_yn "Actualizar Cursor?" "y" && UP_CURSOR=true
+  if [[ "$DEST_MODE" == "cursor_project" ]]; then
+    prompt_yn "Actualizar também <projeto>/.agents?" "n" && UP_AGENTS=true
+  else
+    prompt_yn "Actualizar também ~/.agents?" "n" && UP_AGENTS=true
+  fi
+  if [[ "$DEST_MODE" == "cursor_project" && "$UP_AGENTS" == true ]]; then
+    export AGENTS_HOME="${PROJ}/.agents"
+  elif [[ "$UP_AGENTS" == true ]]; then
+    export AGENTS_HOME="${HOME}/.agents"
+  fi
 fi
 
-NEED_PY=false
-[[ "$UP_CLAUDE" == true || "$UP_ANTI" == true || "$UP_CODEX" == true ]] && NEED_PY=true
-if [[ "$NEED_PY" == true ]] && ! command -v python3 >/dev/null 2>&1; then
-  echo "Erro: python3 é necessário para Claude, Antigravity e Codex." >&2
+if [[ "$UP_CURSOR" != true && "$UP_AGENTS" != true ]]; then
+  echo "Nenhum destino seleccionado. A sair." >&2
   exit 1
 fi
 
@@ -141,12 +143,20 @@ git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$CLONE_DIR"
 
 export INSTALL_IA_SOURCE_ROOT="$CLONE_DIR"
 
-if [[ "$MODE" == "project" ]]; then
-  [[ "$UP_CURSOR" == true ]] && export CURSOR_HOME="${PROJ}/.cursor"
-  [[ "$UP_CLAUDE" == true ]] && export CLAUDE_CONFIG_DIR="${PROJ}/.claude"
-else
-  [[ "$UP_CURSOR" == true ]] && export CURSOR_HOME="${HOME}/.cursor"
-fi
+case "$DEST_MODE" in
+  cursor_global)
+    [[ "$UP_CURSOR" == true ]] && export CURSOR_HOME="${HOME}/.cursor"
+    ;;
+  cursor_project)
+    [[ "$UP_CURSOR" == true ]] && export CURSOR_HOME="${PROJ}/.cursor"
+    ;;
+  agents_global)
+    export AGENTS_HOME="${HOME}/.agents"
+    ;;
+  agents_project)
+    export AGENTS_HOME="${PROJ}/.agents"
+    ;;
+esac
 
 run_block() {
   local title="$1"
@@ -156,35 +166,19 @@ run_block() {
   "$@"
 }
 
-# Cursor: instalação completa das pastas (espelha o repo; ficheiros novos aparecem; removidos no repo deixam de existir no destino).
 if [[ "$UP_CURSOR" == true ]]; then
-  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+  if ((${#EXTRA_ARGS[@]} > 0)); then
     run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh" "${EXTRA_ARGS[@]}"
   else
     run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh"
   fi
 fi
 
-# Claude / Antigravity / Codex: fluxo --upgrade (Karpathy, re-sync convertido).
-if [[ "$UP_CLAUDE" == true ]]; then
-  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
-    run_block "Claude Code" bash "$CLONE_DIR/install/claude.sh" --upgrade "${EXTRA_ARGS[@]}"
+if [[ "$UP_AGENTS" == true ]]; then
+  if ((${#EXTRA_ARGS[@]} > 0)); then
+    run_block "Agents (.agents)" bash "$CLONE_DIR/install/agents.sh" "${EXTRA_ARGS[@]}"
   else
-    run_block "Claude Code" bash "$CLONE_DIR/install/claude.sh" --upgrade
-  fi
-fi
-if [[ "$UP_ANTI" == true ]]; then
-  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
-    run_block "Antigravity" bash "$CLONE_DIR/install/antigravity.sh" --upgrade "${EXTRA_ARGS[@]}"
-  else
-    run_block "Antigravity" bash "$CLONE_DIR/install/antigravity.sh" --upgrade
-  fi
-fi
-if [[ "$UP_CODEX" == true ]]; then
-  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
-    run_block "Codex" bash "$CLONE_DIR/install/codex.sh" --upgrade "${EXTRA_ARGS[@]}"
-  else
-    run_block "Codex" bash "$CLONE_DIR/install/codex.sh" --upgrade
+    run_block "Agents (.agents)" bash "$CLONE_DIR/install/agents.sh"
   fi
 fi
 

@@ -3,19 +3,22 @@ name: agendar-revisao-tarefa
 description: >-
   Agenda revisão de tarefa Baladapp (só ST-0): cria registro local em
   ~/.cursor/revisao-tarefas/, sem GitLab nem ST-1+. Use com "revisar tarefa X",
-  agendar revisão, ou antes de /executar-revisao-tarefa.
+  /agendar-revisao-tarefa, agendar revisão, ou antes de executar-revisao-tarefa.
 disable-model-invocation: true
+VERSION: "1.0.1"
 ---
 
 # agendar-revisao-tarefa
 
-Gatilho: `revisar tarefa <task_ref>` ou `/agendar-revisao-tarefa <task_ref>`.
+Gatilho: `revisar tarefa <task_ref>`, `/agendar-revisao-tarefa <task_ref>`, ou `agendar-revisao-tarefa <task_ref>`.
+
+Argumento obrigatório: `task_ref` (ID Monday, URL ou identificador).
 
 ## Contrato (igual Hermes ST-0 isolado)
 
 Ao executar:
 
-- criar **apenas** ST-0 (registro local = “card pai”)
+- criar **apenas** ST-0 (registro local = "card pai")
 - **não** consultar GitLab
 - **não** chamar APIs GitLab
 - **não** rodar ST-1+
@@ -82,7 +85,7 @@ SAÍDA ST-0
 
 ### next
 
-Parar. Próximo passo humano: `/executar-revisao-tarefa <card_pai_id>`.
+Parar. Próximo passo humano: `executar-revisao-tarefa <card_pai_id>` ou `/executar-revisao-tarefa <card_pai_id>`.
 
 ## Schema do registro (`~/.cursor/revisao-tarefas/<card_pai_id>.json`)
 
@@ -111,7 +114,7 @@ Parar. Próximo passo humano: `/executar-revisao-tarefa <card_pai_id>`.
 
 - `git` em repos de produto (exceto criar pasta de estado)
 - GitLab API
-- Invocar `executar-revisao-tarefa` ou `/bld-code-review`
+- Invocar `executar-revisao-tarefa` ou `code-review`
 - Inferir projetos sem evidência em Monday/entrada do utilizador
 
 ## Recursos

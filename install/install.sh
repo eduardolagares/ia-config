@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Instalador interativo: clona eduardolagares/ia-config (main) para pasta temporária
-# e copia ficheiros para Cursor / Claude / Antigravity / Codex.
+# e copia rules/skills eduardolagares para Cursor e/ou ~/.agents.
 #
 # Uso:
 #   curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash
@@ -10,16 +10,14 @@ set -euo pipefail
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
 REPO_BRANCH="main"
 
-# declare -a evita EXTRA_ARGS "unset" com set -u em bash antigo (ex.: macOS 3.2);
-# índice explícito em vez de += para compatibilidade.
 declare -a EXTRA_ARGS
 for arg in "$@"; do
   case "$arg" in
     --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
     -h | --help)
-      echo "Uso: curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash"
-      echo "     curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash -s -- --dry-run"
-      echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp, pergunta destino (global vs projeto) e agentes, corre install/*.sh."
+      echo "Uso: curl -fsSL …/install/install.sh | bash"
+      echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp; pergunta destino (Cursor ou .agents)."
+      echo "Estrutura: rules/eduardolagares/*.mdc + skills/eduardolagares/*/SKILL.md"
       exit 0
       ;;
     *)
@@ -56,7 +54,11 @@ if ! command -v git >/dev/null 2>&1; then
   exit 1
 fi
 if ! command -v curl >/dev/null 2>&1; then
-  echo "Erro: curl é necessário (baixar Karpathy SKILL.md nos scripts de cada agente)." >&2
+  echo "Erro: curl é necessário (Karpathy SKILL.md)." >&2
+  exit 1
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Erro: python3 é necessário (conversão Karpathy → .mdc)." >&2
   exit 1
 fi
 
@@ -64,17 +66,20 @@ echo "=== ia-config — instalador ==="
 echo "Fonte: ${REPO_URL} (${REPO_BRANCH})"
 echo
 
-echo "Onde instalar a parte que vive no projeto?"
-echo "  1) Global — Cursor em ~/.cursor ; Claude em ~/.claude (ou CLAUDE_CONFIG_DIR se já definido)"
-echo "  2) Projeto — Cursor em <projeto>/.cursor ; Claude em <projeto>/.claude"
-echo "     (Antigravity e Codex usam sempre as pastas globais do utilizador.)"
+echo "Onde instalar rules/skills eduardolagares?"
+echo "  1) Global — ~/.cursor"
+echo "  2) Projeto — <projeto>/.cursor"
+echo "  3) Global — ~/.agents"
+echo "  4) Projeto — <projeto>/.agents"
 echo
-MODE="global"
-read_tty -r -p "Escolha 1 ou 2 [1]: " in_mode || true
-in_mode="${in_mode:-1}"
-case "$in_mode" in
-  1) MODE="global" ;;
-  2) MODE="project" ;;
+DEST_MODE="cursor_global"
+read_tty -r -p "Escolha 1–4 [1]: " in_dest || true
+in_dest="${in_dest:-1}"
+case "$in_dest" in
+  1) DEST_MODE="cursor_global" ;;
+  2) DEST_MODE="cursor_project" ;;
+  3) DEST_MODE="agents_global" ;;
+  4) DEST_MODE="agents_project" ;;
   *)
     echo "Opção inválida." >&2
     exit 1
@@ -82,7 +87,7 @@ case "$in_mode" in
 esac
 
 PROJ=""
-if [[ "$MODE" == "project" ]]; then
+if [[ "$DEST_MODE" == "cursor_project" || "$DEST_MODE" == "agents_project" ]]; then
   while true; do
     read_tty -r -p "Caminho absoluto da raiz do projeto: " PROJ_RAW || true
     PROJ_RAW="${PROJ_RAW/#\~/$HOME}"
@@ -100,25 +105,28 @@ if [[ "$MODE" == "project" ]]; then
 fi
 
 echo
-echo "Quais agentes instalar?"
 INST_CURSOR=false
-INST_CLAUDE=false
-INST_ANTI=false
-INST_CODEX=false
-prompt_yn "  Cursor?" "y" && INST_CURSOR=true
-prompt_yn "  Claude Code?" "y" && INST_CLAUDE=true
-prompt_yn "  Antigravity (Gemini)?" "y" && INST_ANTI=true
-prompt_yn "  Codex (OpenAI)?" "y" && INST_CODEX=true
+INST_AGENTS=false
 
-if [[ "$INST_CURSOR" != true && "$INST_CLAUDE" != true && "$INST_ANTI" != true && "$INST_CODEX" != true ]]; then
-  echo "Nenhum agente selecionado. A sair." >&2
-  exit 1
+if [[ "$DEST_MODE" == "agents_global" || "$DEST_MODE" == "agents_project" ]]; then
+  INST_AGENTS=true
+  echo "Destino .agents — sync eduardolagares activado."
+else
+  prompt_yn "Instalar no Cursor?" "y" && INST_CURSOR=true
+  if [[ "$DEST_MODE" == "cursor_project" ]]; then
+    prompt_yn "Instalar também em <projeto>/.agents?" "n" && INST_AGENTS=true
+  else
+    prompt_yn "Instalar também em ~/.agents?" "n" && INST_AGENTS=true
+  fi
+  if [[ "$DEST_MODE" == "cursor_project" && "$INST_AGENTS" == true ]]; then
+    export AGENTS_HOME="${PROJ}/.agents"
+  elif [[ "$INST_AGENTS" == true ]]; then
+    export AGENTS_HOME="${HOME}/.agents"
+  fi
 fi
 
-NEED_PY=false
-[[ "$INST_CLAUDE" == true || "$INST_ANTI" == true || "$INST_CODEX" == true ]] && NEED_PY=true
-if [[ "$NEED_PY" == true ]] && ! command -v python3 >/dev/null 2>&1; then
-  echo "Erro: python3 é necessário para Claude, Antigravity e Codex." >&2
+if [[ "$INST_CURSOR" != true && "$INST_AGENTS" != true ]]; then
+  echo "Nenhum destino seleccionado. A sair." >&2
   exit 1
 fi
 
@@ -138,19 +146,27 @@ git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$CLONE_DIR"
 
 export INSTALL_IA_SOURCE_ROOT="$CLONE_DIR"
 
-if [[ "$MODE" == "project" ]]; then
-  [[ "$INST_CURSOR" == true ]] && export CURSOR_HOME="${PROJ}/.cursor"
-  [[ "$INST_CLAUDE" == true ]] && export CLAUDE_CONFIG_DIR="${PROJ}/.claude"
-else
-  [[ "$INST_CURSOR" == true ]] && export CURSOR_HOME="${HOME}/.cursor"
-fi
+case "$DEST_MODE" in
+  cursor_global)
+    [[ "$INST_CURSOR" == true ]] && export CURSOR_HOME="${HOME}/.cursor"
+    ;;
+  cursor_project)
+    [[ "$INST_CURSOR" == true ]] && export CURSOR_HOME="${PROJ}/.cursor"
+    ;;
+  agents_global)
+    export AGENTS_HOME="${HOME}/.agents"
+    ;;
+  agents_project)
+    export AGENTS_HOME="${PROJ}/.agents"
+    ;;
+esac
 
 run_agent() {
   local name="$1"
   local script="$2"
   echo
   echo "---------- $name ----------"
-  if [[ "${EXTRA_ARGS+set}" == "set" ]] && ((${#EXTRA_ARGS[@]} > 0)); then
+  if ((${#EXTRA_ARGS[@]} > 0)); then
     bash "$CLONE_DIR/install/$script" "${EXTRA_ARGS[@]}"
   else
     bash "$CLONE_DIR/install/$script"
@@ -158,9 +174,7 @@ run_agent() {
 }
 
 [[ "$INST_CURSOR" == true ]] && run_agent "Cursor" "cursor.sh"
-[[ "$INST_CLAUDE" == true ]] && run_agent "Claude Code" "claude.sh"
-[[ "$INST_ANTI" == true ]] && run_agent "Antigravity" "antigravity.sh"
-[[ "$INST_CODEX" == true ]] && run_agent "Codex" "codex.sh"
+[[ "$INST_AGENTS" == true ]] && run_agent "Agents (.agents)" "agents.sh"
 
 echo
 echo "Instalação concluída."

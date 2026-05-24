@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.11"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -7,7 +7,7 @@ description: "README do baladapp-ia-config — visão geral, instalação, atual
 
 **Idioma deste README:** português do Brasil (pt-BR).
 
-Repositório de **regras**, **comandos** e scripts de instalação para alinhar o assistente de IA ao **seu** fluxo (Ruby on Rails, TDD, convenções de **equipe**). O fluxo documentado é **um** `curl` para `install.sh` ou `upgrade.sh`: o script clona este repo, **baixa** o Karpathy a partir do [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (via **curl** + **python3** no clone) e aplica a configuração nas IDEs suportadas. **Requisitos comuns:** **git**, **curl** e **python3** (também para conversão `.mdc`→`.md` onde aplicável). O pacote de skills **Caveman** é **opcional** e **não** é instalado por estes scripts; veja [Skills Caveman (recomendado)](#skills-caveman-recomendado). Para **atualizar** o `main`, use [Atualizar](#atualizar).
+Repositório de **regras**, **skills** e scripts de instalação para alinhar o assistente de IA ao **seu** fluxo (Ruby on Rails, TDD, convenções de **equipe**). O fluxo documentado é **um** `curl` para `install.sh` ou `upgrade.sh`: o script clona este repo, **baixa** o Karpathy a partir do [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) (via **curl** + **python3** no clone) e aplica a configuração no **Cursor** e/ou **`~/.agents`**. **Requisitos:** **git**, **curl** e **python3**. O pacote de skills **Caveman** é **opcional** e **não** é instalado por estes scripts; veja [Skills Caveman (recomendado)](#skills-caveman-recomendado). Para **atualizar** o `main`, use [Atualizar](#atualizar).
 
 ## Instalação
 
@@ -17,23 +17,20 @@ A instalação é **sempre** este comando (**baixa** `install/install.sh` da bra
 curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash
 ```
 
-O script **clona** [eduardolagares/ia-config](https://github.com/eduardolagares/ia-config) em **`main`** para uma pasta temporária e aplica o que estiver definido no instalador (perguntas interativas no terminal). Skills de terceiros (ex.: **Caveman**) não fazem parte deste fluxo; instale-as à parte conforme [Skills Caveman (recomendado)](#skills-caveman-recomendado).
+O script **clona** [eduardolagares/ia-config](https://github.com/eduardolagares/ia-config) em **`main`** para uma pasta temporária e pergunta:
+
+1. **Destino** — `~/.cursor` ou `~/.agents` (global ou por projeto)
+2. **Extras** — no modo Cursor, pode marcar sync adicional para `.agents`
+
+Suportados pelo instalador: **Cursor** e **`.agents`** apenas.
+
+Tudo vive em **`rules/eduardolagares/`** e **`skills/eduardolagares/`** no repo e nos destinos instalados.
 
 Simular sem alterar **arquivos**:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/install.sh | bash -s -- --dry-run
 ```
-
-### Migração: você tinha symlinks no Cursor
-
-Se você instalou uma versão antiga com symlinks em `~/.cursor/{rules,skills,commands}`:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | bash
-```
-
-Simular: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | bash -s -- --dry-run`. Outro destino: `curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/install/fix-cursor-symlinks.sh | env CURSOR_HOME=/caminho/.cursor bash`. Depois, reinicie o Cursor.
 
 ---
 
@@ -53,28 +50,41 @@ curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/insta
 
 Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você quiser repetir o fluxo completo de primeira instalação.
 
-No **upgrade**, comandos slash antigos com prefixo `baladapp-` deixam de existir no destino: em Cursor (e Claude/Antigravity) a pasta `commands` é substituída pela do repo (`bld-`); no **Codex**, o script remove pastas `command-baladapp-*` em `AGENTS_SKILLS_ROOT` antes de recriar `command-bld-*`.
+No **upgrade**, o instalador re-sincroniza `rules/eduardolagares/` e `skills/eduardolagares/` (remove artefactos legados de layouts antigos).
+
+Scripts: `install/install.sh`, `install/upgrade.sh`, `install/cursor.sh`, `install/agents.sh`, `install/lib/`.
+
+### Destinos após instalação
+
+| Escolha | Rules | Skills |
+|---------|-------|--------|
+| Cursor global | `~/.cursor/rules/eduardolagares/` | `~/.cursor/skills/eduardolagares/` |
+| Cursor projeto | `<proj>/.cursor/rules/eduardolagares/` | `<proj>/.cursor/skills/eduardolagares/` |
+| `.agents` global | `~/.agents/rules/eduardolagares/` | `~/.agents/skills/eduardolagares/` |
+| `.agents` projeto | `<proj>/.agents/rules/eduardolagares/` | `<proj>/.agents/skills/eduardolagares/` |
+
+Karpathy: `rules/eduardolagares/karpathy-guidelines.mdc` (gerado no install, não versionado no Git).
 
 ---
 
-## Comandos
+## Skills (`skills/eduardolagares/`)
 
-Comandos slash (Markdown em `commands/`) que o instalador copia para a IDE; ficam disponíveis no chat após o `install.sh`/`upgrade.sh`.
+Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor) ou destino equivalente na IDE. Cada uma usa `disable-model-invocation: true` — invoque explicitamente pelo nome.
 
-| Comando | O que faz |
-|---------|-----------|
-| `/bld-commit` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
-| `/bld-tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
-| `/bld-tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF ou por fase, com menu de iteração; segue o spec criado por `/bld-tdd-doc`. |
-| `/bld-code-review` | Revisão sênior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
-| `/agendar-revisao-tarefa` | ST-0: agenda revisão (registro em `~/.cursor/revisao-tarefas/`); Monday opcional; sem GitLab. |
-| `/executar-revisao-tarefa` | ST-1→ST-6: Git local, GitLab API opcional, review `/bld-code-review`, update Monday manual ou API. |
+| Skill | O que faz |
+|-------|-----------|
+| `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
+| `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
+| `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
+| `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
+| `agendar-revisao-tarefa` | ST-0: agenda revisão (registro em `~/.cursor/revisao-tarefas/`); Monday opcional; sem GitLab. |
+| `executar-revisao-tarefa` | ST-1→ST-6: Git local, GitLab API opcional, review `code-review`, update Monday manual ou API. |
 
 ---
 
-## Regras
+## Regras (`rules/eduardolagares/`)
 
-Regras em `.mdc` (Cursor **Project Rules** / contexto por glob) que o instalador copia para a IDE. Todas começam com o prefixo `baladapp-` e ficam em `rules/` neste repo.
+Regras `.mdc` (Cursor **User Rules** / globs) copiadas para `rules/eduardolagares/` no destino. Prefixo `baladapp-` no nome do ficheiro.
 
 | Arquivo | Tema |
 |---------|------|
@@ -89,6 +99,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob) que o instalador
 | `baladapp-use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
 | `baladapp-views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
 | `baladapp-writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
+| `baladapp-writting-tests-react.mdc` | Testes Vitest + Testing Library — layout `js-tests/`, naming, config raiz vs submódulo. |
 
 > A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) e converte para `.mdc` durante a instalação.
 
@@ -100,7 +111,7 @@ Regras em `.mdc` (Cursor **Project Rules** / contexto por glob) que o instalador
 
 O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
-**Por quê:** comandos como `/bld-tdd-dev` referem-se à skill **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/` no Codex) — menos tokens e comportamento alinhado ao texto do comando. Sem essa instalação, esse trecho dos comandos é ignorado (sem erro).
+**Por quê:** a skill `tdd-dev` referencia **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/`) — menos tokens e comportamento alinhado. Sem essa instalação, esse trecho é ignorado (sem erro).
 
 ---
 

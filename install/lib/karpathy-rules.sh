@@ -11,16 +11,11 @@ KARPATHY_GUIDELINES_URL_DEFAULT="https://raw.githubusercontent.com/forrestchang/
 install_karpathy_guidelines() {
   local repo_root="$1"
   local dry_run="$2"
-  local for_upgrade="${3:-false}"
   local url="${KARPATHY_GUIDELINES_URL:-$KARPATHY_GUIDELINES_URL_DEFAULT}"
-  local dest="$repo_root/rules/karpathy-guidelines.mdc"
+  local dest="$repo_root/rules/eduardolagares/karpathy-guidelines.mdc"
   local tmp
 
-  if [[ "$for_upgrade" == true ]]; then
-    echo "Karpathy guidelines (upgrade — fonte: skills/karpathy-guidelines/SKILL.md no andrej-karpathy-skills):"
-  else
-    echo "Karpathy guidelines (obrigatório — fonte: skills/karpathy-guidelines/SKILL.md no andrej-karpathy-skills):"
-  fi
+  echo "Karpathy guidelines (fonte: skills/karpathy-guidelines/SKILL.md no andrej-karpathy-skills):"
 
   if [[ "$dry_run" == true ]]; then
     echo "[dry-run] Baixaria $url → converteria com python3 → $dest"
@@ -33,7 +28,7 @@ install_karpathy_guidelines() {
   fi
 
   if ! command -v python3 >/dev/null 2>&1; then
-    echo "Erro: python3 é necessário para converter o SKILL.md do Karpathy em rules/karpathy-guidelines.mdc." >&2
+    echo "Erro: python3 é necessário para converter o SKILL.md do Karpathy em rules/eduardolagares/karpathy-guidelines.mdc." >&2
     return 1
   fi
 
@@ -41,7 +36,7 @@ install_karpathy_guidelines() {
   # shellcheck disable=SC2064
   trap "rm -f \"$tmp\"" EXIT
 
-  mkdir -p "$repo_root/rules"
+  mkdir -p "$repo_root/rules/eduardolagares"
   curl -fsSL -o "$tmp" "$url"
   python3 "$_KARPATHY_RULES_DIR/convert_ia_config.py" karpathy-skill-to-mdc "$tmp" "$dest"
   trap - EXIT

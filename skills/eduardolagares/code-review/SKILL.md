@@ -1,9 +1,14 @@
 ---
-VERSION: "1.0.5"
-description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severidade + 4 lacunas teste/diff; cruzamento diff↔spec TDD se existir; sem cobertura."
+name: code-review
+description: >-
+  Review read-only sénior em pt-BR: blocos 1–3 severidade + lacunas teste/diff;
+  cruzamento diff↔spec TDD se existir; sem cobertura. Use com /code-review,
+  "code-review", "revisar código", ou revisão de diff/PR.
+disable-model-invocation: true
+VERSION: "1.0.0"
 ---
 
-# `/bld-code-review`
+# code-review
 
 ## Meta
 
@@ -32,7 +37,7 @@ description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severid
 - **Quando:** existir no âmbito da análise/revisão um ficheiro `docs/specs/tdd/*.md` aplicável à atividade (ou o utilizador o tiver indicado).
 - **Obrigatório:** ler a spec; extrair escopo explícito (ficheiros/módulos mencionados, RF/fases, exclusões).
 - **Cruzamento:** cada path alterado no diff deve caber no escopo da spec. Paths fora desse conjunto (ou claramente não cobertos por RF/entregáveis da spec) → **sempre** **1 - Crítico** (`1.M`), não diluir em **2**/**3**.
-- **Citação (bloco 1):** path da spec + trecho curto ou secção onde o escopo está definido (equivale a “regra” violada: contrato de escopo da atividade).
+- **Citação (bloco 1):** path da spec + trecho curto ou secção onde o escopo está definido (equivale a "regra" violada: contrato de escopo da atividade).
 - **Hipótese de falha:** mistura de mudanças não previstas com risco de regressão, review parcial e rastreio de requisitos partido.
 - **Se a spec for ambígua** quanto a ficheiros → uma linha **suposição**/**não verificável** sobre o mapeamento; só elevar a **Crítico** quando o fora de escopo for inequívoco face ao texto.
 
@@ -42,13 +47,13 @@ description: "Protocolo: review FS read-only; saída pt-BR; blocos 1–3 severid
 
 ## Bloco 4 (pré-condição: existe mudança no diff)
 
-- **Proibido neste comando:** executar suite de testes; reportar percentagens ou artefactos de cobertura (CI, HTML, `coverage/`, etc.).
+- **Proibido nesta skill:** executar suite de testes; reportar percentagens ou artefactos de cobertura (CI, HTML, `coverage/`, etc.).
 - **Obrigatório:** inventariar lacunas inferíveis **só** por comparação diff ↔ testes (presença + alinhamento).
 - **Classes de lacuna** (para cada alteração relevante: comportamento novo, contrato alterado, ramo novo, erro novo):
   - **sem_teste:** código/fluxo novo sem ficheiro de teste novo nem extensão clara de teste existente no mesmo módulo/caminho.
   - **teste_desalinhado:** existia cobertura de teste do sítio; o diff altera comportamento/contrato/ramo esperado e o diff **não** mostra alteração de teste que reflita o novo estado.
 - **Formato por linha `4.M`:** `4.M` + **onde** (path ou símbolo) + **lacuna** (`sem_teste`|`teste_desalinhado`) + **falta** (uma linha: o que acrescentar/ajustar; sem implementar).
-- Lacuna de alto impacto de domínio: pode duplicar-se em **2**/**3** com fundamento em regra; bloco **4** mantém sempre o inventário face ao diff. Proibido omitir por “óbvio”.
+- Lacuna de alto impacto de domínio: pode duplicar-se em **2**/**3** com fundamento em regra; bloco **4** mantém sempre o inventário face ao diff. Proibido omitir por "óbvio".
 
 ## Saída para utilizador
 

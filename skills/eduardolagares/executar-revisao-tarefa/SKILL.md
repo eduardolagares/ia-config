@@ -2,14 +2,15 @@
 name: executar-revisao-tarefa
 description: >-
   Executa ST-1 a ST-6 de revisão Baladapp a partir do registro em
-  ~/.cursor/revisao-tarefas/ (Git local, GitLab API opcional, /bld-code-review).
-  Use após agendar-revisao-tarefa ou com card_pai_id existente.
+  ~/.cursor/revisao-tarefas/ (Git local, GitLab API opcional, code-review).
+  Use após agendar-revisao-tarefa, /executar-revisao-tarefa, ou com card_pai_id existente.
 disable-model-invocation: true
+VERSION: "1.0.1"
 ---
 
 # executar-revisao-tarefa
 
-Gatilho: `/executar-revisao-tarefa <card_pai_id>` ou `executar revisão <card_pai_id>`.
+Gatilho: `/executar-revisao-tarefa <card_pai_id>`, `executar-revisao-tarefa <card_pai_id>`, ou `executar revisão <card_pai_id>`.
 
 Pré-requisito: ficheiro `~/.cursor/revisao-tarefas/<card_pai_id>.json` com ST-0 válido (`status: st0_done`).
 
@@ -78,7 +79,7 @@ Host API: `https://gitlab.baladapp.com.br/api/v4` com `PRIVATE-TOKEN: $GITLAB_TO
 **exec:**
 
 1. Montar pacote diff (agrupar por projeto; não colar diff integral no chat final)
-2. Aplicar **integralmente** o protocolo da skill `command-bld-code-review` (títulos exatos dos 4 blocos, pt-BR, read-only)
+2. Aplicar **integralmente** o protocolo da skill `code-review` (títulos exatos dos 4 blocos, pt-BR, read-only)
 3. Não chamar GitLab; não executar testes
 
 **validate:** 4 secções; crítico/grave com contexto; vazio = `Nenhum.`
@@ -153,7 +154,7 @@ Se parou antes de ST-6: `Revisão interrompida em ST-N. Motivo:...`
 ## Skills relacionadas
 
 - ST-0: `agendar-revisao-tarefa`
-- ST-3: `command-bld-code-review` / `/bld-code-review`
+- ST-3: `code-review`
 
 ## Variáveis de ambiente
 

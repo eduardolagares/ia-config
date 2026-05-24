@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Copia rules/skills eduardolagares do ia-config para ~/.cursor/ (ou CURSOR_HOME).
-# Uso: ./install/cursor.sh | ./install/cursor.sh --dry-run
+# Copia rules/skills eduardolagares para ~/.agents (ou AGENTS_HOME).
+# Uso: ./install/agents.sh | ./install/agents.sh --dry-run
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${INSTALL_IA_SOURCE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-CURSOR_HOME="${CURSOR_HOME:-${HOME}/.cursor}"
+AGENTS_HOME="${AGENTS_HOME:-${HOME}/.agents}"
 DRY_RUN=false
 
 # shellcheck source=lib/karpathy-rules.sh
@@ -18,9 +18,8 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=true ;;
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
-      echo "Sync rules/skills eduardolagares → \$CURSOR_HOME/{rules,skills}/eduardolagares/"
-      echo "  CURSOR_HOME=...  predef.: ~/.cursor"
-      echo "  Karpathy: KARPATHY_GUIDELINES_URL=... (predef.: upstream andrej-karpathy-skills)"
+      echo "Sync rules/skills eduardolagares → \$AGENTS_HOME/{rules,skills}/eduardolagares/"
+      echo "  AGENTS_HOME=...  predef.: ~/.agents"
       exit 0
       ;;
     *)
@@ -31,16 +30,14 @@ for arg in "$@"; do
 done
 
 echo "Repo:  $REPO_ROOT"
-echo "Dest:  $CURSOR_HOME/{rules,skills}/$IA_NAMESPACE/"
+echo "Dest:  $AGENTS_HOME/{rules,skills}/eduardolagares/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
 echo
-
-mkdir -p "$CURSOR_HOME"
 
 install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
 echo
 
-ia_config_sync_cursor_home "$REPO_ROOT" "$CURSOR_HOME" "$DRY_RUN"
+ia_config_sync_agents_home "$REPO_ROOT" "$AGENTS_HOME" "$DRY_RUN"
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
