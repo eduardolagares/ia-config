@@ -1,12 +1,12 @@
 ---
-VERSION: "0.0.3"
+VERSION: "0.0.4"
 description: Thin AR models — validations, scopes, enums; orchestration elsewhere
 globs: app/models/**/*.rb,test/models/**/*.rb
 ---
 # Models
 
-- Thin layer: associations, validations, scopes, small predicates. Orchestration → use cases / jobs (`baladapp-use_cases.mdc`, `ApplicationJob`). Callbacks limited to `before_validation` / `after_initialize` for normalize / defaults; avoid business workflows on `save` unless team explicitly allows.
-- Simple filters → `scope`; cross-cutting SQL → query object (`baladapp-query_objects.mdc`, `app/domains/**/queries/`). Tests: Shoulda-style for boilerplate; custom examples for tricky domain.
+- Thin layer: associations, validations, scopes, small predicates. Orchestration → use cases / jobs (`use_cases.mdc`, `ApplicationJob`). Callbacks limited to `before_validation` / `after_initialize` for normalize / defaults; avoid business workflows on `save` unless team explicitly allows.
+- Simple filters → `scope`; cross-cutting SQL → query object (`query_objects.mdc`, `app/domains/**/queries/`). Tests: Shoulda-style for boilerplate; custom examples for tricky domain.
 - `belongs_to` required by default; `optional: true` only when domain says optional.
 - `validates :uniqueness` ↔ unique DB index always.
 - Integer-backed `enum`; string enums only with documented reason.
@@ -15,7 +15,7 @@ globs: app/models/**/*.rb,test/models/**/*.rb
 - Normalization → `normalizes :field, with: ->(v) { … }` (Rails 7+).
 - Counter cache when list UIs count associations often.
 - `has_many` / `has_one`: explicit `dependent:` (`:destroy`, `:nullify`, `:restrict_with_error`, …).
-- Model `presence` / required fields ↔ migration `null: false` / defaults / backfill plan (`baladapp-migrations.mdc`).
+- Model `presence` / required fields ↔ migration `null: false` / defaults / backfill plan (`migrations.mdc`).
 
 ```ruby
 has_many :items, dependent: :destroy

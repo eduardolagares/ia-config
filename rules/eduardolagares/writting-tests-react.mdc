@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.8"
+VERSION: "0.0.9"
 description: Vitest + Testing Library — js-tests/ layout (specs + fixtures/), naming, root config vs submodule
 globs: "**/js-tests/**/*.vitest.{ts,tsx}"
 ---

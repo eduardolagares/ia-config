@@ -1,12 +1,12 @@
 ---
-VERSION: "0.0.3"
+VERSION: "0.0.4"
 description: Query objects — read-only, relation: / @relation, self.call, YARD
 alwaysApply: true
 globs: app/domains/**/queries/**/*.rb
 ---
 # Query objects
 
-- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`baladapp-use_cases.mdc`); domain yes/no primitive → rule object (`baladapp-rule_objects.mdc`).
+- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`use_cases.mdc`); domain yes/no primitive → rule object (`rule_objects.mdc`).
 - **Name:** ends with `Query`. **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
 
 ## Invariants

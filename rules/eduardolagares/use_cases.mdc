@@ -1,11 +1,11 @@
 ---
-VERSION: "0.0.3"
+VERSION: "0.0.4"
 description: Use cases — Dry::Monads Result, domain NS, no dry-transaction
 globs: app/domains/**/use_cases/**/*.rb
 ---
 # Use cases
 
-- **When:** one class per controller action / `ApplicationJob` that mutates state or orchestrates steps. **Else:** read-only relation → query object (`baladapp-query_objects.mdc`); single domain yes/no → rule object (`baladapp-rule_objects.mdc`).
+- **When:** one class per controller action / `ApplicationJob` that mutates state or orchestrates steps. **Else:** read-only relation → query object (`query_objects.mdc`); single domain yes/no → rule object (`rule_objects.mdc`).
 - **Name:** `VerbNoun`. **NS:** `DominioX::UseCases::Y::`. **Path:** `app/domains/<domain>/use_cases/**/verb_noun.rb` ↔ nested `Y::` (same as `rules/`, `queries/`).
 
 ## Invariants
@@ -21,7 +21,7 @@ globs: app/domains/**/use_cases/**/*.rb
 
 ## Callers
 
-- Controllers / jobs: load, Pundit, then `::DominioX::UseCases::...::Foo.call(...)`, map `Success`/`Failure` to response (see `baladapp-controllers.mdc`). Use case never owns presentation.
+- Controllers / jobs: load, Pundit, then `::DominioX::UseCases::...::Foo.call(...)`, map `Success`/`Failure` to response (see `controllers.mdc`). Use case never owns presentation.
 
 ```ruby
 case ::DominioOrders::UseCases::Orders::CreateOrder.call(user:, event:)

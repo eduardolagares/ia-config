@@ -44,6 +44,9 @@ ia_config_remove_legacy_install_artifacts() {
     for f in "$home/rules"/baladapp-*.mdc "$home/rules"/baladapp-*.md; do
       remove_item "$f"
     done
+    for f in "$home/rules/$IA_NAMESPACE"/baladapp-*.mdc; do
+      remove_item "$f"
+    done
     remove_item "$home/rules/karpathy-guidelines.mdc"
     remove_item "$home/rules/karpathy-guidelines.md"
   fi

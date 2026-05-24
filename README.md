@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.11"
+VERSION: "0.0.12"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -84,22 +84,22 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 
 ## Regras (`rules/eduardolagares/`)
 
-Regras `.mdc` (Cursor **User Rules** / globs) copiadas para `rules/eduardolagares/` no destino. Prefixo `baladapp-` no nome do ficheiro.
+Regras `.mdc` (Cursor **User Rules** / globs) copiadas para `rules/eduardolagares/` no destino.
 
 | Arquivo | Tema |
 |---------|------|
-| `baladapp-clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR; sintaxe/nomes → `baladapp-ruby.mdc`. |
-| `baladapp-controllers.mdc` | Controllers magros — Pundit, strong params, REST, use cases / queries. |
-| `baladapp-implementation.mdc` | Edits mantêm testes em sincronia — achar spec contraparte, atualizar contratos, rodar testes focados. |
-| `baladapp-migrations.mdc` | Migrations Rails — gerador, prefixo de versão, reversibilidade, índices, FKs, Postgres seguro. |
-| `baladapp-models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
-| `baladapp-query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
-| `baladapp-rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
-| `baladapp-ruby.mdc` | Estilo Ruby — kwargs, nomes, fluxo de controle, sem meta desnecessária. |
-| `baladapp-use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
-| `baladapp-views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
-| `baladapp-writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
-| `baladapp-writting-tests-react.mdc` | Testes Vitest + Testing Library — layout `js-tests/`, naming, config raiz vs submódulo. |
+| `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR; sintaxe/nomes → `ruby.mdc`. |
+| `controllers.mdc` | Controllers magros — Pundit, strong params, REST, use cases / queries. |
+| `implementation.mdc` | Edits mantêm testes em sincronia — achar spec contraparte, atualizar contratos, rodar testes focados. |
+| `migrations.mdc` | Migrations Rails — gerador, prefixo de versão, reversibilidade, índices, FKs, Postgres seguro. |
+| `models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
+| `query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
+| `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
+| `ruby.mdc` | Estilo Ruby — kwargs, nomes, fluxo de controle, sem meta desnecessária. |
+| `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
+| `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
+| `writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
+| `writting-tests-react.mdc` | Testes Vitest + Testing Library — layout `js-tests/`, naming, config raiz vs submódulo. |
 
 > A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) e converte para `.mdc` durante a instalação.
 
