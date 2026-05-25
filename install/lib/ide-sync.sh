@@ -53,6 +53,7 @@ ia_config_remove_legacy_install_artifacts() {
 
   if [[ -d "$home/skills" ]]; then
     for p in "$home/skills"/agendar-revisao-tarefa "$home/skills"/executar-revisao-tarefa \
+      "$home/skills"/revisar-tarefa \
       "$home/skills"/comitar "$home/skills"/tdd-dev "$home/skills"/tdd-doc \
       "$home/skills"/code-review "$home/skills"/README.md; do
       remove_item "$p"

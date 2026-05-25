@@ -1,0 +1,19 @@
+---
+VERSION: "0.0.1"
+description: Vitest greenfield — config na raiz do not submodule, aliases, scripts
+globs: vitest.config.*,vitest.setup.*,vitest-env.d.ts
+---
+# Vitest setup (host root)
+
+- **Escopo:** bootstrap de Vitest no repo **host** (Rails / Shakapacker) — não authoring de specs (`writting-tests-react.mdc`).
+- **Onde vive tooling:** raiz do app host — `package.json` (deps + scripts `test:*`), `vitest.config.*`, `vitest.setup.*`, `vitest-env.d.ts`. **Nunca** dentro de `baladapp-react-components` quando for submódulo.
+- **Onde vivem specs:** no repo que possui o React — `js-tests/<nome>/` + `fixtures/` (`writting-tests-react.mdc`).
+
+## Checklist greenfield (raiz host)
+
+1. `yarn add -D vitest vite @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom` (versões alinhadas ao CI).
+2. `vitest.config.ts`: `environment: "jsdom"`, `test.globals: true`, `resolve.alias` espelhando webpack (ex.: `baladapp-react-components/src`), `test.include` cobrindo `**/js-tests/**/*.vitest.{ts,tsx}` (host + submódulo).
+3. `vitest.setup.ts`: `@testing-library/jest-dom/vitest` + mocks globais se necessário.
+4. `vitest-env.d.ts`: `/// <reference types="vitest/globals" />` (ou `vitest/globals` em `tsconfig`).
+5. Scripts no `package.json`: `vitest run --config vitest.config.ts` / watch equivalente.
+6. Executar sempre da **raiz host** (`yarn test:baladapp`, etc.) — config aponta para specs no submódulo via `include`/alias.

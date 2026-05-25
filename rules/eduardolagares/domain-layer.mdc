@@ -1,0 +1,18 @@
+---
+VERSION: "0.0.1"
+description: Domain layer routing — query vs use case vs rule object vs scope
+alwaysApply: true
+---
+# Domain layer routing
+
+Escolha **uma** forma por responsabilidade — detalhes nas rules por glob:
+
+| Necessidade | Onde | Rule |
+|-------------|------|------|
+| Filtro/join/order/contagem read-only reutilizável | `app/domains/**/queries/` | `query_objects.mdc` |
+| Mutação ou orquestração (controller action, job) | `app/domains/**/use_cases/` | `use_cases.mdc` |
+| Uma pergunta de domínio → primitivo (`Boolean`, etc.) | `app/domains/**/rules/` | `rule_objects.mdc` |
+| Filtro one-liner, só no model | `scope` no model | `models.mdc` |
+
+- Controllers/jobs **chamam** use cases / queries — não embutem regras (`controllers.mdc`).
+- Use cases **delegam** gates a rule objects — não duplicam corpo de regra (`use_cases.mdc`).

@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.12"
+VERSION: "0.0.14"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -79,27 +79,40 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 | `agendar-revisao-tarefa` | ST-0: agenda revisão (registro em `~/.cursor/revisao-tarefas/`); Monday opcional; sem GitLab. |
 | `executar-revisao-tarefa` | ST-1→ST-6: Git local, GitLab API opcional, review `code-review`, update Monday manual ou API. |
+| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs). |
 
 ---
 
 ## Regras (`rules/eduardolagares/`)
 
-Regras `.mdc` (Cursor **User Rules** / globs) copiadas para `rules/eduardolagares/` no destino.
+Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. Cada uma usa **`alwaysApply`** (fixo em todo chat) ou **`globs`** (só quando ficheiros correspondentes entram no contexto).
+
+### Sempre activas (`alwaysApply: true`)
 
 | Arquivo | Tema |
 |---------|------|
-| `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR; sintaxe/nomes → `ruby.mdc`. |
+| `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule object vs scope. |
+| `ruby.mdc` | Estilo Ruby — kwargs, nomes, fluxo de controle, sem meta desnecessária. |
+| `karpathy-guidelines.mdc` | Diretrizes comportamentais Karpathy — gerado no install (não versionado no Git). |
+
+Custo fixo ≈ **~1,5k tokens** por mensagem (domain-layer + ruby + karpathy), em vez de ~8k se tudo fosse always.
+
+### Por glob (activação contextual)
+
+| Arquivo | Tema |
+|---------|------|
+| `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR; sintaxe → `ruby.mdc`. |
 | `controllers.mdc` | Controllers magros — Pundit, strong params, REST, use cases / queries. |
-| `implementation.mdc` | Edits mantêm testes em sincronia — achar spec contraparte, atualizar contratos, rodar testes focados. |
-| `migrations.mdc` | Migrations Rails — gerador, prefixo de versão, reversibilidade, índices, FKs, Postgres seguro. |
+| `implementation.mdc` | Edits mantêm testes em sincronia — spec contraparte, contratos, testes focados. |
+| `migrations.mdc` | Migrations Rails — gerador, versão, reversibilidade, índices, FKs, Postgres. |
 | `models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
 | `query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
 | `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
-| `ruby.mdc` | Estilo Ruby — kwargs, nomes, fluxo de controle, sem meta desnecessária. |
 | `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
 | `writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
-| `writting-tests-react.mdc` | Testes Vitest + Testing Library — layout `js-tests/`, naming, config raiz vs submódulo. |
+| `writting-tests-react.mdc` | Specs Vitest + RTL — layout `js-tests/`, naming, agrupamento, isolamento. |
+| `vitest-setup.mdc` | Bootstrap Vitest na raiz do host (config, aliases, scripts) — não specs. |
 
 > A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) e converte para `.mdc` durante a instalação.
 

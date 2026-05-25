@@ -1,4 +1,6 @@
 install/lib/__pycache__/
+skills/eduardolagares/revisar-tarefa/cache/*
+!skills/eduardolagares/revisar-tarefa/cache/.gitkeep
 
 # Third-party agent skills — install via ecosystem/plugin or ~/.claude; do not vendor here.
 # Karpathy gerado no clone (install) — não versionar

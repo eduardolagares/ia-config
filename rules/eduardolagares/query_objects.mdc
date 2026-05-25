@@ -1,7 +1,6 @@
 ---
-VERSION: "0.0.4"
+VERSION: "0.0.5"
 description: Query objects — read-only, relation: / @relation, self.call, YARD
-alwaysApply: true
 globs: app/domains/**/queries/**/*.rb
 ---
 # Query objects

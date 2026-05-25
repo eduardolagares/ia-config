@@ -1,7 +1,7 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.6"
 description: Ruby style — kwargs, naming, control flow, no needless meta
-globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
+alwaysApply: true
 ---
 # Ruby
 
