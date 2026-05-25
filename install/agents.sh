@@ -19,6 +19,7 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
       echo "Sync rules/skills eduardolagares → \$AGENTS_HOME/{rules,skills}/eduardolagares/"
+      echo "  Remove legado: agendar-revisao-tarefa, executar-revisao-tarefa"
       echo "  AGENTS_HOME=...  predef.: ~/.agents"
       exit 0
       ;;
@@ -30,14 +31,18 @@ for arg in "$@"; do
 done
 
 echo "Repo:  $REPO_ROOT"
-echo "Dest:  $AGENTS_HOME/{rules,skills}/eduardolagares/"
+echo "Dest:  $AGENTS_HOME/{rules,skills}/$IA_NAMESPACE/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
 echo
 
-install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
+ia_config_sync_agents_home "$REPO_ROOT" "$AGENTS_HOME" "$DRY_RUN"
 echo
 
-ia_config_sync_agents_home "$REPO_ROOT" "$AGENTS_HOME" "$DRY_RUN"
+install_karpathy_guidelines "$AGENTS_HOME/rules/$IA_NAMESPACE/karpathy-guidelines.mdc" "$DRY_RUN"
+
+if [[ "$DRY_RUN" != true ]]; then
+  ia_config_print_sync_summary "$AGENTS_HOME/rules" "$AGENTS_HOME/skills"
+fi
 
 echo
 if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi

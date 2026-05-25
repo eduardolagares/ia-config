@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.14"
+VERSION: "0.0.15"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -77,9 +77,9 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
-| `agendar-revisao-tarefa` | ST-0: agenda revisão (registro em `~/.cursor/revisao-tarefas/`); Monday opcional; sem GitLab. |
-| `executar-revisao-tarefa` | ST-1→ST-6: Git local, GitLab API opcional, review `code-review`, update Monday manual ou API. |
-| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs). |
+| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
+
+No **Cursor**, o `install/` regista o hook `beforeSubmitPrompt` em `$CURSOR_HOME/hooks/` para pré-buscar o diff ao enviar `/revisar-tarefa <título>` (requer `GITLAB_TOKEN` e skill `monday-task-info` no ambiente).
 
 ---
 
@@ -114,7 +114,9 @@ Custo fixo ≈ **~1,5k tokens** por mensagem (domain-layer + ruby + karpathy), e
 | `writting-tests-react.mdc` | Specs Vitest + RTL — layout `js-tests/`, naming, agrupamento, isolamento. |
 | `vitest-setup.mdc` | Bootstrap Vitest na raiz do host (config, aliases, scripts) — não specs. |
 
-> A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md) e converte para `.mdc` durante a instalação.
+> A regra `karpathy-guidelines.mdc` **não** está versionada neste repo: o `install/` baixa o [SKILL.md original](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/skills/karpathy-guidelines/SKILL.md), converte para `.mdc` com `alwaysApply: true` e grava em `{dest}/rules/eduardolagares/` **após** copiar as rules versionadas.
+
+O **upgrade** remove skills legadas `agendar-revisao-tarefa` e `executar-revisao-tarefa` (layouts flat ou em `skills/eduardolagares/`) antes de sincronizar o pacote actual.
 
 ---
 

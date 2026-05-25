@@ -16,6 +16,7 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: curl -fsSL …/install/upgrade.sh | bash"
       echo "Re-sync rules/skills eduardolagares (Cursor ou .agents; mesmas opções que install.sh)."
+      echo "Remove skills legadas agendar/executar-revisao-tarefa; instala revisar-tarefa."
       exit 0
       ;;
     *)

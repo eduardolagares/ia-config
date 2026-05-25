@@ -12,6 +12,8 @@ DRY_RUN=false
 source "$SCRIPT_DIR/lib/karpathy-rules.sh"
 # shellcheck source=lib/ide-sync.sh
 source "$SCRIPT_DIR/lib/ide-sync.sh"
+# shellcheck source=lib/cursor-hooks.sh
+source "$SCRIPT_DIR/lib/cursor-hooks.sh"
 
 for arg in "$@"; do
   case "$arg" in
@@ -19,8 +21,11 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
       echo "Sync rules/skills eduardolagares → \$CURSOR_HOME/{rules,skills}/eduardolagares/"
+      echo "  Rules always: domain-layer, ruby + karpathy (gerado após sync)"
+      echo "  Remove legado: agendar-revisao-tarefa, executar-revisao-tarefa"
+      echo "  Hook opcional: beforeSubmitPrompt → prefetch diff (/revisar-tarefa)"
       echo "  CURSOR_HOME=...  predef.: ~/.cursor"
-      echo "  Karpathy: KARPATHY_GUIDELINES_URL=... (predef.: upstream andrej-karpathy-skills)"
+      echo "  KARPATHY_GUIDELINES_URL=... (predef.: upstream andrej-karpathy-skills)"
       exit 0
       ;;
     *)
@@ -37,10 +42,23 @@ echo
 
 mkdir -p "$CURSOR_HOME"
 
-install_karpathy_guidelines "$REPO_ROOT" "$DRY_RUN" false
-echo
-
 ia_config_sync_cursor_home "$REPO_ROOT" "$CURSOR_HOME" "$DRY_RUN"
+echo
+
+install_karpathy_guidelines "$CURSOR_HOME/rules/$IA_NAMESPACE/karpathy-guidelines.mdc" "$DRY_RUN"
+echo
+
+ia_config_install_revisar_tarefa_hook "$CURSOR_HOME" "$REPO_ROOT" "$DRY_RUN"
+
+if [[ "$DRY_RUN" != true ]]; then
+  ia_config_print_sync_summary "$CURSOR_HOME/rules" "$CURSOR_HOME/skills"
+fi
 
 echo
-if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
+if [[ "$DRY_RUN" == true ]]; then
+  echo "Feito. (dry-run)"
+else
+  echo "Feito."
+  echo "Revisar tarefa: /revisar-tarefa <título> (skill em skills/$IA_NAMESPACE/revisar-tarefa/)"
+  echo "Ambiente: skills/eduardolagares/revisar-tarefa/scripts/validate-env.sh"
+fi

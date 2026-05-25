@@ -2,6 +2,12 @@
 # Sincroniza rules/eduardolagares e skills/eduardolagares do repo ia-config para Cursor ou ~/.agents.
 IA_NAMESPACE="eduardolagares"
 
+# Skills substituídas por revisar-tarefa (layouts flat e namespace).
+IA_CONFIG_OBSOLETE_SKILLS=(
+  agendar-revisao-tarefa
+  executar-revisao-tarefa
+)
+
 ia_config_each_rule_mdc() {
   local repo="$1"
   local rules_ns="$repo/rules/$IA_NAMESPACE"
@@ -32,7 +38,7 @@ ia_config_remove_legacy_install_artifacts() {
   remove_item "$home/commands"
 
   shopt -s nullglob
-  local f p
+  local f p name
   if [[ -n "$agents_skills" && -d "$agents_skills" ]]; then
     for p in "$agents_skills"/command-* "$agents_skills"/ia-rule-*; do
       [[ -e "$p" ]] || continue
@@ -47,13 +53,18 @@ ia_config_remove_legacy_install_artifacts() {
     for f in "$home/rules/$IA_NAMESPACE"/baladapp-*.mdc; do
       remove_item "$f"
     done
+    # Karpathy na raiz de rules/ (layout antigo); o activo fica em rules/eduardolagares/
     remove_item "$home/rules/karpathy-guidelines.mdc"
     remove_item "$home/rules/karpathy-guidelines.md"
   fi
 
   if [[ -d "$home/skills" ]]; then
-    for p in "$home/skills"/agendar-revisao-tarefa "$home/skills"/executar-revisao-tarefa \
-      "$home/skills"/revisar-tarefa \
+    for name in "${IA_CONFIG_OBSOLETE_SKILLS[@]}"; do
+      remove_item "$home/skills/$name"
+      remove_item "$home/skills/$IA_NAMESPACE/$name"
+    done
+    # Skills em layout flat (pré-namespace eduardolagares)
+    for p in "$home/skills"/revisar-tarefa \
       "$home/skills"/comitar "$home/skills"/tdd-dev "$home/skills"/tdd-doc \
       "$home/skills"/code-review "$home/skills"/README.md; do
       remove_item "$p"
@@ -107,6 +118,26 @@ ia_config_sync_eduardolagares_skills() {
   rm -rf "$dest"
   cp -R "$src" "$dest_skills/"
   echo "  skills/$IA_NAMESPACE/ (cópia de $src)"
+}
+
+ia_config_print_sync_summary() {
+  local dest_rules="$1" dest_skills="$2"
+  local rules_ns="$dest_rules/$IA_NAMESPACE"
+  local skills_ns="$dest_skills/$IA_NAMESPACE"
+
+  echo
+  echo "Resumo do sync ($IA_NAMESPACE):"
+  if [[ -d "$rules_ns" ]]; then
+    local n always karpathy
+    n="$(find "$rules_ns" -name '*.mdc' | wc -l | tr -d ' ')"
+    always="$(grep -l 'alwaysApply: true' "$rules_ns"/*.mdc 2>/dev/null | xargs -I{} basename {} | paste -sd ', ' - || true)"
+    echo "  Rules: ${n} ficheiros .mdc"
+    [[ -n "$always" ]] && echo "    alwaysApply: ${always}"
+    [[ -f "$rules_ns/karpathy-guidelines.mdc" ]] || echo "    AVISO: karpathy-guidelines.mdc ausente (correr install de novo)"
+  fi
+  if [[ -d "$skills_ns/revisar-tarefa" ]]; then
+    echo "  Skill revisar-tarefa: instalada (substitui agendar-revisao-tarefa + executar-revisao-tarefa)"
+  fi
 }
 
 ia_config_sync_cursor_home() {
