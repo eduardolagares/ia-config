@@ -6,12 +6,12 @@ description: >-
   (referência ou tarefa existente para continuar). Use com /escrever-tarefa,
   "escrever tarefa", ou quando o utilizador anexar esta skill.
 disable-model-invocation: true
-VERSION: "1.1.1"
+VERSION: "1.1.2"
 ---
 
 # escrever-tarefa
 
-Documento **simples** de atividade em **pt-BR**. **Sempre** modo entrevista (**grill-me**). **Não** invocar, mencionar nem encaminhar para outras skills (TDD, Monday, revisão, etc.) — exceto carregar e seguir **grill-me**.
+Documento **simples** de atividade em **pt-BR**. **Sempre** modo entrevista (**grill-me**). **Não** invocar, mencionar nem encaminhar para nenhuma skill além de **grill-me** (carregar e seguir só essa).
 
 **Pacote:** `skills/eduardolagares/escrever-tarefa/` — instalada pelo `install/` em `{destino}/skills/eduardolagares/escrever-tarefa/` (Cursor ou `~/.agents`).
 
@@ -116,7 +116,7 @@ conteúdo do caso de uso...
 
 ## Proibido
 
-- Mencionar ou delegar a `tdd-doc`, `tdd-dev`, `revisar-tarefa`, Monday, ou qualquer skill que não seja **grill-me**.
+- Mencionar ou delegar a qualquer skill que não seja **grill-me**.
 - Implementar código, migrações ou testes neste fluxo.
 - Gravar fora do artefacto acordado (`docs/tarefas/…` novo ou ficheiro em continuação) sem pedido explícito do utilizador.
 
