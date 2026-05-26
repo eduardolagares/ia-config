@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.15"
+VERSION: "0.0.18"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -74,6 +74,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | Skill | O que faz |
 |-------|-----------|
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
+| `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
 | `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |

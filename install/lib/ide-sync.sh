@@ -138,6 +138,9 @@ ia_config_print_sync_summary() {
   if [[ -d "$skills_ns/revisar-tarefa" ]]; then
     echo "  Skill revisar-tarefa: instalada (substitui agendar-revisao-tarefa + executar-revisao-tarefa)"
   fi
+  if [[ -d "$skills_ns/escrever-tarefa" ]]; then
+    echo "  Skill escrever-tarefa: instalada (docs/tarefas/; grill-me em ~/.agents, ~/.cursor ou ~/.claude)"
+  fi
 }
 
 ia_config_sync_cursor_home() {
