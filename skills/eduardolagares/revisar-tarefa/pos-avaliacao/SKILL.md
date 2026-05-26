@@ -5,7 +5,7 @@ description: >-
   (status, owners). Se precisa_de_correcao, garante MRs GitLab (branch → master), publica
   links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
 disable-model-invocation: true
-VERSION: "1.2.1"
+VERSION: "1.2.2"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -16,10 +16,13 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 
 **Antes de cada tool MCP:** ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json`.
 
+**Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
+
 ## Pré-requisito
 
 | Dado | Obrigatório |
 |------|-------------|
+| **`## Diff`** (passo 3) | Sim — **`Status: ok`** (critérios em [executar-diff](../executar-diff/SKILL.md) § Status do diff) |
 | **`## Avaliação`** | Sim — passo 7 (`Veredito`) |
 | **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código, Testar |
 | **Passo 1 ou 3** (só `precisa_de_correcao`) | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) |
@@ -44,10 +47,30 @@ Resolver `item_id` de cada subtarefa via cache `monday-task-info` ou passo 1.
 
 ## Fluxo (ordem fixa)
 
+0. **Validar diff:** ler `Status` em `## Diff` (passo 3). Se ≠ `ok` → § **Bloqueio (diff indisponível)** e **terminar** (zero mutations Monday/GitLab).
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `deve_ser_testada`, `pode_avancar_para_deploy`}.
 2. Executar **apenas** o bloco de ações do veredito (§ abaixo).
 3. Usar `change_item_column_values` — status: `{"label": "<texto exato>"}`.
 4. Reportar cada mutation no chat (sucesso/erro por item).
+
+### Bloqueio (diff indisponível)
+
+Quando o passo 0 falhar — **não** chamar `change_item_column_values`, `create_doc`, `append_blocks`, `gitlab-api-mr-ensure*` nem equivalente MCP.
+
+Entregar no chat:
+
+```markdown
+## Pós avaliação
+
+| Campo | Valor |
+|-------|-------|
+| Veredito (passo 7) | `<veredito>` — **não aplicado** |
+| Motivo | Diff GitLab indisponível (`Status: <parcial\|indisponível>`) |
+| Ações Monday | **nenhuma** (status/owners/doc MR inalterados) |
+| Próximo passo | Corrigir VPN/`GITLAB_TOKEN`, rodar prefetch ou repetir passo 3 até `Status: ok` |
+```
+
+Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem executá-lo.
 
 ### `precisa_de_correcao`
 
@@ -231,6 +254,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 
 | Situação | Ação |
 |----------|------|
+| `## Diff` ausente ou `Status` ≠ `ok` | § Bloqueio; **nenhuma** mutation Monday/GitLab |
 | Sem `## Avaliação` | Parar; executar passo 7 |
 | Veredito inválido | Parar |
 | MCP Monday indisponível | Parar; **não** simular mutations |

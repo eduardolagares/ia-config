@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.4.1"
+VERSION: "5.4.2"
 ---
 
 # `/revisar-tarefa`
@@ -65,8 +65,9 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 - **Entrada:** branch e projetos/repos da saída do Passo 1.
 - **Check (início):** `scripts/check-gitlab-ready.sh --branch "<branch>" --titulo "<título>"`.
-- **Saída:** secção **`## Diff`** — branch vs **`master`** por repo.
+- **Saída:** secção **`## Diff`** — branch vs **`master`** por repo, com linha **`Status:`** `ok` \| `parcial` \| `indisponível` (ver `executar-diff`).
 - **Proibido:** clones locais, GitLab MCP e `glab`.
+- **Bloqueio:** se **`Status: indisponível`** ou **`parcial`**, **não** avançar ao passo 8 — ver § Passo 8.
 
 ## Passo 4 — Code review do diff (`code-review-diff`)
 
@@ -117,12 +118,13 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 ## Passo 8 — Pós avaliação (`pos-avaliacao`)
 
-**Obrigatório.** Aplicar a sub-skill:
+**Obrigatório** — **somente se** o passo 3 entregou **`## Diff`** com **`Status: ok`**. Aplicar a sub-skill:
 
 `pos-avaliacao/SKILL.md`
 
-- **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 / cache.
-- **Saída:** **`## Pós avaliação`** — mutations executadas.
+- **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 / cache + **`## Diff`** com **`Status: ok`**.
+- **Saída:** **`## Pós avaliação`** — mutations executadas, **ou** bloqueio documentado (sem alterar status/owners no Monday).
+- **Proibido sem diff válido:** `change_item_column_values` de status/owner, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (QA, Fazendo, Aguardando deploy, Aguardando correção, etc.).
 
 | Veredito | Ações |
 |----------|--------|
@@ -143,7 +145,7 @@ Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 7. `avaliar-tarefa`
 8. `pos-avaliacao`
 
-Não pular. Passos **6**, **7** e **8** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**; passo 8: **Merge requests** se `precisa_de_correcao`). Passo **8** também altera status/owners. GitLab: **leitura** no passo 3; **escrita** no passo 8 se `precisa_de_correcao` (MR → `master`).
+Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí altera status/owners e, se `precisa_de_correcao`, **Merge requests** + MRs. GitLab: **leitura** no passo 3; **escrita** no passo 8 condicionada a diff **ok**.
 
 ## Erros
 
@@ -151,7 +153,8 @@ Não pular. Passos **6**, **7** e **8** escrevem no doc **Revisar código** (pas
 |----------|------|
 | MCP Monday indisponível | Parar ou fallback leitura; passo 8 não simular |
 | Passo N sem saída do N−1 | Voltar ao passo em falta |
-| `GITLAB_TOKEN` ausente no env do executador | Parar no passo 3 (ou 8 se MRs); pedir `export` no shell local |
+| `GITLAB_TOKEN` ausente no env do executador | Parar no passo 3; passo 8 **proibido** |
+| `## Diff` com `Status: parcial` ou `indisponível` | **Não** executar passo 8; reportar bloqueio em `## Pós avaliação` |
 | Passo 8 sem avaliação | Voltar ao passo 7 |
 | Título ambíguo | Não escolher item aleatório |
 

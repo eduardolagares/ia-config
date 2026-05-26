@@ -5,7 +5,7 @@ description: >-
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes. Status Testar
   via passo 1.
 disable-model-invocation: true
-VERSION: "2.0.0"
+VERSION: "2.0.1"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -21,7 +21,7 @@ Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 | Dado | Obrigatório |
 |------|-------------|
 | **Passo 1** | Sim — subtarefas (Executar, Revisar código, **Testar**) + status |
-| **Passo 3** | Sim — secção **`## Diff`** (evidência de correção) |
+| **Passo 3** | Sim — secção **`## Diff`** com **`Status: ok`** para handoff ao passo 8 (evidência de correção) |
 | **Passo 6** | Sim — doc **Revisar código** publicado ou `Ação: nenhum` |
 | **Passos 4–5** | Recomendado — fallback se doc ausente |
 
@@ -183,9 +183,11 @@ Entregar **somente** este bloco:
 
 ## Handoff para passo 8
 
-| Veredito | Passo 8 |
-|----------|---------|
-| `precisa_de_correcao` | [pos-avaliacao](../pos-avaliacao/SKILL.md) § Correção |
+Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Status: ok`**. Caso contrário, incluir em **`## Avaliação`** a linha **`Pós-avaliação: bloqueada (diff GitLab indisponível)`** e entregar § Bloqueio do passo 8 — **sem** aplicar veredito no Monday.
+
+| Veredito | Passo 8 (se `Status: ok`) |
+|----------|---------------------------|
+| `precisa_de_correcao` | § Correção |
 | `deve_ser_testada` | § Testar |
 | `pode_avancar_para_deploy` | § Deploy |
 
@@ -195,6 +197,7 @@ Entregar **somente** este bloco:
 |----------|------|
 | Sem passo 1 | Parar |
 | Sem passo 3 (`## Diff`) | Parar |
+| `## Diff` com `Status` ≠ `ok` | Emitir veredito **sugerido** se possível; passo 8 **bloqueado** |
 | Sem passo 6 e sem passos 4–5 | Parar |
 | Subtarefa Testar não encontrada | Parar; listar subtarefas |
 | Doc ilegível | Fallback passos 4–5; avisar |

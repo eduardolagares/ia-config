@@ -5,7 +5,7 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.1"
+VERSION: "2.0.2"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -132,7 +132,18 @@ Se cache e API falharem:
 
 1. Informar que o hook pode não ter encontrado Monday cache na **1ª** revisão da tarefa
 2. Sugerir `prefetch-diff.sh --branch … --repo …` no **Terminal integrado** (VPN + `GITLAB_TOKEN`)
-3. Entregar `## Diff` com **Erro:** por repo — **não** usar clone local, MCP ou glab
+3. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — **não** usar clone local, MCP ou glab
+4. **Não** seguir para passo 8 (decisão final no Monday) — passos 4–7 podem documentar o bloqueio; status/owners ficam intactos
+
+## Status do diff (bloqueio do passo 8)
+
+Na saída **`## Diff`**, linha obrigatória após **Branch/Base:**
+
+| `Status` | Critério | Passo 8 |
+|----------|----------|---------|
+| **`ok`** | Cada repo de **Projetos alterados** (passo 1) tem subsecção com diff via cache/API; sem **Erro:**; fence `diff` com ≥1 linha de hunk | Permitido |
+| **`parcial`** | Pelo menos um repo **ok** e pelo menos um esperado falhou (ausente, **Erro:** ou diff vazio) | **Proibido** |
+| **`indisponível`** | Nenhum repo com diff válido; ou passo 3 abortado antes de montar diff | **Proibido** |
 
 ## Resolver repositórios
 
@@ -154,7 +165,7 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 ```markdown
 ## Diff
 
-**Branch:** `<branch>` · **Base:** `master`
+**Branch:** `<branch>` · **Base:** `master` · **Status:** `ok` | `parcial` | `indisponível`
 
 ### `<namespace/project>`
 
@@ -176,8 +187,9 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 ### Regras de formato
 
 - Título: **`## Diff`**
-- Erro em um repo: linha **Erro:** na tabela; seguir nos demais
-- Fence `diff` vazio proibido
+- Linha **`Status:`** obrigatória — recalcular após todos os repos (tabela § Status do diff)
+- Erro em um repo: linha **Erro:** na tabela; seguir nos demais; tende a `parcial` ou `indisponível`
+- Fence `diff` vazio proibido em repo marcado como obtido com sucesso
 
 ## Erros
 
@@ -187,7 +199,8 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 | `GITLAB_TOKEN` ausente no env do executador | Parar; pedir `export` no shell local |
 | CACHE_MISS na 1ª revisão | REST API (§2) via `ctx_execute` ou prefetch |
 | Bundle exit 2 no agente | Cache/hook ou `ctx_execute`; senão prefetch manual |
-| Bundle exit 1 em todos | Reportar JSON; não inventar diff |
+| Bundle exit 1 em todos | Reportar JSON; `Status: indisponível`; não inventar diff; passo 8 proibido |
+| `Status` ≠ `ok` | Passo 8 proibido — ver [pos-avaliacao](../pos-avaliacao/SKILL.md) |
 | Tentação de MCP/glab/clone local | Recusar § Proibido |
 | Repo ambíguo | Perguntar antes do bundle |
 
