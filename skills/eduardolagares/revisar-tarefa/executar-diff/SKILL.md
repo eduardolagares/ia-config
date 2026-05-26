@@ -5,7 +5,7 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.2"
+VERSION: "2.0.3"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -17,6 +17,8 @@ Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no Gi
 **Autenticação:** ler **`GITLAB_TOKEN` só das variáveis de ambiente da máquina de quem executa** (shell do utilizador, Terminal integrado, hook). Não colar token no chat; não inventar nem persistir em ficheiros. Ver secção **GitLab — autenticação** em [SKILL.md](../SKILL.md).
 
 **Proibido:** GitLab MCP, `glab`, clone/`git diff` local.
+
+**Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** na máquina do executador ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
 
 Invocação isolada (com passo 1 já no contexto):
 
@@ -82,7 +84,7 @@ Antes do agente rodar, o hook `beforeSubmitPrompt` tenta:
 scripts/prefetch-diff.sh --titulo "<título>" --source hook
 ```
 
-(grava cache via **REST API** — ambiente do hook / VPN do Mac)
+(grava cache via **REST API** — rede do Mac do executador, VPN já ativa)
 
 **Validar no passo 3:**
 
@@ -122,7 +124,7 @@ scripts/gitlab-api-phase3-diff-bundle.sh \
 
 **Agente (shell bloqueado):** `ctx_execute` (javascript + `fetch`) com `GITLAB_TOKEN` — mesmo fluxo MR → changes ou compare. Imprimir só resumo; diffs grandes → arquivo ou `ctx_index` + `ctx_search`.
 
-**VPN:** obrigatória — API não contorna rede.
+**Rede:** a API usa a VPN do executador (já ligada); o sandbox do agente pode bloquear `curl` — ver `ctx_execute` abaixo.
 
 Variáveis: `GLAB_DIFF_BASE` (default `master`), `GLAB_DIFF_PREVIEW_LINES`, `GLAB_DIFF_TMP`.
 
@@ -131,7 +133,7 @@ Variáveis: `GLAB_DIFF_BASE` (default `master`), `GLAB_DIFF_PREVIEW_LINES`, `GLA
 Se cache e API falharem:
 
 1. Informar que o hook pode não ter encontrado Monday cache na **1ª** revisão da tarefa
-2. Sugerir `prefetch-diff.sh --branch … --repo …` no **Terminal integrado** (VPN + `GITLAB_TOKEN`)
+2. Sugerir `prefetch-diff.sh --branch … --repo …` no **Terminal integrado** (`GITLAB_TOKEN` no env)
 3. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — **não** usar clone local, MCP ou glab
 4. **Não** seguir para passo 8 (decisão final no Monday) — passos 4–7 podem documentar o bloqueio; status/owners ficam intactos
 

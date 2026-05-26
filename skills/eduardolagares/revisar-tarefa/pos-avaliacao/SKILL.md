@@ -67,7 +67,7 @@ Entregar no chat:
 | Veredito (passo 7) | `<veredito>` — **não aplicado** |
 | Motivo | Diff GitLab indisponível (`Status: <parcial\|indisponível>`) |
 | Ações Monday | **nenhuma** (status/owners/doc MR inalterados) |
-| Próximo passo | Corrigir VPN/`GITLAB_TOKEN`, rodar prefetch ou repetir passo 3 até `Status: ok` |
+| Próximo passo | Corrigir `GITLAB_TOKEN`/cache, rodar prefetch ou repetir passo 3 até `Status: ok` (VPN já ativa no executador) |
 ```
 
 Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem executá-lo.
@@ -97,7 +97,7 @@ scripts/gitlab-api-mr-ensure-bundle.sh \
 | MR aberto com outro target | Atualiza target para `master` (`updated_target`) |
 | Sem MR aberto | Cria (`created`) |
 | Canal | REST API — scripts `gitlab-api-mr-ensure*`; **proibido** `glab` e GitLab MCP |
-| Exit **2** | `ctx_execute` com `fetch` ou Terminal integrado (VPN) |
+| Exit **2** | `ctx_execute` com `fetch` ou Terminal integrado (rede do Mac, VPN ativa) |
 
 Título do MR: título da tarefa Monday (ou branch se ausente).
 

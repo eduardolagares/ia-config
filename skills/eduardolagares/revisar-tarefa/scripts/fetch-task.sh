@@ -190,7 +190,7 @@ echo "${item}" | jq -r --arg st "${COL_SUB_STATUS}" '
 '
 
 echo ""
-echo "── Projetos inferidos (confirmar antes do glab — C1)"
+echo "── Projetos inferidos (confirmar antes do GitLab API — C1)"
 if [[ -n "${projects}" ]]; then
   echo "${projects}" | sed 's/^/  /'
 else

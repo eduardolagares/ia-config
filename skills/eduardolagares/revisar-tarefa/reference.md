@@ -224,5 +224,5 @@ curl -s -X POST https://api.monday.com/v2 \
 - Publicação doc Revisar código: [gerar-requisitos-de-codigo/SKILL.md](gerar-requisitos-de-codigo/SKILL.md)
 - Avaliação: [avaliar-tarefa/SKILL.md](avaliar-tarefa/SKILL.md)
 - Pós avaliação (status): [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md)
-- GitLab / glab: [reference-glab.md](reference-glab.md)
+- GitLab (REST API, `GITLAB_TOKEN`): [reference-gitlab-api.md](reference-gitlab-api.md)
 - Fluxo Hermes legado: `~/projetos/ia-config/skills/agendar-revisao-tarefa/reference.md`

@@ -142,7 +142,7 @@ jq -n \
 
 if [[ "${need_terminal}" -eq 1 ]]; then
   echo "GLAB_RUN_IN_USER_TERMINAL=1" >&2
-  echo "Rode no seu Terminal (com VPN ativa):" >&2
+  echo "Rode no seu Terminal integrado (rede do Mac — VPN já ativa):" >&2
   echo "  REVISAR_TAREFA_DIFF_FETCH=api ${SCRIPT_DIR}/gitlab-api-phase3-diff-bundle.sh $(printf '%q ' "${BRANCH}" "${REPOS[@]}")" >&2
   exit 2
 fi

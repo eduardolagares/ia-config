@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Ambiente compartilhado para scripts glab da skill /revisar-tarefa.
+# OBSOLETO para /revisar-tarefa — use gitlab-api-env.sh + GITLAB_TOKEN (REST API).
+# Ambiente compartilhado para scripts glab legados.
 # Uso: source "$(dirname "$0")/glab-env.sh"
 set -euo pipefail
 

@@ -4,6 +4,12 @@ Instância: **`https://gitlab.baladapp.com.br/api/v4`**
 
 **Canal único** para passo 3 (`executar-diff`). Sem GitLab MCP, sem `glab`.
 
+## Rede (VPN)
+
+A instância **só** responde com **VPN ativa**. Assume-se que quem executa a skill (utilizador no Mac) **já tem a VPN ligada** — hook, scripts bash e `ctx_execute` usam a rede dessa máquina.
+
+Não instruir “ativar VPN” por defeito. Falha de API → `GITLAB_TOKEN`, PAT, cache, sandbox; VPN só se o utilizador disser que está desligada.
+
 ## Autenticação (`GITLAB_TOKEN`)
 
 Sempre que usar GitLab nesta skill:
@@ -33,6 +39,7 @@ Reiniciar Cursor ou Terminal integrado após alterar `~/.zshrc` / `~/.bashrc`.
 | `gitlab-api-mr-ensure.sh` | garante MR aberto `source_branch` → `master` |
 | `gitlab-api-mr-ensure-bundle.sh` | MR por repo (passo 8, `precisa_de_correcao`) |
 | `prefetch-diff.sh` | pré-busca via API + grava cache |
+| `gitlab-api-validate.sh` | `GITLAB_TOKEN` + GET `/user` |
 | `check-gitlab-ready.sh` | token, hook, cache, API |
 
 ## Prefetch / hook
@@ -45,10 +52,10 @@ scripts/prefetch-diff.sh \
   --repo baladapp/assinaturas
 ```
 
-## Validar no Terminal (VPN on)
+## Validar no Terminal
 
 ```bash
-~/.agents/skills/gitlab-api/scripts/gitlab-api-check.sh
+scripts/gitlab-api-validate.sh
 
 scripts/gitlab-api-mr-find.sh \
   baladapp/assinaturas dev-eventos-sugeridos
@@ -66,7 +73,7 @@ scripts/gitlab-api-phase3-diff-bundle.sh \
 | Output grande | `ctx_execute` + `ctx_search` |
 
 - **Agente Cursor:** `gitlab_api_curl` → exit **2** no sandbox → usar `ctx_execute`
-- **Hook `beforeSubmitPrompt`:** rede do Mac/VPN — scripts bash OK
+- **Hook `beforeSubmitPrompt`:** rede do Mac (VPN já ativa no executador) — scripts bash OK
 
 ## `method` no JSON do bundle
 

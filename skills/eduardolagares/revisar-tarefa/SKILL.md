@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.4.2"
+VERSION: "5.4.4"
 ---
 
 # `/revisar-tarefa`
@@ -13,6 +13,14 @@ VERSION: "5.4.2"
 Oito passos: contexto → requisitos → diff → code review → verificação → publicação doc → **avaliação** → **pós avaliação** (Monday).
 
 **Pacote:** `skills/eduardolagares/revisar-tarefa/` (instalada em `{dest}/skills/eduardolagares/revisar-tarefa/`). Sub-skills e `scripts/` usam paths **relativos** a esta pasta.
+
+## GitLab — rede (VPN)
+
+`gitlab.baladapp.com.br` **só** é alcançável pela **VPN** da empresa. **Premissa:** a VPN **já está ativa** no computador de quem executa a skill (hook `beforeSubmitPrompt`, Terminal integrado ou sessão do agente na mesma máquina).
+
+- **Não** pedir para “ligar a VPN” como passo padrão de troubleshooting.
+- Se a API falhar, verificar primeiro: `GITLAB_TOKEN`, escopo do PAT, cache/hook, sandbox do agente (`ctx_execute`).
+- Só considerar VPN desligada se o utilizador confirmar que a ligação caiu.
 
 ## GitLab — autenticação
 

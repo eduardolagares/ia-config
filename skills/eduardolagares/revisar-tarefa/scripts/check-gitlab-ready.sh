@@ -3,6 +3,9 @@
 # Uso: check-gitlab-ready.sh [--branch BR] [--titulo T]
 set -euo pipefail
 
+# GITLAB_TOKEN costuma estar em ~/.zshrc (gitlab-api-env também carrega ao testar API)
+[[ -f "${HOME}/.zshrc" ]] && source "${HOME}/.zshrc" 2>/dev/null || true
+
 BRANCH=""
 TITULO=""
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -70,7 +73,7 @@ if [[ -f "${SCRIPT_DIR}/gitlab-api-env.sh" ]]; then
     api_note="esperado no agente; use cache do hook ou ctx_execute"
   else
     api_status="unreachable"
-    api_note="VPN/rede ou GITLAB_TOKEN inválido"
+    api_note="GITLAB_TOKEN inválido ou rede (VPN já deve estar ativa no Mac do executador)"
   fi
   set -e
 fi
@@ -91,7 +94,7 @@ if [[ "${token_status}" == "missing" ]]; then
 fi
 
 if [[ "${cache_status}" == "MISS" ]]; then
-  echo "**Cache:** hook roda ao enviar \`/revisar-tarefa <título>\` (VPN on). Ou:"
+  echo "**Cache:** hook roda ao enviar \`/revisar-tarefa <título>\` (rede do Mac, VPN ativa). Ou:"
   echo "\`scripts/prefetch-diff.sh --titulo \"...\" --branch \"...\" --repo baladapp/...\`"
   echo ""
 fi
@@ -103,5 +106,5 @@ elif [[ "${api_status}" == "agent_shell_blocked" ]]; then
 elif [[ "${api_status}" == "ok" ]]; then
   echo "**Agente:** REST API acessível — rodar \`gitlab-api-phase3-diff-bundle.sh\`."
 else
-  echo "**Agente:** corrigir GITLAB_TOKEN/VPN ou rodar prefetch no Terminal integrado."
+  echo "**Agente:** corrigir GITLAB_TOKEN ou rodar prefetch no Terminal integrado (VPN já ativa no executador)."
 fi

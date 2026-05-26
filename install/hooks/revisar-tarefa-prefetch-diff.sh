@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# beforeSubmitPrompt: prefetch diff GitLab ao enviar /revisar-tarefa (VPN do Mac).
+# beforeSubmitPrompt: prefetch diff GitLab ao enviar /revisar-tarefa (rede do Mac; VPN já ativa).
 # Instalado em $CURSOR_HOME/hooks/ pelo install/cursor.sh.
 set -euo pipefail
 

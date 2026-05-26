@@ -72,11 +72,12 @@ check_file "${MONDAY_STATUS_LABELS_FILE:-$HOME/.config/revisar-tarefa/monday-sta
 check_file "${MONDAY_SUBITEM_STATUS_LABELS_FILE:-$HOME/.config/revisar-tarefa/monday-subitem-status-labels.json}"
 
 echo ""
-echo "── GitLab (glab — terminal do usuário)"
+echo "── GitLab (REST API — GITLAB_TOKEN)"
+check_secret GITLAB_TOKEN "${GITLAB_TOKEN:-}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if out="$("${SCRIPT_DIR}/glab-validate.sh" 2>&1)"; then
+if out="$("${SCRIPT_DIR}/gitlab-api-validate.sh" 2>&1)"; then
   echo "${out}" | sed 's/^/  OK   /'
-  ok=$((ok + 2))
+  ok=$((ok + 1))
 else
   echo "${out}" | sed 's/^/  FAIL /'
   fail=$((fail + 1))
