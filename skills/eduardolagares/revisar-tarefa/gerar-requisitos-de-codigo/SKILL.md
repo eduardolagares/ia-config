@@ -5,7 +5,7 @@ description: >-
   os tópicos Revisão de código (1.M/2.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.2.0"
+VERSION: "2.2.1"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -230,7 +230,7 @@ Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
 |-------|--------|
 | `revisar-tarefa-code-review-diff` | Passo 4 — fonte 1.M / 2.M |
 | `revisar-tarefa-verificar-requisitos-usuario` | Passo 5 — fonte R* não implementados |
-| `revisar-tarefa-avaliar-tarefa` | Passo 7 — lê pendências deste doc |
+| `revisar-tarefa-avaliar-tarefa` | Passo 7 — verifica cumprimento no diff e marca checkboxes deste doc |
 | `revisar-tarefa-pos-avaliacao` | Passo 8 — MRs + tópico Merge requests + status/owners |
 | `monday-task-info` | Cache IDs subtarefa/doc |
 | `revisar-tarefa-gerar-requisitos-de-usuario` | Passo 2 — requisitos de usuário |

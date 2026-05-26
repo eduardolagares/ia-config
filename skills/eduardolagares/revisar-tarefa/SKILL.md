@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.3.1"
+VERSION: "5.4.0"
 ---
 
 # `/revisar-tarefa`
@@ -95,13 +95,14 @@ Oito passos: contexto → requisitos → diff → code review → verificação 
 
 `avaliar-tarefa/SKILL.md`
 
-- **Entrada:** passo 1 (status **Testar**) + doc **Revisar código** (após passo 6).
+- **Entrada:** passo 1 (status **Testar**) + **`## Diff`** (passo 3) + doc **Revisar código** (após passo 6).
 - **Lógica:**
-  - Existe item pendente em **Revisão de código** ou **Requisitos não implementados** (checkbox `- [ ]`, exceto `#ignorar`) → **não pode avançar** → veredito **`precisa_de_correcao`**.
+  - Para cada item aberto em **Revisão de código** ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
+  - Ainda existe `- [ ]` nas secções acima → **não pode avançar** → veredito **`precisa_de_correcao`**.
   - Senão, subtarefa **Testar** concluída → **`pode_avancar_para_deploy`**.
   - Senão → **`deve_ser_testada`**.
-- **Saída:** **`## Avaliação`** com veredito.
-- **Somente leitura.**
+- **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.
+- **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status → passo 8).
 
 ## Passo 8 — Pós avaliação (`pos-avaliacao`)
 
@@ -131,7 +132,7 @@ Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 7. `avaliar-tarefa`
 8. `pos-avaliacao`
 
-Não pular. Passos **6** e **8** escrevem no doc **Revisar código** (passo 6: revisão + R*; passo 8: **Merge requests** se `precisa_de_correcao`). Passo **8** também altera status/owners. GitLab: **leitura** no passo 3; **escrita** no passo 8 se `precisa_de_correcao` (MR → `master`).
+Não pular. Passos **6**, **7** e **8** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**; passo 8: **Merge requests** se `precisa_de_correcao`). Passo **8** também altera status/owners. GitLab: **leitura** no passo 3; **escrita** no passo 8 se `precisa_de_correcao` (MR → `master`).
 
 ## Erros
 
