@@ -31,12 +31,12 @@ Reiniciar Cursor ou Terminal integrado após alterar `~/.zshrc` / `~/.bashrc`.
 
 | Script | Função |
 |--------|--------|
-| `gitlab-api-env.sh` | `GITLAB_TOKEN`, `GITLAB_API_BASE`, `gitlab_api_curl` |
+| `gitlab-api-env.sh` | delega para skill **`gitlab-api`** (`GITLAB_TOKEN`, `gitlab_api_curl`) |
 | `gitlab-api-mr-find.sh` | MR por `source_branch` |
 | `gitlab-api-mr-diff.sh` | diff do MR (`/merge_requests/:iid/changes`) |
 | `gitlab-api-compare-diff.sh` | compare `from..to` |
 | `gitlab-api-phase3-diff-bundle.sh` | bundle passo 3 (`api_mr_diff` / `api_compare`) |
-| `gitlab-api-mr-ensure.sh` | garante MR aberto `source_branch` → `master` |
+| `gitlab-api-mr-ensure.sh` | delega para **`gitlab-api`** — MR `source_branch` → `master` |
 | `gitlab-api-mr-ensure-bundle.sh` | MR por repo (passo 8, `precisa_de_correcao`) |
 | `prefetch-diff.sh` | pré-busca via API + grava cache |
 | `gitlab-api-validate.sh` | `GITLAB_TOKEN` + GET `/user` |

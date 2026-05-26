@@ -14,7 +14,7 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 
 **GitLab (MRs):** ler **`GITLAB_TOKEN` das variáveis de ambiente da máquina de quem executa** — mesma regra do passo 3 ([SKILL.md](../SKILL.md) § GitLab — autenticação). Scripts `gitlab-api-mr-ensure*` herdam o env; `ctx_execute` usa `process.env.GITLAB_TOKEN`.
 
-**Antes de cada tool MCP:** ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json`.
+**Monday:** `CallMcpTool` com `server`: `plugin-monday.com-monday` (conexão Monday ligada no Cursor — Settings → MCP). Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
 
 **Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
 

@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.4.5"
+VERSION: "5.5.0"
 ---
 
 # `/revisar-tarefa`
@@ -52,9 +52,10 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 /monday-task-info <título exato da tarefa>
 ```
 
-- Seguir `~/.agents/skills/monday-task-info/SKILL.md` (MCP Monday + cache context-mode).
-- Entregar a **saída markdown completa** no chat (formato obrigatório daquela skill).
-- **Não** usar `fetch-task.sh` / GraphQL manual, salvo falha do MCP (fallback: `scripts/fetch-task.sh` + aviso).
+- Seguir `skills/eduardolagares/monday-task-info/SKILL.md` — **`CallMcpTool`**, `server`: `plugin-monday.com-monday`; depois `write-task-cache.sh`.
+- Entregar a **saída markdown completa** no chat (formato daquela skill).
+- Monday fora do MCP (scripts, token, GraphQL) → **proibido** — não há alternativa neste pacote.
+- MCP Monday indisponível → **parar** (sem simular contexto).
 
 ## Passo 2 — Requisitos de usuário (`gerar-requisitos-de-usuario`)
 
@@ -159,7 +160,7 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 
 | Situação | Ação |
 |----------|------|
-| MCP Monday indisponível | Parar ou fallback leitura; passo 8 não simular |
+| MCP Monday indisponível | Parar no passo 1; passos 6–8 não simular escrita |
 | Passo N sem saída do N−1 | Voltar ao passo em falta |
 | `GITLAB_TOKEN` ausente no env do executador | Parar no passo 3; passo 8 **proibido** |
 | `## Diff` com `Status: parcial` ou `indisponível` | **Não** executar passo 8; reportar bloqueio em `## Pós avaliação` |

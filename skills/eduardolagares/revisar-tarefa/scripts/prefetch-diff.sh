@@ -6,8 +6,25 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MONDAY_CACHE="${HOME}/.agents/skills/monday-task-info/cache/tasks-by-title.json"
 SKILL_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+resolve_monday_cache() {
+  local candidate
+  for candidate in \
+    "${SKILL_ROOT}/../monday-task-info/cache/tasks-by-title.json" \
+    "${HOME}/.agents/skills/eduardolagares/monday-task-info/cache/tasks-by-title.json" \
+    "${HOME}/.cursor/skills/eduardolagares/monday-task-info/cache/tasks-by-title.json" \
+    "${HOME}/.agents/skills/monday-task-info/cache/tasks-by-title.json" \
+    "${HOME}/.cursor/skills/monday-task-info/cache/tasks-by-title.json"; do
+    if [[ -f "${candidate}" ]]; then
+      printf '%s' "${candidate}"
+      return 0
+    fi
+  done
+  printf '%s' "${HOME}/.agents/skills/eduardolagares/monday-task-info/cache/tasks-by-title.json"
+}
+
+MONDAY_CACHE="$(resolve_monday_cache)"
 CACHE_DIR="${SKILL_ROOT}/cache"
 CACHE_FILE="${CACHE_DIR}/last-diff-bundle.json"
 BUNDLE_SCRIPT_API="${SCRIPT_DIR}/gitlab-api-phase3-diff-bundle.sh"

@@ -14,7 +14,7 @@ Sub-skill **`avaliar-tarefa`** do passo 7. **Leitura** do doc + diff; **escrita*
 
 Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
-**Antes de cada tool MCP:** ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json`.
+**Monday:** `CallMcpTool`, `server`: `plugin-monday.com-monday`. Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
 
 ## Pré-requisito
 

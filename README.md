@@ -78,9 +78,11 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
+| `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday (título exato), documento, subtarefas e cache `tasks-by-title.json`. |
+| `gitlab-api` | REST API GitLab (`GITLAB_TOKEN`): env, validação e garantir MRs (`source` → `master`). Usada por `revisar-tarefa` no passo 8. |
 | `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
 
-No **Cursor**, o `install/` regista o hook `beforeSubmitPrompt` em `$CURSOR_HOME/hooks/` para pré-buscar o diff ao enviar `/revisar-tarefa <título>` (requer `GITLAB_TOKEN` e skill `monday-task-info` no ambiente).
+No **Cursor**, o `install/` regista o hook `beforeSubmitPrompt` para pré-buscar o diff ao enviar `/revisar-tarefa <título>` (requer `GITLAB_TOKEN`, Monday ligado em **Settings → MCP**, passo 1 via `monday-task-info`, e skill `gitlab-api`).
 
 ---
 

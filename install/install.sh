@@ -18,7 +18,7 @@ for arg in "$@"; do
       echo "Uso: curl -fsSL …/install/install.sh | bash"
       echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp; pergunta destino (Cursor ou .agents)."
       echo "Estrutura: rules/eduardolagares/*.mdc (always: domain-layer, ruby; karpathy gerado)"
-      echo "           skills/eduardolagares/*/SKILL.md (escrever-tarefa, revisar-tarefa, tdd-doc, …)"
+      echo "           skills/eduardolagares/*/SKILL.md (monday-task-info, revisar-tarefa, gitlab-api, tdd-doc, …)"
       echo "           Cursor: hook prefetch diff em \$CURSOR_HOME/hooks/"
       exit 0
       ;;

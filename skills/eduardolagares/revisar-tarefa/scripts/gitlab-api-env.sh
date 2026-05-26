@@ -1,43 +1,37 @@
 #!/usr/bin/env bash
-# Minimal GitLab REST API env for revisar-tarefa scripts.
-
-for _gitlab_env_file in "${HOME}/.zshenv" "${HOME}/.zshrc"; do
-  if [[ -f "${_gitlab_env_file}" ]]; then
-    set +e
-    set +u
-    # shellcheck disable=SC1090
-    source "${_gitlab_env_file}" 2>/dev/null
-    set -e
-    set -u
-  fi
-  if [[ -n "${GITLAB_TOKEN:-}" ]]; then
-    break
-  fi
-done
-unset _gitlab_env_file
-
+# Carrega env da skill gitlab-api (repo ou install). Usar: source "$(dirname "$0")/gitlab-api-env.sh"
 set -euo pipefail
 
-GITLAB_API_BASE="${GITLAB_API_BASE:-https://gitlab.baladapp.com.br/api/v4}"
-
-gitlab_api_urlencode() {
-  python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"
+_gitlab_api_env_candidates() {
+  local script_dir="$1"
+  local repo_env
+  repo_env="$(cd "${script_dir}/../../gitlab-api/scripts" 2>/dev/null && pwd)/gitlab-api-env.sh" || true
+  printf '%s\n' \
+    "${repo_env}" \
+    "${HOME}/.agents/skills/eduardolagares/gitlab-api/scripts/gitlab-api-env.sh" \
+    "${HOME}/.cursor/skills/eduardolagares/gitlab-api/scripts/gitlab-api-env.sh" \
+    "${HOME}/.agents/skills/gitlab-api/scripts/gitlab-api-env.sh" \
+    "${HOME}/.cursor/skills/gitlab-api/scripts/gitlab-api-env.sh"
 }
 
-gitlab_api_is_cursor_agent_shell() {
-  [[ -n "${CURSOR_AGENT:-}" || -n "${CURSOR_TRACE_ID:-}" ]]
+_gitlab_api_load_env() {
+  local script_dir="$1"
+  local candidate
+  while IFS= read -r candidate; do
+    [[ -n "${candidate}" && -f "${candidate}" ]] || continue
+    # shellcheck source=/dev/null
+    source "${candidate}"
+    return 0
+  done < <(_gitlab_api_env_candidates "${script_dir}")
+  echo "FAIL: gitlab-api-env.sh não encontrado — instale skill gitlab-api (ia-config install)" >&2
+  return 1
 }
 
-gitlab_api_curl() {
-  local url="$1"
-  shift || true
-  if [[ -z "${GITLAB_TOKEN:-}" ]]; then
-    echo "FAIL: GITLAB_TOKEN ausente" >&2
-    return 1
-  fi
-  curl -sS --fail-with-body \
-    -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-    -H "Content-Type: application/json" \
-    "$@" \
-    "${url}"
-}
+_CALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  echo "Use: source ${BASH_SOURCE[0]}" >&2
+  exit 1
+fi
+
+_gitlab_api_load_env "${_CALLER_DIR}"

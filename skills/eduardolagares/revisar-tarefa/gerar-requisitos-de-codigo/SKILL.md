@@ -12,7 +12,7 @@ VERSION: "2.2.1"
 
 Sub-skill **`gerar-requisitos-de-codigo`** do passo 6. **Escrita** no Monday — **somente** documento da subtarefa **Revisar código** (coluna `monday_doc`). **Não** alterar status de subtarefas nem publicar updates.
 
-**Antes de cada tool MCP:** ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json`.
+**Monday:** `CallMcpTool`, `server`: `plugin-monday.com-monday` apenas. Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
 
 ## Pré-requisito
 
@@ -92,7 +92,7 @@ Nenhum.
 
 ### 0. Resolver subtarefa Revisar código
 
-Cache: `~/.agents/skills/monday-task-info/cache/tasks-by-title.json` → `subitems["Revisar código"].item_id` / `doc_object_id`.
+Cache: `monday-task-info/cache/tasks-by-title.json` → `subitems["Revisar código"].item_id` / `doc_object_id`.
 
 Se cache miss: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código` ou `Revisão de código`.
 

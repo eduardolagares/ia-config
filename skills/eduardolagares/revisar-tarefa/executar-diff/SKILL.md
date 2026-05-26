@@ -5,14 +5,14 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.4"
+VERSION: "2.0.5"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
 
 Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no GitLab.
 
-**Canal obrigatório:** **REST API** (`GITLAB_TOKEN`). Skill `gitlab-api` para auth e padrões.
+**Canal obrigatório:** **REST API** (`GITLAB_TOKEN`). Env partilhado: skill **`gitlab-api`** (`scripts/gitlab-api-env.sh`).
 
 **Autenticação:** ler **`GITLAB_TOKEN` só das variáveis de ambiente da máquina de quem executa** (shell do utilizador, Terminal integrado, hook). Não colar token no chat; não inventar nem persistir em ficheiros. Ver secção **GitLab — autenticação** em [SKILL.md](../SKILL.md).
 
