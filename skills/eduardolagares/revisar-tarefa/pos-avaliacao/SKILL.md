@@ -5,12 +5,14 @@ description: >-
   (status, owners). Se precisa_de_correcao, garante MRs GitLab (branch → master), publica
   links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
 disable-model-invocation: true
-VERSION: "1.2.0"
+VERSION: "1.2.1"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
 Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**).
+
+**GitLab (MRs):** ler **`GITLAB_TOKEN` das variáveis de ambiente da máquina de quem executa** — mesma regra do passo 3 ([SKILL.md](../SKILL.md) § GitLab — autenticação). Scripts `gitlab-api-mr-ensure*` herdam o env; `ctx_execute` usa `process.env.GITLAB_TOKEN`.
 
 **Antes de cada tool MCP:** ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json`.
 
@@ -21,7 +23,7 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 | **`## Avaliação`** | Sim — passo 7 (`Veredito`) |
 | **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código, Testar |
 | **Passo 1 ou 3** (só `precisa_de_correcao`) | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) |
-| **GITLAB_TOKEN** | Sim — para MRs em `precisa_de_correcao` |
+| **GITLAB_TOKEN** | Sim — **env do executador**, para MRs em `precisa_de_correcao` |
 | **Passo 6** (recomendado) | Doc **Revisar código** — se `Ação: nenhum`, § A.2 pode **criar** doc só com MRs |
 | **`doc_object_id`** | Sim (§ A.2) — cache `monday-task-info` → `subitems["Revisar código"].doc_object_id` |
 
@@ -55,7 +57,7 @@ Resolver `item_id` de cada subtarefa via cache `monday-task-info` ou passo 1.
 
 Para **cada** `namespace/project` da tarefa (mesma lista do passo 3 — `## Diff` / **Projetos alterados** do passo 1):
 
-1. **Check:** `GITLAB_TOKEN` presente; senão parar e pedir token (Monday abaixo só se MRs não forem bloqueantes — preferir parar tudo).
+1. **Check:** `GITLAB_TOKEN` presente no **env da máquina do executador** (`check-gitlab-ready.sh` ou equivalente); senão parar e pedir `export` no shell local (não pedir token no chat). Monday abaixo só se MRs não forem bloqueantes — preferir parar tudo.
 2. Rodar e **mostrar no chat** o JSON resumido:
 
 ```bash
@@ -232,7 +234,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 | Sem `## Avaliação` | Parar; executar passo 7 |
 | Veredito inválido | Parar |
 | MCP Monday indisponível | Parar; **não** simular mutations |
-| `GITLAB_TOKEN` ausente (`precisa_de_correcao`) | Parar antes de Monday; pedir token |
+| `GITLAB_TOKEN` ausente no env (`precisa_de_correcao`) | Parar antes de Monday; pedir `export` no shell local |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; Monday § B opcional |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Subtarefa não encontrada | Parar; listar subtarefas |

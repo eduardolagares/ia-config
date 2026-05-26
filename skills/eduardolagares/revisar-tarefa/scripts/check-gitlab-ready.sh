@@ -79,14 +79,14 @@ echo "## GitLab ready"
 echo ""
 echo "| Check | Status | Detalhe |"
 echo "|-------|--------|---------|"
-echo "| GITLAB_TOKEN | ${token_status} | env |"
+echo "| GITLAB_TOKEN | ${token_status} | env do executador |"
 echo "| hook prefetch | ${hook_status} | ${HOOK} |"
 echo "| cache diff | ${cache_status} | ${BRANCH:-—} |"
 echo "| api (shell) | ${api_status} | ${api_note:-—} |"
 echo ""
 
 if [[ "${token_status}" == "missing" ]]; then
-  echo "**Token:** export GITLAB_TOKEN=\"glpat-...\" (PAT em gitlab.baladapp.com.br)"
+  echo "**Token:** definir GITLAB_TOKEN nas variáveis de ambiente da sua máquina (ex.: export GITLAB_TOKEN=\"glpat-...\" em ~/.zshrc; PAT em gitlab.baladapp.com.br)"
   echo ""
 fi
 

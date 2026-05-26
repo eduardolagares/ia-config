@@ -5,7 +5,7 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.0"
+VERSION: "2.0.1"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -13,6 +13,8 @@ VERSION: "2.0.0"
 Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no GitLab.
 
 **Canal obrigatório:** **REST API** (`GITLAB_TOKEN`). Skill `gitlab-api` para auth e padrões.
+
+**Autenticação:** ler **`GITLAB_TOKEN` só das variáveis de ambiente da máquina de quem executa** (shell do utilizador, Terminal integrado, hook). Não colar token no chat; não inventar nem persistir em ficheiros. Ver secção **GitLab — autenticação** em [SKILL.md](../SKILL.md).
 
 **Proibido:** GitLab MCP, `glab`, clone/`git diff` local.
 
@@ -31,7 +33,7 @@ Ou seguir automaticamente após o passo 2 no fluxo `/revisar-tarefa`.
 | **Branch** | Sim — tabela do passo 1 (`monday-task-info`) |
 | **Repos GitLab** | Sim — `namespace/project` (updates, doc, `impacto:` ou confirmados com usuário) |
 | **Título** | Recomendado — validar cache (`--titulo`) |
-| **GITLAB_TOKEN** | Sim — env (hook/Terminal); `ctx_execute` no agente |
+| **GITLAB_TOKEN** | Sim — **env do executador** (hook/Terminal/`process.env` no `ctx_execute`); nunca no chat |
 
 Passo 2 (requisitos de usuário) não bloqueia a execução. Ordem completa: **1 → 2 → 3 → 4 → 5 → 6 → 7** ([avaliar-tarefa](../avaliar-tarefa/SKILL.md)) **→ 8** ([pos-avaliacao](../pos-avaliacao/SKILL.md)).
 
@@ -66,7 +68,7 @@ scripts/check-gitlab-ready.sh \
 | Check | Ação do agente |
 |-------|----------------|
 | `GITLAB_TOKEN` = ok | Prosseguir |
-| `GITLAB_TOKEN` = missing | Parar; pedir export do token |
+| `GITLAB_TOKEN` = missing | Parar; pedir `export` no shell local do executador (não no chat) |
 | `cache` = HIT | Montar `## Diff` do cache |
 | `api (shell)` = agent_shell_blocked | Normal — usar cache ou `ctx_execute` |
 
@@ -182,7 +184,7 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 | Situação | Ação |
 |----------|------|
 | Branch vazia no Monday | Parar |
-| `GITLAB_TOKEN` ausente | Parar; pedir token |
+| `GITLAB_TOKEN` ausente no env do executador | Parar; pedir `export` no shell local |
 | CACHE_MISS na 1ª revisão | REST API (§2) via `ctx_execute` ou prefetch |
 | Bundle exit 2 no agente | Cache/hook ou `ctx_execute`; senão prefetch manual |
 | Bundle exit 1 em todos | Reportar JSON; não inventar diff |

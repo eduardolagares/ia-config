@@ -4,7 +4,22 @@ Instância: **`https://gitlab.baladapp.com.br/api/v4`**
 
 **Canal único** para passo 3 (`executar-diff`). Sem GitLab MCP, sem `glab`.
 
-Auth: **`GITLAB_TOKEN`** (env) — ver skill `gitlab-api` (`~/.agents/skills/gitlab-api/scripts/gitlab-api-env.sh`).
+## Autenticação (`GITLAB_TOKEN`)
+
+Sempre que usar GitLab nesta skill:
+
+- **Fonte única:** variável de ambiente **`GITLAB_TOKEN`** na máquina de **quem executa** (utilizador no Terminal, hook `beforeSubmitPrompt`, ou sessão do agente com env herdado).
+- **Proibido:** pedir o PAT no chat, inventar token, gravar em ficheiros do repo ou confiar só no OAuth do plugin GitLab MCP para os scripts REST abaixo.
+- **Validar:** `scripts/check-gitlab-ready.sh` ou `source scripts/gitlab-api-env.sh` (delega para `~/.agents/skills/gitlab-api/scripts/gitlab-api-env.sh`).
+- **Agente com curl bloqueado:** `ctx_execute` com `Authorization: Bearer ${process.env.GITLAB_TOKEN}` — o valor tem de vir do mesmo env da sessão.
+
+Configurar no executador:
+
+```bash
+export GITLAB_TOKEN="glpat-..."   # PAT em gitlab.baladapp.com.br (escopo api)
+```
+
+Reiniciar Cursor ou Terminal integrado após alterar `~/.zshrc` / `~/.bashrc`.
 
 ## Scripts
 

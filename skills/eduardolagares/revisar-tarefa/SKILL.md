@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.4.0"
+VERSION: "5.4.1"
 ---
 
 # `/revisar-tarefa`
@@ -13,6 +13,17 @@ VERSION: "5.4.0"
 Oito passos: contexto → requisitos → diff → code review → verificação → publicação doc → **avaliação** → **pós avaliação** (Monday).
 
 **Pacote:** `skills/eduardolagares/revisar-tarefa/` (instalada em `{dest}/skills/eduardolagares/revisar-tarefa/`). Sub-skills e `scripts/` usam paths **relativos** a esta pasta.
+
+## GitLab — autenticação
+
+Sempre que usar GitLab nesta skill (passos **3** e **8**, scripts `gitlab-api-*`, hook `prefetch-diff`, `ctx_execute` com `fetch`):
+
+1. **Ler `GITLAB_TOKEN` das variáveis de ambiente da máquina de quem executa** — shell do utilizador, Terminal integrado do Cursor ou processo do hook. O agente **não** inventa token, **não** pede para colar no chat e **não** grava em ficheiros do repo.
+2. **Antes de API ou scripts:** confirmar presença (`scripts/check-gitlab-ready.sh` ou equivalente). Se `missing`, parar e pedir `export GITLAB_TOKEN="glpat-..."` no perfil do shell (`~/.zshrc`, `~/.bashrc`, etc.) e reiniciar o Cursor ou o Terminal integrado.
+3. **Shell do agente bloqueado:** em `ctx_execute`, usar `process.env.GITLAB_TOKEN` herdado do ambiente da sessão — mesma regra: só o env do executador.
+4. **OAuth / GitLab MCP** do plugin Cursor **não** substitui `GITLAB_TOKEN` para REST API desta skill (passo 3 proíbe MCP; passo 8 usa só scripts `gitlab-api-*`).
+
+Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 ## Entrada
 
@@ -140,7 +151,7 @@ Não pular. Passos **6**, **7** e **8** escrevem no doc **Revisar código** (pas
 |----------|------|
 | MCP Monday indisponível | Parar ou fallback leitura; passo 8 não simular |
 | Passo N sem saída do N−1 | Voltar ao passo em falta |
-| `GITLAB_TOKEN` ausente | Parar no passo 3 |
+| `GITLAB_TOKEN` ausente no env do executador | Parar no passo 3 (ou 8 se MRs); pedir `export` no shell local |
 | Passo 8 sem avaliação | Voltar ao passo 7 |
 | Título ambíguo | Não escolher item aleatório |
 
