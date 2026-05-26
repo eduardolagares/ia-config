@@ -5,7 +5,7 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.3"
+VERSION: "2.0.4"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -16,7 +16,7 @@ Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no Gi
 
 **Autenticação:** ler **`GITLAB_TOKEN` só das variáveis de ambiente da máquina de quem executa** (shell do utilizador, Terminal integrado, hook). Não colar token no chat; não inventar nem persistir em ficheiros. Ver secção **GitLab — autenticação** em [SKILL.md](../SKILL.md).
 
-**Proibido:** GitLab MCP, `glab`, clone/`git diff` local.
+**Proibido:** GitLab MCP — ver [reference-gitlab-mcp.md](../reference-gitlab-mcp.md).
 
 **Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** na máquina do executador ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
 
@@ -41,20 +41,9 @@ Passo 2 (requisitos de usuário) não bloqueia a execução. Ordem completa: **1
 
 Sem branch → parar. Sem repo → inferir ou perguntar; não chutar path GitLab.
 
-## Proibido (sem fallback)
+## Fontes válidas
 
-**Nunca** obter diff via clone local ou git no filesystem:
-
-- `git diff` / `git log` em `~/projetos/`, worktrees ou qualquer path local
-- inferir alterações lendo arquivos do disco
-- marcar `method: compare (local)` ou equivalente na saída
-
-**Nunca** usar:
-
-- **GitLab MCP** (`CallMcpTool`, `/api/v4/mcp`)
-- **`glab`** (CLI, scripts `glab-*`, config `glab-cli`)
-
-Fontes válidas: **cache** (`last-diff-bundle.json`), **REST API** (scripts `gitlab-api-*` ou `ctx_execute`).
+Somente **cache** (`last-diff-bundle.json`) e **REST API** (scripts `gitlab-api-*` ou `ctx_execute` com `GITLAB_TOKEN`). Não inferir alterações lendo arquivos do disco nem marcar `method` fora de `cache` \| `api_mr_diff` \| `api_compare`.
 
 ## Ordem de execução (obrigatória)
 
@@ -126,7 +115,7 @@ scripts/gitlab-api-phase3-diff-bundle.sh \
 
 **Rede:** a API usa a VPN do executador (já ligada); o sandbox do agente pode bloquear `curl` — ver `ctx_execute` abaixo.
 
-Variáveis: `GLAB_DIFF_BASE` (default `master`), `GLAB_DIFF_PREVIEW_LINES`, `GLAB_DIFF_TMP`.
+Variáveis opcionais nos scripts: base branch (default `master`), preview de linhas, diretório temporário — ver [reference-gitlab-api.md](../reference-gitlab-api.md).
 
 ### 3. Falha total
 
@@ -134,7 +123,7 @@ Se cache e API falharem:
 
 1. Informar que o hook pode não ter encontrado Monday cache na **1ª** revisão da tarefa
 2. Sugerir `prefetch-diff.sh --branch … --repo …` no **Terminal integrado** (`GITLAB_TOKEN` no env)
-3. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — **não** usar clone local, MCP ou glab
+3. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — sem inventar diff nem contornar via MCP
 4. **Não** seguir para passo 8 (decisão final no Monday) — passos 4–7 podem documentar o bloqueio; status/owners ficam intactos
 
 ## Status do diff (bloqueio do passo 8)
@@ -203,7 +192,7 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 | Bundle exit 2 no agente | Cache/hook ou `ctx_execute`; senão prefetch manual |
 | Bundle exit 1 em todos | Reportar JSON; `Status: indisponível`; não inventar diff; passo 8 proibido |
 | `Status` ≠ `ok` | Passo 8 proibido — ver [pos-avaliacao](../pos-avaliacao/SKILL.md) |
-| Tentação de MCP/glab/clone local | Recusar § Proibido |
+| Tentação de GitLab MCP ou fonte fora cache/API | Recusar — só cache + REST API |
 | Repo ambíguo | Perguntar antes do bundle |
 
 ## Skills relacionadas

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Passo 3: diff via GitLab REST API (curl + token), sem binário glab.
+# Passo 3: diff via GitLab REST API (curl + token).
 # Uso: gitlab-api-phase3-diff-bundle.sh <source-branch> <repo1> [repo2 ...]
 set -euo pipefail
 

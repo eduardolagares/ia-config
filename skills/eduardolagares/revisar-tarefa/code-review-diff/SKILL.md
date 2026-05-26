@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–4 (Crítico, Grave, Outros, Lacunas de teste). Itens 1.M e 2.M
   alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.3.1"
+VERSION: "1.3.2"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
@@ -18,7 +18,7 @@ Sub-skill do **passo 4** de `revisar-tarefa`. **Somente leitura** — não edita
 
 Ao invocar o protocolo neste passo, **declarar explicitamente** à skill `code-review`:
 
-> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff`), secção **`## Diff`** desta conversa (ou `diff_file` do bundle/cache se truncado). **Não** usar outro diff, paths soltos indicados pelo utilizador, nem `git diff` local.
+> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff`), secção **`## Diff`** desta conversa (ou `diff_file` do bundle/cache se truncado). **Não** usar outro diff nem paths soltos indicados pelo utilizador fora do passo 3.
 
 Regras:
 

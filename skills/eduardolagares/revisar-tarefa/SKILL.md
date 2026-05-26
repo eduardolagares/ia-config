@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.4.4"
+VERSION: "5.4.5"
 ---
 
 # `/revisar-tarefa`
@@ -74,7 +74,7 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 - **Entrada:** branch e projetos/repos da saída do Passo 1.
 - **Check (início):** `scripts/check-gitlab-ready.sh --branch "<branch>" --titulo "<título>"`.
 - **Saída:** secção **`## Diff`** — branch vs **`master`** por repo, com linha **`Status:`** `ok` \| `parcial` \| `indisponível` (ver `executar-diff`).
-- **Proibido:** clones locais, GitLab MCP e `glab`.
+- **Canal:** cache + REST API (`gitlab-api-*`); ver [executar-diff/SKILL.md](executar-diff/SKILL.md). **Proibido:** GitLab MCP.
 - **Bloqueio:** se **`Status: indisponível`** ou **`parcial`**, **não** avançar ao passo 8 — ver § Passo 8.
 
 ## Passo 4 — Code review do diff (`code-review-diff`)

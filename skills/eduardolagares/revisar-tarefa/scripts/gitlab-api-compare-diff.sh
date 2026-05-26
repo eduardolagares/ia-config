@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compare branch vs base via GitLab REST API (curl, sem glab).
+# Compare branch vs base via GitLab REST API (curl).
 # Uso: gitlab-api-compare-diff.sh <namespace/project> <branch> [base_ref] [arquivo_saida]
 set -euo pipefail
 

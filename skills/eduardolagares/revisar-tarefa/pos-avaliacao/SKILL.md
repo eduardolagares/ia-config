@@ -5,7 +5,7 @@ description: >-
   (status, owners). Se precisa_de_correcao, garante MRs GitLab (branch → master), publica
   links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
 disable-model-invocation: true
-VERSION: "1.2.2"
+VERSION: "1.2.3"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -91,12 +91,12 @@ scripts/gitlab-api-mr-ensure-bundle.sh \
 
 | Comportamento | Detalhe |
 |---------------|---------|
-| Target | **`master`** (`GLAB_DIFF_BASE`) |
+| Target | **`master`** |
 | Source | Branch da tarefa (coluna Monday) |
 | MR já aberto `source` → `master` | Reutiliza (`action: existing`) |
 | MR aberto com outro target | Atualiza target para `master` (`updated_target`) |
 | Sem MR aberto | Cria (`created`) |
-| Canal | REST API — scripts `gitlab-api-mr-ensure*`; **proibido** `glab` e GitLab MCP |
+| Canal | REST API — scripts `gitlab-api-mr-ensure*`; GitLab MCP proibido |
 | Exit **2** | `ctx_execute` com `fetch` ou Terminal integrado (rede do Mac, VPN ativa) |
 
 Título do MR: título da tarefa Monday (ou branch se ausente).

@@ -2,7 +2,7 @@
 
 Instância: **`https://gitlab.baladapp.com.br/api/v4`**
 
-**Canal único** para passo 3 (`executar-diff`). Sem GitLab MCP, sem `glab`.
+**Canal único** para passo 3 (`executar-diff`): REST API com `GITLAB_TOKEN`. GitLab MCP: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 
 ## Rede (VPN)
 
@@ -16,7 +16,7 @@ Sempre que usar GitLab nesta skill:
 
 - **Fonte única:** variável de ambiente **`GITLAB_TOKEN`** na máquina de **quem executa** (utilizador no Terminal, hook `beforeSubmitPrompt`, ou sessão do agente com env herdado).
 - **Proibido:** pedir o PAT no chat, inventar token, gravar em ficheiros do repo ou confiar só no OAuth do plugin GitLab MCP para os scripts REST abaixo.
-- **Validar:** `scripts/check-gitlab-ready.sh` ou `source scripts/gitlab-api-env.sh` (delega para `~/.agents/skills/gitlab-api/scripts/gitlab-api-env.sh`).
+- **Validar:** `scripts/check-gitlab-ready.sh` ou `source scripts/gitlab-api-env.sh`.
 - **Agente com curl bloqueado:** `ctx_execute` com `Authorization: Bearer ${process.env.GITLAB_TOKEN}` — o valor tem de vir do mesmo env da sessão.
 
 Configurar no executador:
@@ -31,7 +31,7 @@ Reiniciar Cursor ou Terminal integrado após alterar `~/.zshrc` / `~/.bashrc`.
 
 | Script | Função |
 |--------|--------|
-| `gitlab-api-env.sh` | delega para skill `gitlab-api` |
+| `gitlab-api-env.sh` | `GITLAB_TOKEN`, `GITLAB_API_BASE`, `gitlab_api_curl` |
 | `gitlab-api-mr-find.sh` | MR por `source_branch` |
 | `gitlab-api-mr-diff.sh` | diff do MR (`/merge_requests/:iid/changes`) |
 | `gitlab-api-compare-diff.sh` | compare `from..to` |
@@ -78,7 +78,7 @@ scripts/gitlab-api-phase3-diff-bundle.sh \
 ## `method` no JSON do bundle
 
 - `api_mr_diff` — MR encontrado, diff via changes API
-- `api_compare` — sem MR (ou MR diff falhou), compare branch vs `GLAB_DIFF_BASE` (default `master`)
+- `api_compare` — sem MR (ou MR diff falhou), compare branch vs base (default `master`)
 
 ## MR para correção (passo 8)
 
@@ -92,6 +92,4 @@ scripts/gitlab-api-mr-ensure-bundle.sh \
 
 ## Proibido no passo 3
 
-- GitLab MCP (`CallMcpTool`, `/api/v4/mcp`)
-- `glab` e scripts `glab-*`
-- `git diff` / clone local
+GitLab MCP — ver [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
