@@ -4,7 +4,7 @@ description: >-
   Passo 1 revisar-tarefa: lê tarefa Monday só via MCP Cursor (plugin-monday.com-monday).
   Grava cache com write-task-cache.sh. Use com /monday-task-info.
 disable-model-invocation: true
-VERSION: "1.3.0"
+VERSION: "1.3.1"
 ---
 
 # monday-task-info
@@ -100,6 +100,12 @@ scripts/write-task-cache.sh "<título exato>" < payload.json
 ## Cache (`cache/tasks-by-title.json`)
 
 Ver esquema em [reference-mcp-monday.md](reference-mcp-monday.md) § Cache. Gravar com `write-task-cache.sh` após cada leitura MCP.
+
+## Normalização de projetos alterados
+
+Ao montar **`## Projetos alterados`**, aplicar as normalizações abaixo:
+
+- `ingressos-repo` (citado no texto/doc/updates) representa o projeto **ingressos** (submodule) e deve entrar como `baladapp/ingressos`.
 
 ## Setup (utilizador)
 

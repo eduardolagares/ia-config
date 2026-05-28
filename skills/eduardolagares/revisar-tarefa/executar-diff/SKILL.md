@@ -5,7 +5,7 @@ description: >-
   ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
   Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.5"
+VERSION: "2.0.6"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -141,7 +141,8 @@ Na saída **`## Diff`**, linha obrigatória após **Branch/Base:**
 1. Paths em doc/updates: `gitlab.baladapp.com.br/...`, `baladapp/repo`.
 2. Update `impacto: <nome>` → `baladapp/<nome>`.
 3. `baladapp-react-components` → `baladapp/baladapp-react-components`.
-4. Ambíguo → **uma** pergunta ao usuário.
+4. `ingressos-repo` → `baladapp/ingressos` (submodule do projeto ingressos).
+5. Ambíguo → **uma** pergunta ao usuário.
 
 ## Diffs grandes
 
