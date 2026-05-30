@@ -60,5 +60,6 @@ if [[ "$DRY_RUN" == true ]]; then
 else
   echo "Feito."
   echo "Revisar tarefa: /revisar-tarefa <título> (skill em skills/$IA_NAMESPACE/revisar-tarefa/)"
+  echo "Refatorar código: /refatorar-codigo (skill em skills/$IA_NAMESPACE/refatorar-codigo/)"
   echo "Ambiente: validate-env.sh (GitLab) + Monday em Cursor → Settings → MCP"
 fi

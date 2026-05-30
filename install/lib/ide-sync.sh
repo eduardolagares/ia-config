@@ -141,6 +141,9 @@ ia_config_print_sync_summary() {
   if [[ -d "$skills_ns/escrever-tarefa" ]]; then
     echo "  Skill escrever-tarefa: instalada (docs/tarefas/; grill-me em ~/.agents, ~/.cursor ou ~/.claude)"
   fi
+  if [[ -d "$skills_ns/refatorar-codigo" ]]; then
+    echo "  Skill refatorar-codigo: instalada (/refatorar-codigo — refatora diff vs master ou alterações locais)"
+  fi
 }
 
 ia_config_sync_cursor_home() {

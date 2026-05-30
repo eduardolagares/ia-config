@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.4"
+VERSION: "0.0.5"
 description: Minitest tests — TDD, naming, business assertions, isolation
 globs: test/**/*.rb
 ---
@@ -21,6 +21,7 @@ globs: test/**/*.rb
 - `setup` data not shared across unrelated tests.
 - Mock/stub **external** boundaries (HTTP, mail, queue, clock, RNG) — not your own application classes.
 - State deltas → `assert_difference` / `assert_changes` instead of manual before/after juggling when fit.
+- Migrations: **no contract tests** — do not add specs that mirror `db/migrate` (columns, indexes, FKs, `up`/`down`). Schema is the migration + `schema.rb`; prove effects through model/query/integration behavior.
 
 ```ruby
 # bad: test "works" do … multiple unrelated asserts … end
