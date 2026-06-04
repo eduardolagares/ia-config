@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.5.0"
+VERSION: "5.5.1"
 ---
 
 # `/revisar-tarefa`
@@ -119,7 +119,8 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 - **Entrada:** passo 1 (status **Testar**) + **`## Diff`** (passo 3) + doc **Revisar código** (após passo 6).
 - **Lógica:**
   - Para cada item aberto em **Revisão de código** ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
-  - Ainda existe `- [ ]` nas secções acima → **não pode avançar** → veredito **`precisa_de_correcao`**.
+  - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
+  - Ainda existe `- [ ]` em **Revisão de código**, **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
   - Senão, subtarefa **Testar** concluída → **`pode_avancar_para_deploy`**.
   - Senão → **`deve_ser_testada`**.
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.

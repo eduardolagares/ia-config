@@ -5,7 +5,7 @@ description: >-
   os tópicos Revisão de código (1.M/2.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.2.1"
+VERSION: "2.2.2"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -34,7 +34,7 @@ Subboard subtarefas: **`4571892432`**. Coluna doc: **`monday_doc`**.
 
 ## Estrutura do documento Monday
 
-Três tópicos no documento (headings **`##`**). O passo 6 preenche os dois primeiros; **`## Merge requests`** é preenchido no passo 8 quando veredito = `precisa_de_correcao` ([pos-avaliacao](../pos-avaliacao/SKILL.md) § A.2).
+Quatro tópicos no documento (headings **`##`**). O passo 6 preenche os dois primeiros; **`## Análise manual`** pode existir antes (itens inseridos à mão ou por outro fluxo); **`## Merge requests`** é preenchido no passo 8 quando veredito = `precisa_de_correcao` ([pos-avaliacao](../pos-avaliacao/SKILL.md) § A.2).
 
 ```markdown
 # Revisar código
@@ -63,6 +63,10 @@ Nenhum.
 
 - [ ] **R2** — <texto>. Evidência: …
 
+## Análise manual
+
+- [ ] **M1** — <texto>. Verificação humana obrigatória.
+
 ## Merge requests
 
 | Repo | MR | Branch → target | URL |
@@ -74,6 +78,7 @@ Nenhum.
 |--------|----------|--------|
 | **`## Revisão de código`** | Checkboxes `1.M` / `2.M` | Passo 4 |
 | **`## Requisitos não implementados`** | Checkboxes `R*` | Passo 5 |
+| **`## Análise manual`** | Checkboxes `M*` (ou bullets `- [ ]`) | Fora do passo 6 por defeito — **não** sobrescrever; passo 7 bloqueia se aberto |
 | **`## Merge requests`** | Tabela repo / MR / branch→master / URL | Passo 8 (`precisa_de_correcao`) — **não** publicar no passo 6 |
 
 ### Agrupamento por projeto (passo 6)

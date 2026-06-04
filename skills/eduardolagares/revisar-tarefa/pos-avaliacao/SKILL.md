@@ -5,7 +5,7 @@ description: >-
   (status, owners). Se precisa_de_correcao, garante MRs GitLab (branch → master), publica
   links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
 disable-model-invocation: true
-VERSION: "1.2.3"
+VERSION: "1.2.4"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -73,6 +73,8 @@ Entregar no chat:
 Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem executá-lo.
 
 ### `precisa_de_correcao`
+
+Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxes — conclusão humana). Mesmas ações de status abaixo.
 
 **Ordem:** GitLab (MRs) → doc Monday (**Merge requests**) → Monday (owners + status).
 
@@ -266,7 +268,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 
 ## Proibido
 
-- Alterar tópicos **`## Revisão de código`** ou **`## Requisitos não implementados`** no doc (passo 6)
+- Alterar tópicos **`## Revisão de código`**, **`## Requisitos não implementados`** ou **`## Análise manual`** no doc (passo 6 / conclusão humana)
 - Sobrescrever/apagar conteúdo existente do doc (só **append** em **Merge requests**)
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)

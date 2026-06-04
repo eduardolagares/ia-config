@@ -5,7 +5,7 @@ description: >-
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes. Status Testar
   via passo 1.
 disable-model-invocation: true
-VERSION: "2.0.1"
+VERSION: "2.0.2"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -54,19 +54,25 @@ Extrair:
 |------|-----|
 | `blocks_as_markdown` / markdown integral | Secções e texto dos itens |
 | `blocks[]` com `id`, `type`, `content`, `checked` | `update_block` nos checkboxes |
-| IDs em aberto | `\*\*(\d\.\d+|R\d+)\*\*` em bullets `- [ ]` nas secções alvo |
+| IDs em aberto | `\*\*(\d\.\d+|R\d+)\*\*` em bullets `- [ ]` nas secções de verificação; em **`## Análise manual`**, qualquer `- [ ]` / `list_item` com `checked: false` (ids `M\d+` opcionais) |
 | `#ignorar` | Excluir da verificação e da escrita |
 
-**Secções alvo** (heading `##`):
+**Secções alvo — verificação no diff (Fases B–C):**
 
 - **`## Revisão de código`** (inclui subsecções datadas `## Revisão de código — YYYY-MM-DD`)
 - **`## Requisitos não implementados`** (idem com data no título)
 
-Fora dessas secções → **não** verificar nem marcar.
+**Secção só leitura para pendências (Fase D — nunca Fases B–C):**
+
+- **`## Análise manual`** (inclui `## Análise manual — YYYY-MM-DD`)
+
+Fora das secções de verificação → **não** verificar nem marcar. **`## Análise manual`** → **não** verificar no diff nem marcar checkbox (conclusão só humana no Monday).
 
 ## Fase B — Verificar cumprimento (diff)
 
-Para cada item **aberto** (`- [ ]` ou bloco `list_item` com `checked: false`) nas secções alvo:
+**Âmbito:** apenas **`## Revisão de código`** e **`## Requisitos não implementados`**. Itens em **`## Análise manual`** ficam **fora** desta fase.
+
+Para cada item **aberto** (`- [ ]` ou bloco `list_item` com `checked: false`) nas secções alvo de verificação:
 
 | Tipo | ID | Critério **cumprido** |
 |------|-----|----------------------|
@@ -85,6 +91,7 @@ Para cada item **aberto** (`- [ ]` ou bloco `list_item` com `checked: false`) na
 - **Não** desmarcar (`checked: false`) itens já concluídos no doc.
 - **Não** alterar texto do bullet — só estado `checked`.
 - Linha com **`#ignorar`** → ignorar (não verificar, não marcar).
+- **`## Análise manual`:** **proibido** marcar `checked: true` nesta fase — conclusão **exclusivamente manual** no Monday (fora do agente).
 
 Diff só com **Erro:** por repo → tratar itens daquele repo como **incerto**; não marcar cumpridos sem hunks.
 
@@ -130,11 +137,12 @@ A tarefa **não pode avançar** se existir **qualquer** item ainda aberto em:
 
 | Fonte | O que conta |
 |-------|-------------|
-| Doc **Revisar código** | Checkbox `- [ ]` nos tópicos **`## Revisão de código`** ou **`## Requisitos não implementados`** |
+| Doc **Revisar código** | Checkbox `- [ ]` nos tópicos **`## Revisão de código`**, **`## Requisitos não implementados`** ou **`## Análise manual`** |
+| **Análise manual** | Itens abertos **bloqueiam** mesmo que revisão e requisitos estejam limpos; o agente **não** os fecha no passo 7 — só leitura para o veredito |
 | Exclusão | Linhas com **`#ignorar`** — **não** contam |
-| Fallback (sem doc) | Itens `1.M`/`2.M` nos blocos **1–2** do code review **≠** `Nenhum.` **ou** ids em **Requisitos não implementados** **≠** `Nenhum.` |
+| Fallback (sem doc) | Itens `1.M`/`2.M` nos blocos **1–2** do code review **≠** `Nenhum.` **ou** ids em **Requisitos não implementados** **≠** `Nenhum.` (sem fallback para análise manual — exige doc) |
 
-Se **há pendências** → veredito **`precisa_de_correcao`**.
+Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtarefa **Revisar código** → **Aguardando correção**; tarefa principal → **Fazendo**).
 
 ### Regra 2 — Sem pendências: olhar subtarefa Testar
 
@@ -167,6 +175,7 @@ Entregar **somente** este bloco:
 | Itens marcados cumpridos | <ids ou —> |
 | Pendências revisão | <ids ou contagem> (ou —) |
 | Pendências requisitos | <ids ou contagem> (ou —) |
+| Pendências análise manual | <resumo ou contagem> (ou —) |
 | Status Testar | <label do passo 1> |
 | Doc atualizado | `sim` \| `não` \| `parcial` |
 
@@ -177,7 +186,8 @@ Entregar **somente** este bloco:
 
 ### Regras da saída
 
-- **`Pode avançar?`** = `não` só quando veredito = `precisa_de_correcao`.
+- **`Pode avançar?`** = `não` só quando veredito = `precisa_de_correcao` (inclui pendências em **`## Análise manual`**).
+- **`Pendências análise manual`:** listar bullets/ids abertos ou contagem; se nenhuma → `—`.
 - **`Doc atualizado`** = `sim` se Fase C concluiu sem falha; `parcial` se algum `update_block` falhou; `não` se nada a marcar.
 - **Não** repetir doc integral nem code review.
 
