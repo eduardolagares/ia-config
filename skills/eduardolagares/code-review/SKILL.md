@@ -5,7 +5,7 @@ description: >-
   cruzamento diff↔spec TDD se existir; sem cobertura. Use com /code-review,
   "code-review", "revisar código", ou revisão de diff/PR.
 disable-model-invocation: true
-VERSION: "1.0.0"
+VERSION: "1.1.1"
 ---
 
 # code-review
@@ -27,9 +27,11 @@ VERSION: "1.0.0"
 ## Fontes (ordem fixa)
 
 1. Diff ou paths indicados pelo utilizador.
-2. `.cursor/rules/`, `AGENTS.md`, constituição se existir.
-3. Convenções observáveis no código.
+2. **`rules/eduardolagares/**/*.mdc`** — **obrigatório** ler e aplicar **todas** as rules deste conjunto; violação → citar path da rule em blocos **1**/**2** (sem reescrever o conteúdo das rules na skill).
+3. `.cursor/rules/`, `AGENTS.md`, constituição se existir (complementar; não substituir `rules/eduardolagares`).
+4. Convenções observáveis no código.
 
+- **Âmbito:** validar regras só em **código novo ou alterado no diff**; não exigir retrofit de legado não tocado.
 - Evidência fraca para conclusão forte → no relatório uma linha com **suposição** ou **não verificável** (pt-BR).
 
 ## Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade
@@ -96,7 +98,7 @@ VERSION: "1.0.0"
 ## Severidade (classificar aqui; texto do item ao utilizador em pt-BR sob o título numerado)
 
 - **Crítico:** regra de negócio errada; fluxo partido; dados inconsistentes; corrupção de estado; exposição de alto risco (auth, pagamentos, PII); regressão óbvia vs comportamento esperado; **diff com ficheiros fora do escopo declarado** numa spec `docs/specs/tdd/*.md` quando essa spec integra a revisão (ver secção **Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade**).
-- **Grave:** violação clara de regra do projecto; contrato API/schema partido; N+1 ou bug de performance real; tratamento de erros em falta → estado inválido utilizador/sistema; testes que mentem sobre o comportamento.
+- **Grave:** violação clara de regra do projecto (`rules/eduardolagares/**` ou outra fonte citada); contrato API/schema partido; N+1 ou bug de performance real; tratamento de erros em falta → estado inválido utilizador/sistema; testes que mentem sobre o comportamento.
 - **Outros:** sugestões com valor claro (clareza, consistência, dívida técnica pequena com ROI explícito).
 
 ## Proibido (global)
