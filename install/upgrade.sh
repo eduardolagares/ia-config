@@ -9,10 +9,10 @@ set -euo pipefail
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
 REPO_BRANCH="main"
 
-declare -a EXTRA_ARGS
+EXTRA_ARGS=()
 for arg in "$@"; do
   case "$arg" in
-    --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
+    --dry-run) EXTRA_ARGS+=(--dry-run) ;;
     -h | --help)
       echo "Uso: curl -fsSL …/install/upgrade.sh | bash"
       echo "Re-sync rules/skills eduardolagares (Cursor ou .agents; mesmas opções que install.sh)."
@@ -168,7 +168,7 @@ run_block() {
 }
 
 if [[ "$UP_CURSOR" == true ]]; then
-  if ((${#EXTRA_ARGS[@]} > 0)); then
+  if ((${#EXTRA_ARGS[@]})); then
     run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh" "${EXTRA_ARGS[@]}"
   else
     run_block "Cursor" bash "$CLONE_DIR/install/cursor.sh"
@@ -176,7 +176,7 @@ if [[ "$UP_CURSOR" == true ]]; then
 fi
 
 if [[ "$UP_AGENTS" == true ]]; then
-  if ((${#EXTRA_ARGS[@]} > 0)); then
+  if ((${#EXTRA_ARGS[@]})); then
     run_block "Agents (.agents)" bash "$CLONE_DIR/install/agents.sh" "${EXTRA_ARGS[@]}"
   else
     run_block "Agents (.agents)" bash "$CLONE_DIR/install/agents.sh"

@@ -10,10 +10,10 @@ set -euo pipefail
 REPO_URL="https://github.com/eduardolagares/ia-config.git"
 REPO_BRANCH="main"
 
-declare -a EXTRA_ARGS
+EXTRA_ARGS=()
 for arg in "$@"; do
   case "$arg" in
-    --dry-run) EXTRA_ARGS[${#EXTRA_ARGS[@]}]=--dry-run ;;
+    --dry-run) EXTRA_ARGS+=(--dry-run) ;;
     -h | --help)
       echo "Uso: curl -fsSL …/install/install.sh | bash"
       echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp; pergunta destino (Cursor ou .agents)."
@@ -168,7 +168,7 @@ run_agent() {
   local script="$2"
   echo
   echo "---------- $name ----------"
-  if ((${#EXTRA_ARGS[@]} > 0)); then
+  if ((${#EXTRA_ARGS[@]})); then
     bash "$CLONE_DIR/install/$script" "${EXTRA_ARGS[@]}"
   else
     bash "$CLONE_DIR/install/$script"
