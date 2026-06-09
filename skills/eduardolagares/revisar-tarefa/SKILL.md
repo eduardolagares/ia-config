@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.5.1"
+VERSION: "5.6.0"
 ---
 
 # `/revisar-tarefa`
@@ -87,7 +87,7 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 - **Entrada:** `## Diff` (passo 3) + **Projetos alterados** do passo 1.
 - **Cobertura:** revisar **cada** repositório/projeto presente em `## Diff` (e listado em Projetos alterados). Um projeto sem achados → subsecção com `Nenhum.` — **não** omitir o projeto.
 - **Protocolo:** `code-review` — fonte primária = diff do passo 3, **por projeto**.
-- **Saída:** secção **`## Code review`** (blocos 1–4); itens **1.M** / **2.M** agrupados por projeto quando houver mais de um repo.
+- **Saída:** secção **`## Code review`** (blocos 1–5); itens **1.M** / **2.M** / **3.M** agrupados por projeto quando houver mais de um repo.
 
 ## Passo 5 — Verificação de requisitos (`verificar-requisitos-usuario`)
 
@@ -107,7 +107,7 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 - **Entrada:** code review (passo 4) + verificação (passo 5).
 - **Saída:** **`## Requisitos de código`** — confirmação do doc Monday.
-- **Tópicos:** **`## Revisão de código`** (`1.M`/`2.M`, **agrupados por projeto** se 2+ repos) e **`## Requisitos não implementados`** (`R*`).
+- **Tópicos:** **`## Revisão de código`** (`1.M`/`2.M`/`3.M` — Crítico, Grave, Padrão de código; **agrupados por projeto** se 2+ repos) e **`## Requisitos não implementados`** (`R*`).
 - **Não** alterar status (passo 8).
 
 ## Passo 7 — Avaliação (`avaliar-tarefa`)
@@ -118,9 +118,9 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 - **Entrada:** passo 1 (status **Testar**) + **`## Diff`** (passo 3) + doc **Revisar código** (após passo 6).
 - **Lógica:**
-  - Para cada item aberto em **Revisão de código** ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
+  - Para cada item aberto em **Revisão de código** (Crítico, Grave ou **Padrão de código**) ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
   - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
-  - Ainda existe `- [ ]` em **Revisão de código**, **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
+  - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
   - Senão, subtarefa **Testar** concluída → **`pode_avancar_para_deploy`**.
   - Senão → **`deve_ser_testada`**.
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.

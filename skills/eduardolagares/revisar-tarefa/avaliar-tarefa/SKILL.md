@@ -5,7 +5,7 @@ description: >-
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes. Status Testar
   via passo 1.
 disable-model-invocation: true
-VERSION: "2.0.2"
+VERSION: "2.1.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -76,7 +76,7 @@ Para cada item **aberto** (`- [ ]` ou bloco `list_item` com `checked: false`) na
 
 | Tipo | ID | Critério **cumprido** |
 |------|-----|----------------------|
-| Code review | `1.M` / `2.M` | Diff (passo 3) mostra alteração no path de **Onde:** (ou repo do `####`) que implementa **Correção:** descrita no bullet; evidência clara — não especulativa |
+| Code review | `1.M` / `2.M` / `3.M` | Diff (passo 3) mostra alteração no path de **Onde:** (ou repo do `####`) que implementa **Correção:** descrita no bullet; evidência clara — não especulativa |
 | Requisito | `R*` | Mesma lógica do passo 5 ([verificar-requisitos-usuario](../verificar-requisitos-usuario/SKILL.md)): diff com mudança substantiva que atende o texto do bullet; modo `monday` sem artefato de código → **não cumprido** (não marcar) |
 
 | Resultado | Ação na Fase C |
@@ -137,10 +137,12 @@ A tarefa **não pode avançar** se existir **qualquer** item ainda aberto em:
 
 | Fonte | O que conta |
 |-------|-------------|
-| Doc **Revisar código** | Checkbox `- [ ]` nos tópicos **`## Revisão de código`**, **`## Requisitos não implementados`** ou **`## Análise manual`** |
+| Doc **Revisar código** | Checkbox `- [ ]` nos tópicos **`## Revisão de código`** (subsecções **Crítico**, **Grave** e **Padrão de código**), **`## Requisitos não implementados`** ou **`## Análise manual`** |
 | **Análise manual** | Itens abertos **bloqueiam** mesmo que revisão e requisitos estejam limpos; o agente **não** os fecha no passo 7 — só leitura para o veredito |
 | Exclusão | Linhas com **`#ignorar`** — **não** contam |
-| Fallback (sem doc) | Itens `1.M`/`2.M` nos blocos **1–2** do code review **≠** `Nenhum.` **ou** ids em **Requisitos não implementados** **≠** `Nenhum.` (sem fallback para análise manual — exige doc) |
+| Fallback (sem doc) | Itens `1.M`/`2.M`/`3.M` nos blocos **1–3** do code review **≠** `Nenhum.` **ou** ids em **Requisitos não implementados** **≠** `Nenhum.` (sem fallback para análise manual — exige doc) |
+
+Itens **`3.M`** (Padrão de código) têm **o mesmo peso** que **`1.M`** e **`2.M`**: qualquer um aberto → **`precisa_de_correcao`**.
 
 Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtarefa **Revisar código** → **Aguardando correção**; tarefa principal → **Fazendo**).
 
@@ -157,7 +159,7 @@ Só aplicar se **não** há pendências (Regra 1).
 
 | Veredito | Significado |
 |----------|-------------|
-| `precisa_de_correcao` | Ainda há itens abertos de revisão ou requisitos |
+| `precisa_de_correcao` | Ainda há itens abertos de revisão (Crítico, Grave ou Padrão de código) ou requisitos |
 | `deve_ser_testada` | Revisão limpa; Testar ainda não concluída |
 | `pode_avancar_para_deploy` | Revisão limpa; Testar já concluída |
 
@@ -173,7 +175,7 @@ Entregar **somente** este bloco:
 | Pode avançar? | `sim` \| `não` |
 | Veredito | `precisa_de_correcao` \| `deve_ser_testada` \| `pode_avancar_para_deploy` |
 | Itens marcados cumpridos | <ids ou —> |
-| Pendências revisão | <ids ou contagem> (ou —) |
+| Pendências revisão | <ids ou contagem — inclui 1.M, 2.M e 3.M> (ou —) |
 | Pendências requisitos | <ids ou contagem> (ou —) |
 | Pendências análise manual | <resumo ou contagem> (ou —) |
 | Status Testar | <label do passo 1> |

@@ -2,10 +2,10 @@
 name: revisar-tarefa-gerar-requisitos-de-codigo
 description: >-
   Passo 6 de revisar-tarefa: publica no documento Monday da subtarefa Revisar código
-  os tópicos Revisão de código (1.M/2.M) e Requisitos não implementados (R*). Cria doc
+  os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.2.2"
+VERSION: "2.3.0"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -18,15 +18,15 @@ Sub-skill **`gerar-requisitos-de-codigo`** do passo 6. **Escrita** no Monday —
 
 | Dado | Obrigatório |
 |------|-------------|
-| **`## Code review`** | Sim — passo 4 (blocos `1 - Crítico` e `2 - Grave`) |
+| **`## Code review`** | Sim — passo 4 (blocos `1 - Crítico`, `2 - Grave` e `3 - Padrão de código`) |
 | **`## Verificação de requisitos`** | Sim — passo 5 (**Requisitos não implementados**) |
 | **Subtarefa Revisar código** | Sim — `item_id` do passo 1 ou cache `monday-task-info` |
 
-Ambos vazios (blocos 1/2 `Nenhum.` **e** requisitos não implementados `Nenhum.`) → encerrar com `Ação: nenhum`; **não** criar doc vazio.
+Ambos vazios (blocos 1/2/3 `Nenhum.` **e** requisitos não implementados `Nenhum.`) → encerrar com `Ação: nenhum`; **não** criar doc vazio.
 
 ## Entrada
 
-- Itens **`1.M`** (Crítico) e **`2.M`** (Grave) do `## Code review`
+- Itens **`1.M`** (Crítico), **`2.M`** (Grave) e **`3.M`** (Padrão de código) do `## Code review`
 - Itens **`R*`** da secção **Requisitos não implementados** do passo 5
 - `item_id` / `doc_object_id` da subtarefa **Revisar código**
 
@@ -59,6 +59,12 @@ Nenhum.
 
 - [ ] **2.1** — …
 
+### Padrão de código
+
+#### baladapp/ingressos
+
+- [ ] **3.1** — **Onde:** `path` — **Problema:** … — **Correção:** … — **regra:** `rules/eduardolagares/…`
+
 ## Requisitos não implementados
 
 - [ ] **R2** — <texto>. Evidência: …
@@ -76,7 +82,7 @@ Nenhum.
 
 | Tópico | Conteúdo | Origem |
 |--------|----------|--------|
-| **`## Revisão de código`** | Checkboxes `1.M` / `2.M` | Passo 4 |
+| **`## Revisão de código`** | Checkboxes `1.M` / `2.M` / `3.M` (Crítico, Grave, Padrão de código) | Passo 4 |
 | **`## Requisitos não implementados`** | Checkboxes `R*` | Passo 5 |
 | **`## Análise manual`** | Checkboxes `M*` (ou bullets `- [ ]`) | Fora do passo 6 por defeito — **não** sobrescrever; passo 7 bloqueia se aberto |
 | **`## Merge requests`** | Tabela repo / MR / branch→master / URL | Passo 8 (`precisa_de_correcao`) — **não** publicar no passo 6 |
@@ -86,12 +92,12 @@ Nenhum.
 | Regra | Detalhe |
 |-------|---------|
 | **Quando** | **2+** repositórios no `## Code review` / `## Diff` |
-| **Heading** | `#### <namespace/project>` (ex.: `#### baladapp/ingressos`) **dentro** de `### Crítico` e `### Grave` |
-| **1 repo** | Omitir `####` — bullets direto sob `### Crítico` / `### Grave` |
+| **Heading** | `#### <namespace/project>` (ex.: `#### baladapp/ingressos`) **dentro** de `### Crítico`, `### Grave` e `### Padrão de código` |
+| **1 repo** | Omitir `####` — bullets direto sob `### Crítico` / `### Grave` / `### Padrão de código` |
 | **Repo sem itens** | Incluir `#### <repo>` + `Nenhum.` — espelha passo 4 |
 | **Mapeamento** | Path em **Onde:** → repo do `###` correspondente no diff; dúvida → repo do `diff_file` |
 
-**Proibido:** publicar lista plana de `1.M`/`2.M` sem agrupar quando a tarefa tem vários projetos.
+**Proibido:** publicar lista plana de `1.M`/`2.M`/`3.M` sem agrupar quando a tarefa tem vários projetos.
 
 ## Fluxo MCP (ordem fixa)
 
@@ -112,7 +118,7 @@ Extrair de `blocks_as_markdown` (ou conteúdo equivalente):
 
 ### 2. Filtrar itens a publicar
 
-Para cada candidato (`1.M`, `2.M`, `R*`):
+Para cada candidato (`1.M`, `2.M`, `3.M`, `R*`):
 
 | Condição | Ação |
 |----------|------|
@@ -145,6 +151,12 @@ Nenhum.
 
 - [ ] **2.1** — …
 
+### Padrão de código
+
+#### baladapp/ingressos
+
+- [ ] **3.1** — …
+
 ## Requisitos não implementados — <YYYY-MM-DD>
 
 - [ ] **R2** — …
@@ -152,8 +164,8 @@ Nenhum.
 
 Regras:
 
-- Omitir secção/subsecção vazia (ex.: sem `1.M` em **todos** os repos → sem `### Crítico`).
-- **2+ repos:** repetir estrutura `### Crítico` → `#### <repo>` → bullets (ou `Nenhum.`).
+- Omitir secção/subsecção vazia (ex.: sem `1.M` em **todos** os repos → sem `### Crítico`; idem para Grave e Padrão de código).
+- **2+ repos:** repetir estrutura `### Crítico` / `### Grave` / `### Padrão de código` → `#### <repo>` → bullets (ou `Nenhum.`).
 - Um bullet `- [ ]` por item.
 - Preservar id original no texto (`1.1`, `R2`, …).
 
@@ -201,7 +213,7 @@ Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
 | Subtarefa | Revisar código (`<item_id>`) |
 | Doc | <url ou —> |
 | Ação | `criado` \| `append` \| `nenhum` |
-| Revisão de código | 1.1, 2.1… (ou —) |
+| Revisão de código | 1.1, 2.1, 3.1… (ou —) |
 | Requisitos não implementados | R2… (ou —) |
 | Ignorados (duplicado) | … (ou —) |
 | Ignorados (#ignorar) | … (ou —) |
@@ -225,7 +237,7 @@ Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
 - Publicar ou alterar tópico **`## Merge requests`** (responsabilidade do passo 8)
 - Alterar **status** de subtarefas
 - `create_update` / comentários no item principal
-- Publicar blocos **3 - Outros** ou **4 - Lacunas** (salvo pedido explícito)
+- Publicar blocos **4 - Outros** ou **5 - Lacunas** (salvo pedido explícito)
 - Sobrescrever/apagar conteúdo existente (só **append**)
 - Recriar item existente marcado com **`#ignorar`**
 
@@ -233,7 +245,7 @@ Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
 
 | Skill | Papel |
 |-------|--------|
-| `revisar-tarefa-code-review-diff` | Passo 4 — fonte 1.M / 2.M |
+| `revisar-tarefa-code-review-diff` | Passo 4 — fonte 1.M / 2.M / 3.M |
 | `revisar-tarefa-verificar-requisitos-usuario` | Passo 5 — fonte R* não implementados |
 | `revisar-tarefa-avaliar-tarefa` | Passo 7 — verifica cumprimento no diff e marca checkboxes deste doc |
 | `revisar-tarefa-pos-avaliacao` | Passo 8 — MRs + tópico Merge requests + status/owners |
