@@ -1,10 +1,11 @@
 ---
-VERSION: "0.0.4"
+VERSION: "0.0.5"
 description: Rule objects — one domain question, primitive #result, read-only
-globs: app/domains/**/rules/**/*.rb
+alwaysApply: true
 ---
 # Rule objects
 
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = pergunta de domínio, **sem** `?` no identificador da classe.
 - **When:** one boolean / small primitive answers “is this domain fact true?” reused in use cases, auth hints, views. **Else:** SQL-shaped reads → query object (`query_objects.mdc`); multi-step mutation → use case (`use_cases.mdc`).
 - **Name:** domain question, **no** trailing `?` (e.g. `ClienteIsPortador`). **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::` (same depth idea as queries / use cases).
 

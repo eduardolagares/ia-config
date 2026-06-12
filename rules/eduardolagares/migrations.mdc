@@ -1,10 +1,11 @@
 ---
-VERSION: "0.0.4"
-description: Rails migrations — generator, version prefix, reversibility, indexes, FKs, safe Postgres
-globs: db/migrate/**/*.rb
+VERSION: "0.0.5"
+description: Rails migrations — generator, version prefix, reversibility, indexes, FKs, column naming
+alwaysApply: true
 ---
 # Migrations
 
+- Naming de colunas → `naming-rails.mdc` § Colunas: `snake_case`; boolean sem prefixo (`ativo`, não `is_ativo`); datetime `_at`, date `_on`; FK `_id`; counter cache `_count`; enum singular (`status`, `tipo`).
 - Generate with `bin/rails g migration descriptive_name` so filename starts with valid **`YYYYMMDDHHMMSS`** (14-digit decimal version in `schema_migrations`). Hand-made files: never shorten, reuse, collide, or use non-digits in that prefix.
 - Prefer reversible **`change`** over `up`/`down`.
 - Required columns: `null: false` aligned with model `validates … presence` (multi-step add when table has rows — see below).

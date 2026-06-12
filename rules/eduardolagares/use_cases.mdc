@@ -1,7 +1,7 @@
 ---
-VERSION: "0.0.4"
+VERSION: "0.0.5"
 description: Use cases — Dry::Monads Result, domain NS, no dry-transaction
-globs: app/domains/**/use_cases/**/*.rb
+alwaysApply: true
 ---
 # Use cases
 
@@ -14,7 +14,7 @@ globs: app/domains/**/use_cases/**/*.rb
 - `def self.call(...) = new(...).call`.
 - Input: kwargs or `Dry::Struct` — never `call({ only: "hash" })`.
 - Every `yield`-ed callee returns `Success` | `Failure`. No `yield x if condition`.
-- Branching work → private method returning Result. Side-effect skips → `maybe_*` methods; **only** `Success` (value or `nil`).
+- Branching work → private method returning Result. Side-effect skips → `maybe_*` methods (`naming-rails.mdc`); **only** `Success` (value or `nil`).
 - `Failure(:meaningful_symbol)`. No `render`, HTTP status, or I18n in the use case.
 - Heavy reuse → delegate to another use case `.call`. Policy / domain gate → `::DominioX::Rules::Y::Z.result(...)` (or `#result`), no duplicated rule bodies.
 - Prefer records/objects from caller over raw ids when the caller can resolve them.

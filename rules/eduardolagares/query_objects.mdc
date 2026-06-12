@@ -1,10 +1,11 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.6"
 description: Query objects — read-only, relation: / @relation, self.call, YARD
-globs: app/domains/**/queries/**/*.rb
+alwaysApply: true
 ---
 # Query objects
 
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe termina em `Query` (PascalCase).
 - **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`use_cases.mdc`); domain yes/no primitive → rule object (`rule_objects.mdc`).
 - **Name:** ends with `Query`. **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
 

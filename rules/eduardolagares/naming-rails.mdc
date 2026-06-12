@@ -1,0 +1,105 @@
+---
+VERSION: "1.0.0"
+description: Naming Rails — PT domínio, EN convenções Rails, métodos, variáveis, colunas, models
+alwaysApply: true
+---
+# Naming (Rails)
+
+**Escopo:** métodos, variáveis, colunas, `validates`, scopes, associations, enums, callbacks, constants.
+
+**Resolução de conflito:** padrão existente em ficheiros vizinhos > esta rule.
+
+## Idioma
+
+- Termo de domínio → português: `pedido`, `ingresso`, `socio`, `pagamento`, `evento`.
+- Termo de convenção Rails → inglês: `created_at`, `slug`, `token`, `user_agent`.
+- **Nunca** misturar idiomas num identificador. Ruim: `buscar_tickets`, `criado_at`. Bom: `buscar_ingressos`.
+- **Nunca** abreviar. Ruim: `qtd`, `desc`, `val`, `num`. Bom: `quantidade`, `descricao`, `valor`, `numero`.
+- **Nunca** acentos em identificadores. Bom: `descricao`, `usuario`, `numero`.
+
+## Colunas
+
+- `snake_case`.
+- Boolean → adjetivo/particípio, **sem** prefixo. Bom: `ativo`, `cancelado`, `meia_entrada`. Ruim: `is_ativo`, `has_pagamento`, `flag_cancelado`.
+- Datetime → sufixo `_at`. Date → sufixo `_on`. Segue precedente `created_at`.
+- Foreign key → sufixo `_id`.
+- Counter cache → sufixo `_count`.
+- Coluna enum → singular: `status`, `tipo`, `forma_pagamento`.
+
+Detalhe de migrations → `migrations.mdc`.
+
+## Métodos
+
+- Ação → verbo no infinitivo: `calcular_total`, `enviar_confirmacao`, `aplicar_desconto`.
+- Predicado → retorna boolean **e** termina em `?`: `pago?`, `pode_cancelar?`. Ruim: `verifica_se_pago`, `esta_pago`.
+- Bang `!` **só se:** existe par não-bang **ou** o método levanta erro em falha. Nunca decorativo.
+- **Nunca** `get_` / `set_`. Quando getter/setter explícito → `obter_` / `definir_`: `obter_token_externo`, `definir_status_inicial`.
+- Getter simples → só o nome do valor. Bom: `total`. Ruim: `get_total`, `obter_total`.
+- Passo opcional em use case → prefixo `maybe_`: `maybe_aplicar_cupom`. Passo obrigatório → sem prefixo (`use_cases.mdc`).
+- Helper privado → nomeado pelo efeito. Bom: `normalizar_cpf`. Ruim: `before_save_callback`.
+
+## Variáveis
+
+- Nome = conteúdo, não tipo. Bom: `ingressos_pendentes`. Ruim: `array_ingressos`, `lista`, `hash_dados`.
+- Variável de bloco → nome completo: `pedidos.map { |pedido| ... }`. Evitar `|p|`.
+- Memoização → mesmo nome do método: `@total ||= calcular_total`.
+- Boolean local → **sem** sufixo `?`: `pagamento_confirmado = pedido.pago?`.
+
+## Model — validates
+
+- Declarar na ordem das colunas do schema.
+- Agrupar validações do mesmo atributo numa linha quando possível.
+- Validação custom → método privado prefixo `validar_`, registo: `validate :validar_<regra>`. Ex.: `validate :validar_data_dentro_do_evento`.
+- Validação reutilizável → classe `<Regra>Validator` em `app/validators`. Ex.: `CpfValidator`.
+
+Detalhe de arquitetura de model → `models.mdc`.
+
+## Model — scopes
+
+- Nome = filtro/estado, **sem** verbo: `ativos`, `pagos`, `com_pagamento_pendente`, `do_dia`.
+- Scope com argumento → prefixo `por_` ou preposição: `por_status`, `criados_apos`, `do_evento`.
+- **Nunca** `get_`, `find_`, `buscar_` no nome do scope.
+
+## Model — associations
+
+- `has_many` / `has_and_belongs_to_many` → plural.
+- `belongs_to` / `has_one` → singular.
+- Manter nome do model. Papel semântico diferente → renomear + `class_name:`: `belongs_to :comprador, class_name: "Usuario"`.
+
+## Model — enums
+
+- **Sempre** hash explícito label+valor: `enum status: { pendente: 0, pago: 1, cancelado: 2 }`.
+- **Nunca** forma array `%i[...]` — ordem implícita quebra ao inserir.
+- Labels → `snake_case` português.
+- Usar predicados/scopes gerados (`pedido.pago?`, `Pedido.cancelado`). Nunca duplicar manualmente.
+
+## Model — callbacks
+
+- Apontar para método privado nomeado: `before_save :normalizar_cpf`.
+- **Nunca** bloco inline com lógica.
+
+## Constants
+
+- `SCREAMING_SNAKE_CASE`, declaradas na classe dona: `PRAZO_CANCELAMENTO = 7.days`.
+- Coleções fixas → congeladas: `FORMAS_PAGAMENTO = %w[pix cartao boleto].freeze`.
+
+## Proibido (sempre rejeitar)
+
+- Prefixo boolean `is_` / `has_` / `flag_`.
+- `get_` / `set_` em qualquer sítio → usar `obter_` / `definir_`.
+- Nomes genéricos: `data`, `info`, `dados`, `item`, `obj`, `temp`, `aux`.
+- Sufixo de tipo: `_array`, `_hash`, `_string`, `_obj`.
+- Idioma misto: `criado_at`, `buscar_tickets`.
+- Enum em forma array (sem valor explícito).
+
+```ruby
+# ruim
+def get_total; is_pago?; end
+enum :status, %i[pendente pago cancelado]
+scope :buscar_ativos, -> { where(ativo: true) }
+
+# bom
+def total; pago?; end
+enum :status, { pendente: 0, pago: 1, cancelado: 2 }
+scope :ativos, -> { where(ativo: true) }
+```

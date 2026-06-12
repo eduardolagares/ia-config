@@ -1,7 +1,7 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.6"
 description: Edits must keep tests in sync — find counterpart specs, update contracts, run focused tests
-globs: app/**/*.{rb,erb},lib/**/*.rb,test/**/*.rb,**/js-tests/**/*.vitest.{ts,tsx}
+alwaysApply: true
 ---
 # Implementation ↔ tests
 

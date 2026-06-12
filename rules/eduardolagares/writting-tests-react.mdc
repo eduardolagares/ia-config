@@ -1,7 +1,7 @@
 ---
-VERSION: "0.0.10"
+VERSION: "0.0.11"
 description: Vitest + Testing Library — js-tests/ layout, naming, grouping, isolation
-globs: "**/js-tests/**/*.vitest.{ts,tsx}"
+alwaysApply: true
 ---
 # Tests (React — Vitest)
 

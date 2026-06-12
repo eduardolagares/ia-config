@@ -1,13 +1,13 @@
 ---
-VERSION: "0.0.4"
-description: Rails clean code — time zones, errors, AR boundaries; syntax/naming → ruby.mdc
-globs: **/*.rb,**/*.rake,**/*.ru,**/Gemfile,**/Rakefile,**/*.erb,**/*.html.erb,**/*.slim,**/*.haml
+VERSION: "0.0.5"
+description: Rails clean code — time zones, errors, AR boundaries; naming → naming-rails.mdc
+alwaysApply: true
 ---
 # Clean code (Rails)
 
-- Naming / Ruby grammar → `ruby.mdc`.
+- Naming / Ruby grammar → `naming-rails.mdc` + `ruby.mdc`.
 - No magic numbers → named constants or AR `enum`.
-- Predicate methods end with `?` (`active?`, `billable?`).
+- Predicate methods end with `?` (`ativo?`, `faturavel?`).
 - One responsibility per method; name contains “and” → split.
 - Comments: **why** only; no dead code (git has history).
 - AR callbacks (`after_create`, `before_save`, …) **only** for invariants on the record itself. Mail, jobs, integrations, external I/O → **out** of callbacks (use case / job / subscriber pattern per project).

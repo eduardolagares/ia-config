@@ -1,12 +1,13 @@
 ---
-VERSION: "0.0.6"
+VERSION: "0.0.7"
 description: Ruby style — kwargs, naming, control flow, no needless meta
 alwaysApply: true
 ---
 # Ruby
 
+- Naming completo (PT domínio / EN Rails) → `naming-rails.mdc`.
 - Methods take **kwargs** always — including a single parameter (`find(id:)` not `find(id)`).
-- Method names: verbs, full words, concise — no `calc`, `proc`, `get_` prefixes. Variables spelled out; single-letter only in tight loops.
+- Method names: verbs, full words, concise — no `calc`, `proc`, `get_`/`set_` (use `obter_`/`definir_` per naming-rails). Variables spelled out; single-letter only in tight loops.
 - Every file: `# frozen_string_literal: true` first line.
 - `return` only for early exit; otherwise last expression is the return.
 - No `unless` / `else` pair — rewrite with `if`.
@@ -18,11 +19,11 @@ alwaysApply: true
 - No metaprogramming when a plain method works.
 
 ```ruby
-# bad: calc_tot(u, 3); find(u.id)
-# good:
-def calculate_total(user:, quantity:); end
-calculate_total(user: user, quantity: 3)
+# ruim: calc_tot(u, 3); find(u.id); get_total
+# bom:
+def calcular_total(usuario:, quantidade:); end
+calcular_total(usuario: usuario, quantidade: 3)
 
-def find_user(id:); end
-find_user(id: user.id)
+def buscar_usuario(id:); end
+buscar_usuario(id: usuario.id)
 ```

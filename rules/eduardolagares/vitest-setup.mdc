@@ -1,7 +1,7 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.2"
 description: Vitest greenfield — config na raiz do not submodule, aliases, scripts
-globs: vitest.config.*,vitest.setup.*,vitest-env.d.ts
+alwaysApply: true
 ---
 # Vitest setup (host root)
 

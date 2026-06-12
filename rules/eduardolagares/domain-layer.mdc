@@ -1,11 +1,11 @@
 ---
-VERSION: "0.0.1"
+VERSION: "0.0.2"
 description: Domain layer routing — query vs use case vs rule object vs scope
 alwaysApply: true
 ---
 # Domain layer routing
 
-Escolha **uma** forma por responsabilidade — detalhes nas rules por glob:
+Escolha **uma** forma por responsabilidade — detalhes nas rules por camada:
 
 | Necessidade | Onde | Rule |
 |-------------|------|------|
@@ -16,3 +16,4 @@ Escolha **uma** forma por responsabilidade — detalhes nas rules por glob:
 
 - Controllers/jobs **chamam** use cases / queries — não embutem regras (`controllers.mdc`).
 - Use cases **delegam** gates a rule objects — não duplicam corpo de regra (`use_cases.mdc`).
+- Naming de métodos/variáveis em domínio → `naming-rails.mdc`.

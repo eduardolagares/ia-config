@@ -21,7 +21,7 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
       echo "Sync rules/skills eduardolagares → \$CURSOR_HOME/{rules,skills}/eduardolagares/"
-      echo "  Rules always: domain-layer, ruby + karpathy (gerado após sync)"
+      echo "  Rules: todas alwaysApply + karpathy (gerado após sync)"
       echo "  Remove legado: agendar-revisao-tarefa, executar-revisao-tarefa"
       echo "  Hook opcional: beforeSubmitPrompt → prefetch diff (/revisar-tarefa)"
       echo "  CURSOR_HOME=...  predef.: ~/.cursor"

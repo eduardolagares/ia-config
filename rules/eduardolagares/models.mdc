@@ -1,15 +1,16 @@
 ---
-VERSION: "0.0.4"
-description: Thin AR models — validations, scopes, enums; orchestration elsewhere
-globs: app/models/**/*.rb,test/models/**/*.rb
+VERSION: "0.0.5"
+description: Thin AR models — validations, scopes, enums; naming → naming-rails.mdc
+alwaysApply: true
 ---
 # Models
 
+- Naming de validates, scopes, associations, enums, callbacks → `naming-rails.mdc`.
 - Thin layer: associations, validations, scopes, small predicates. Orchestration → use cases / jobs (`use_cases.mdc`, `ApplicationJob`). Callbacks limited to `before_validation` / `after_initialize` for normalize / defaults; avoid business workflows on `save` unless team explicitly allows.
 - Simple filters → `scope`; cross-cutting SQL → query object (`query_objects.mdc`, `app/domains/**/queries/`). Tests: Shoulda-style for boilerplate; custom examples for tricky domain.
 - `belongs_to` required by default; `optional: true` only when domain says optional.
 - `validates :uniqueness` ↔ unique DB index always.
-- Integer-backed `enum`; string enums only with documented reason.
+- Integer-backed `enum` with explicit hash (`naming-rails.mdc`); string enums only with documented reason.
 - Concerns: ≥2 models share behavior — not one-off indirection.
 - No `attr_accessor` for persistent-ish fields; virtual columns → `attribute :name, :type`.
 - Normalization → `normalizes :field, with: ->(v) { … }` (Rails 7+).
@@ -18,6 +19,7 @@ globs: app/models/**/*.rb,test/models/**/*.rb
 - Model `presence` / required fields ↔ migration `null: false` / defaults / backfill plan (`migrations.mdc`).
 
 ```ruby
-has_many :items, dependent: :destroy
-enum :status, { draft: 0, published: 1 }
+has_many :ingressos, dependent: :destroy
+enum :status, { pendente: 0, pago: 1, cancelado: 2 }
+scope :ativos, -> { where(ativo: true) }
 ```
