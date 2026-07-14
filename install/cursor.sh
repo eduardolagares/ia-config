@@ -42,6 +42,12 @@ echo
 
 mkdir -p "$CURSOR_HOME"
 
+BEFORE_MANIFEST=""
+if [[ "$DRY_RUN" != true ]]; then
+  BEFORE_MANIFEST="$(mktemp)"
+  ia_config_write_home_manifest "$CURSOR_HOME" "$BEFORE_MANIFEST"
+fi
+
 ia_config_sync_cursor_home "$REPO_ROOT" "$CURSOR_HOME" "$DRY_RUN"
 echo
 
@@ -62,4 +68,6 @@ else
   echo "Revisar tarefa: /revisar-tarefa <título> (skill em skills/$IA_NAMESPACE/revisar-tarefa/)"
   echo "Refatorar código: /refatorar-codigo (skill em skills/$IA_NAMESPACE/refatorar-codigo/)"
   echo "Ambiente: validate-env.sh (GitLab) + Monday em Cursor → Settings → MCP"
+  ia_config_print_home_changes "$BEFORE_MANIFEST" "$CURSOR_HOME"
+  rm -f "$BEFORE_MANIFEST"
 fi

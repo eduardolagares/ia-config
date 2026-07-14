@@ -35,6 +35,12 @@ echo "Dest:  $AGENTS_HOME/{rules,skills}/$IA_NAMESPACE/"
 if [[ "$DRY_RUN" == true ]]; then echo "(dry-run)"; fi
 echo
 
+BEFORE_MANIFEST=""
+if [[ "$DRY_RUN" != true ]]; then
+  BEFORE_MANIFEST="$(mktemp)"
+  ia_config_write_home_manifest "$AGENTS_HOME" "$BEFORE_MANIFEST"
+fi
+
 ia_config_sync_agents_home "$REPO_ROOT" "$AGENTS_HOME" "$DRY_RUN"
 echo
 
@@ -45,4 +51,10 @@ if [[ "$DRY_RUN" != true ]]; then
 fi
 
 echo
-if [[ "$DRY_RUN" == true ]]; then echo "Feito. (dry-run)"; else echo "Feito."; fi
+if [[ "$DRY_RUN" == true ]]; then
+  echo "Feito. (dry-run)"
+else
+  echo "Feito."
+  ia_config_print_home_changes "$BEFORE_MANIFEST" "$AGENTS_HOME"
+  rm -f "$BEFORE_MANIFEST"
+fi

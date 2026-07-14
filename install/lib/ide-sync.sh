@@ -146,6 +146,84 @@ ia_config_print_sync_summary() {
   fi
 }
 
+# Digest de um ficheiro (shasum no macOS; sha256sum/md5 como fallback).
+ia_config_file_digest() {
+  local f="$1"
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$f" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$f" | awk '{print $1}'
+  elif command -v md5 >/dev/null 2>&1; then
+    md5 -q "$f"
+  else
+    md5sum "$f" | awk '{print $1}'
+  fi
+}
+
+# Manifesto digest<TAB>path dos artefactos geridos sob $home (rules/skills + hooks Cursor).
+ia_config_write_home_manifest() {
+  local home="$1"
+  local out="$2"
+  local root f
+  : >"$out"
+
+  for f in \
+    "$home/hooks/revisar-tarefa-prefetch-diff.sh" \
+    "$home/hooks.json"; do
+    [[ -f "$f" ]] || continue
+    printf '%s\t%s\n' "$(ia_config_file_digest "$f")" "$f" >>"$out"
+  done
+
+  for root in "$home/rules/$IA_NAMESPACE" "$home/skills/$IA_NAMESPACE"; do
+    [[ -d "$root" ]] || continue
+    while IFS= read -r -d '' f; do
+      printf '%s\t%s\n' "$(ia_config_file_digest "$f")" "$f"
+    done < <(find "$root" -type f -print0 | sort -z) >>"$out"
+  done
+}
+
+# Compara manifesto before com o estado actual de $home; lista + (novo) e ~ (alterado).
+ia_config_print_home_changes() {
+  local before_manifest="$1"
+  local home="$2"
+  local after_manifest home_prefix
+  after_manifest="$(mktemp)"
+  ia_config_write_home_manifest "$home" "$after_manifest"
+  home_prefix="${home%/}/"
+
+  echo
+  echo "Ficheiros alterados ou adicionados:"
+  # FILENAME (não FNR==NR): 1.º ficheiro vazio (1.ª instalação) não pode “engolir” o after.
+  awk -F'\t' -v before_file="$before_manifest" -v home_prefix="$home_prefix" '
+    FILENAME == before_file { before[$2] = $1; next }
+    {
+      path = $2
+      display = path
+      if (index(path, home_prefix) == 1) {
+        display = substr(path, length(home_prefix) + 1)
+      }
+      if (!(path in before)) {
+        print "  + " display
+        added++
+      } else if (before[path] != $1) {
+        print "  ~ " display
+        changed++
+      } else {
+        same++
+      }
+      delete before[path]
+    }
+    END {
+      if (!added && !changed) {
+        print "  (nenhum — tudo igual ao que já estava)"
+      }
+      printf "  (%d adicionados, %d alterados, %d inalterados)\n", added + 0, changed + 0, same + 0
+    }
+  ' "$before_manifest" "$after_manifest"
+
+  rm -f "$after_manifest"
+}
+
 ia_config_sync_cursor_home() {
   local repo="$1" cursor_home="$2" dry="$3"
   echo "Cursor: sync $IA_NAMESPACE em $cursor_home/"
