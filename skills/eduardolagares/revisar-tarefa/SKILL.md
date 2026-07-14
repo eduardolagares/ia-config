@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.6.0"
+VERSION: "5.6.2"
 ---
 
 # `/revisar-tarefa`
@@ -86,7 +86,7 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 - **Entrada:** `## Diff` (passo 3) + **Projetos alterados** do passo 1.
 - **Cobertura:** revisar **cada** repositório/projeto presente em `## Diff` (e listado em Projetos alterados). Um projeto sem achados → subsecção com `Nenhum.` — **não** omitir o projeto.
-- **Protocolo:** `code-review` — fonte primária = diff do passo 3, **por projeto**.
+- **Protocolo:** skill irmã `skills/eduardolagares/code-review/SKILL.md` (via `code-review-diff`) — fonte primária = diff do passo 3, **por projeto**. Saída = relatório do protocolo `code-review`.
 - **Saída:** secção **`## Code review`** (blocos 1–5); itens **1.M** / **2.M** / **3.M** agrupados por projeto quando houver mais de um repo.
 
 ## Passo 5 — Verificação de requisitos (`verificar-requisitos-usuario`)
@@ -195,4 +195,4 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 | `revisar-tarefa-gerar-requisitos-de-codigo` | Passo 6 |
 | `revisar-tarefa-avaliar-tarefa` | Passo 7 |
 | `revisar-tarefa-pos-avaliacao` | Passo 8 |
-| `code-review` | Protocolo passo 4 |
+| `code-review` (`../code-review/`) | Protocolo passo 4 |
