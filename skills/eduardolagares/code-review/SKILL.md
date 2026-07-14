@@ -5,7 +5,7 @@ description: >-
   lacunas teste/diff; cruzamento diff↔spec TDD se existir; sem cobertura.
   Use com /code-review, "code-review", "revisar código", ou revisão de diff/PR.
 disable-model-invocation: true
-VERSION: "1.2.0"
+VERSION: "1.2.1"
 ---
 
 # code-review
@@ -17,7 +17,7 @@ VERSION: "1.2.0"
 ## Papel e âmbito
 
 - Atuar como sénior full-stack: correcção, fluxos, segurança, contratos API/UI, persistência, concorrência/erros, observabilidade quando pertinente.
-- **Omitir:** estética, preferências de formatação, micro-refactors sem efeito.
+- **Omitir:** estética, preferências de formatação, micro-refactors sem efeito; paths sob `.local_ci_metadata/` (artefactos gerados só para atestar execução do CI local — não revisar conteúdo, estilo, testes nem escopo).
 - **Não listar:** achados já corrigidos no diff/revisão; achados neutralizados por outro caminho verificável (guard, validação, fluxo complementar E2E). Proibir duplicar achados redundantes.
 
 ## Modo
@@ -31,14 +31,14 @@ VERSION: "1.2.0"
 3. `.cursor/rules/`, `AGENTS.md`, constituição se existir (complementar; não substituir `rules/eduardolagares`).
 4. Convenções observáveis no código.
 
-- **Âmbito:** validar regras só em **código novo ou alterado no diff**; não exigir retrofit de legado não tocado.
+- **Âmbito:** validar regras só em **código novo ou alterado no diff**; não exigir retrofit de legado não tocado. Excluir do âmbito de revisão (blocos **1–5** e cruzamento Spec TDD) qualquer path sob `.local_ci_metadata/`.
 - Evidência fraca para conclusão forte → no relatório uma linha com **suposição** ou **não verificável** (pt-BR).
 
 ## Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade
 
 - **Quando:** existir no âmbito da análise/revisão um ficheiro `docs/specs/tdd/*.md` aplicável à atividade (ou o utilizador o tiver indicado).
 - **Obrigatório:** ler a spec; extrair escopo explícito (ficheiros/módulos mencionados, RF/fases, exclusões).
-- **Cruzamento:** cada path alterado no diff deve caber no escopo da spec. Paths fora desse conjunto (ou claramente não cobertos por RF/entregáveis da spec) → **sempre** **1 - Crítico** (`1.M`), não diluir em **2**/**3**/**4**.
+- **Cruzamento:** cada path alterado no diff (exceto `.local_ci_metadata/**`) deve caber no escopo da spec. Paths fora desse conjunto (ou claramente não cobertos por RF/entregáveis da spec) → **sempre** **1 - Crítico** (`1.M`), não diluir em **2**/**3**/**4**.
 - **Citação (bloco 1):** path da spec + trecho curto ou secção onde o escopo está definido (equivale a "regra" violada: contrato de escopo da atividade).
 - **Hipótese de falha:** mistura de mudanças não previstas com risco de regressão, review parcial e rastreio de requisitos partido.
 - **Se a spec for ambígua** quanto a ficheiros → uma linha **suposição**/**não verificável** sobre o mapeamento; só elevar a **Crítico** quando o fora de escopo for inequívoco face ao texto.
