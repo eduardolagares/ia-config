@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.10"
+VERSION: "0.0.11"
 description: Minitest tests — TDD, naming, business assertions, isolation
 alwaysApply: true
 ---
@@ -7,7 +7,7 @@ alwaysApply: true
 
 - Scope: authoring `test/**/*.rb` — structure, naming, assertions (not CI wiring).
 - Identificadores de produção em setup/helpers → `naming-rails.mdc`. Nomes de teste (frase legível) → abaixo.
-- Each case **short** and proves **one** outcome. Name is **human sentence** (product person readable): scenario + expectation — not `test_calls_foo`.
+- Each case **short** and proves **one** outcome. Name is **human sentence** (product person readable): scenario + expectation — not `test_calls_foo`. Do **not** reference requirements (`RF1`, `RF2`, …) or use cases (`UC1`, `UC2`, …) in the name; the name alone must show what was validated, without ticket/spec codes.
 - Stack: `ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc. Prefer `test "…" do` or `def test_*` — not RSpec DSL unless project already uses `minitest/spec`.
 - TDD: RED → GREEN → REFACTOR; do not change prod + assertions in same step when proving behavior.
 - One behavior cluster per test method; unrelated expectations → separate test methods (same file for the same class).
