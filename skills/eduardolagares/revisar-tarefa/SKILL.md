@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.6.2"
+VERSION: "5.6.3"
 ---
 
 # `/revisar-tarefa`
@@ -13,6 +13,14 @@ VERSION: "5.6.2"
 Oito passos: contexto → requisitos → diff → code review → verificação → publicação doc → **avaliação** → **pós avaliação** (Monday).
 
 **Pacote:** `skills/eduardolagares/revisar-tarefa/` (instalada em `{dest}/skills/eduardolagares/revisar-tarefa/`). Sub-skills e `scripts/` usam paths **relativos** a esta pasta.
+
+## GitLab — requisito obrigatório
+
+O GitLab é **requisito para o funcionamento da skill**. Sem diff válido do GitLab não há base para code review, avaliação nem decisão de status.
+
+- **GitLab indisponível** = `check-gitlab-ready.sh` falha (`GITLAB_TOKEN` `missing`, API `unreachable`) **ou** o passo 3 entrega `## Diff` com `Status: parcial` \| `indisponível`.
+- Nesse caso a skill **para** e **não move a tarefa no Monday**: **nenhuma** escrita de status/owner, MR ou append em **Merge requests** (passo 8 proibido). Reportar o bloqueio e o que falta corrigir (token, rede/VPN, cache).
+- Só o passo 8 (movimentar Monday) corre com `## Diff` · `Status: ok`.
 
 ## GitLab — rede (VPN)
 
@@ -76,7 +84,7 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 - **Check (início):** `scripts/check-gitlab-ready.sh --branch "<branch>" --titulo "<título>"`.
 - **Saída:** secção **`## Diff`** — branch vs **`master`** por repo, com linha **`Status:`** `ok` \| `parcial` \| `indisponível` (ver `executar-diff`).
 - **Canal:** cache + REST API (`gitlab-api-*`); ver [executar-diff/SKILL.md](executar-diff/SKILL.md). **Proibido:** GitLab MCP.
-- **Bloqueio:** se **`Status: indisponível`** ou **`parcial`**, **não** avançar ao passo 8 — ver § Passo 8.
+- **Bloqueio:** se **`Status: indisponível`** ou **`parcial`** (GitLab indisponível — requisito da skill), **parar** e **não mover a tarefa no Monday** — passo 8 proibido; ver § GitLab — requisito obrigatório e § Passo 8.
 
 ## Passo 4 — Code review do diff (`code-review-diff`)
 
@@ -163,8 +171,8 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 |----------|------|
 | MCP Monday indisponível | Parar no passo 1; passos 6–8 não simular escrita |
 | Passo N sem saída do N−1 | Voltar ao passo em falta |
-| `GITLAB_TOKEN` ausente no env do executador | Parar no passo 3; passo 8 **proibido** |
-| `## Diff` com `Status: parcial` ou `indisponível` | **Não** executar passo 8; reportar bloqueio em `## Pós avaliação` |
+| `GITLAB_TOKEN` ausente no env do executador | GitLab indisponível → **parar** no passo 3; **não** mover a tarefa no Monday; passo 8 **proibido** |
+| GitLab indisponível (`## Diff` com `Status: parcial`/`indisponível`, API `unreachable`) | **Parar**; **não** mover a tarefa no Monday (sem status/owner/MR); reportar bloqueio em `## Pós avaliação` |
 | Passo 8 sem avaliação | Voltar ao passo 7 |
 | Título ambíguo | Não escolher item aleatório |
 
