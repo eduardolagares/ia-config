@@ -1,0 +1,14 @@
+---
+description: "Ao mudar o VERSION de uma skill, incrementar também o VERSION do README.md."
+alwaysApply: true
+---
+
+# Versão de skill ↔ VERSION do README
+
+**Aplicação:** só ao trabalho **neste** repositório (ia-config). Vive em `.cursor/rules/` e **não** é copiado pelo `install/`.
+
+**Regra:** sempre que o `VERSION` de qualquer skill for alterado (`skills/**/SKILL.md` ou `skills/README.md`), incrementar **no mesmo conjunto de alterações** o `VERSION` do frontmatter do `README.md` na raiz.
+
+- O bump do `README.md` é a **versão principal** do pacote de skills: acompanha qualquer mudança de versão de skill.
+- Incremento coerente: **patch** para ajuste retrocompatível, **minor** para skill nova ou capacidade nova, **major** para remoção/mudança incompatível.
+- O `VERSION` de cada skill continua por arquivo (ver `versioning.mdc`). Esta regra **adiciona** o bump obrigatório do `README.md` — não substitui o versionamento por artefato.
