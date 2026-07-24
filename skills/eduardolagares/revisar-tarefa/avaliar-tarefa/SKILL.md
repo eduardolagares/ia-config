@@ -2,10 +2,9 @@
 name: revisar-tarefa-avaliar-tarefa
 description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
-  cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes. Status Testar
-  via passo 1.
+  cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.1.0"
+VERSION: "2.2.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -20,14 +19,14 @@ Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
 | Dado | Obrigatório |
 |------|-------------|
-| **Passo 1** | Sim — subtarefas (Executar, Revisar código, **Testar**) + status |
+| **Passo 1** | Sim — subtarefas (Executar, Revisar código; **Testar** opcional para contexto) |
 | **Passo 3** | Sim — secção **`## Diff`** com **`Status: ok`** para handoff ao passo 8 (evidência de correção) |
 | **Passo 6** | Sim — doc **Revisar código** publicado ou `Ação: nenhum` |
 | **Passos 4–5** | Recomendado — fallback se doc ausente |
 
 ## Entrada
 
-- Saída do **passo 1** (`monday-task-info`) — status da subtarefa **Testar**; `doc_object_id` da subtarefa **Revisar código**
+- Saída do **passo 1** (`monday-task-info`) — `doc_object_id` da subtarefa **Revisar código**; status **Testar** só informativo
 - **`## Diff`** (passo 3)
 - Doc da subtarefa **Revisar código** (`read_docs` via `doc_object_id` do cache ou passo 6)
 - Opcional: **`## Requisitos da tarefa`** (passo 2) — contexto para bullets `R*` no doc
@@ -146,22 +145,18 @@ Itens **`3.M`** (Padrão de código) têm **o mesmo peso** que **`1.M`** e **`2.
 
 Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtarefa **Revisar código** → **Aguardando correção**; tarefa principal → **Fazendo**).
 
-### Regra 2 — Sem pendências: olhar subtarefa Testar
+### Regra 2 — Sem pendências: avanço para revisão manual
 
 Só aplicar se **não** há pendências (Regra 1).
 
-| Status Testar | Veredito |
-|---------------|----------|
-| **Concluída** (ou `concluído` / `Done`) | `pode_avancar_para_deploy` |
-| Qualquer outro | `deve_ser_testada` |
+Veredito **`pode_avancar_para_revisao_manual`**. **Não** ramificar por status de **Testar** nem por deploy — o próximo passo no Monday é o grupo **Revisão manual de código**.
 
 ### Vereditos (enum fixo)
 
 | Veredito | Significado |
 |----------|-------------|
-| `precisa_de_correcao` | Ainda há itens abertos de revisão (Crítico, Grave ou Padrão de código) ou requisitos |
-| `deve_ser_testada` | Revisão limpa; Testar ainda não concluída |
-| `pode_avancar_para_deploy` | Revisão limpa; Testar já concluída |
+| `precisa_de_correcao` | Ainda há itens abertos de revisão (Crítico, Grave ou Padrão de código), requisitos ou análise manual |
+| `pode_avancar_para_revisao_manual` | Revisão limpa; tarefa deve ir ao grupo **Revisão manual de código** |
 
 ## Saída obrigatória
 
@@ -173,12 +168,11 @@ Entregar **somente** este bloco:
 | Campo | Valor |
 |-------|-------|
 | Pode avançar? | `sim` \| `não` |
-| Veredito | `precisa_de_correcao` \| `deve_ser_testada` \| `pode_avancar_para_deploy` |
+| Veredito | `precisa_de_correcao` \| `pode_avancar_para_revisao_manual` |
 | Itens marcados cumpridos | <ids ou —> |
 | Pendências revisão | <ids ou contagem — inclui 1.M, 2.M e 3.M> (ou —) |
 | Pendências requisitos | <ids ou contagem> (ou —) |
 | Pendências análise manual | <resumo ou contagem> (ou —) |
-| Status Testar | <label do passo 1> |
 | Doc atualizado | `sim` \| `não` \| `parcial` |
 
 ### Motivo
@@ -188,7 +182,7 @@ Entregar **somente** este bloco:
 
 ### Regras da saída
 
-- **`Pode avançar?`** = `não` só quando veredito = `precisa_de_correcao` (inclui pendências em **`## Análise manual`**).
+- **`Pode avançar?`** = `sim` quando veredito = `pode_avancar_para_revisao_manual`; `não` quando = `precisa_de_correcao` (inclui pendências em **`## Análise manual`**).
 - **`Pendências análise manual`:** listar bullets/ids abertos ou contagem; se nenhuma → `—`.
 - **`Doc atualizado`** = `sim` se Fase C concluiu sem falha; `parcial` se algum `update_block` falhou; `não` se nada a marcar.
 - **Não** repetir doc integral nem code review.
@@ -200,8 +194,7 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | Veredito | Passo 8 (se `Status: ok`) |
 |----------|---------------------------|
 | `precisa_de_correcao` | § Correção |
-| `deve_ser_testada` | § Testar |
-| `pode_avancar_para_deploy` | § Deploy |
+| `pode_avancar_para_revisao_manual` | § Revisão manual de código (grupo + status; **proibido** QA / testes / deploy) |
 
 ## Erros
 
@@ -211,7 +204,6 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | Sem passo 3 (`## Diff`) | Parar |
 | `## Diff` com `Status` ≠ `ok` | Emitir veredito **sugerido** se possível; passo 8 **bloqueado** |
 | Sem passo 6 e sem passos 4–5 | Parar |
-| Subtarefa Testar não encontrada | Parar; listar subtarefas |
 | Doc ilegível | Fallback passos 4–5; avisar |
 | MCP Monday indisponível | Parar; **não** simular veredito nem checkboxes marcados |
 | `read_docs` sem blocos | Repetir com `include_blocks: true` antes de `update_doc` |
@@ -224,4 +216,4 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | `revisar-tarefa-gerar-requisitos-de-codigo` | Passo 6 — doc fonte de pendências |
 | `revisar-tarefa-verificar-requisitos-usuario` | Passo 5 — critério para `R*` |
 | `revisar-tarefa-pos-avaliacao` | Passo 8 — executa veredito (status/owners) |
-| `monday-task-info` | Passo 1 — status Testar + `doc_object_id` |
+| `monday-task-info` | Passo 1 — subtarefas + `doc_object_id` |

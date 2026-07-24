@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "5.6.3"
+VERSION: "5.7.0"
 ---
 
 # `/revisar-tarefa`
@@ -124,15 +124,14 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 `avaliar-tarefa/SKILL.md`
 
-- **Entrada:** passo 1 (status **Testar**) + **`## Diff`** (passo 3) + doc **Revisar código** (após passo 6).
+- **Entrada:** passo 1 + **`## Diff`** (passo 3) + doc **Revisar código** (após passo 6).
 - **Lógica:**
   - Para cada item aberto em **Revisão de código** (Crítico, Grave ou **Padrão de código**) ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
   - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
   - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
-  - Senão, subtarefa **Testar** concluída → **`pode_avancar_para_deploy`**.
-  - Senão → **`deve_ser_testada`**.
+  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: grupo + status **Revisão manual de código** — **não** QA, testes nem deploy).
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.
-- **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status → passo 8).
+- **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status/grupo → passo 8).
 
 ## Passo 8 — Pós avaliação (`pos-avaliacao`)
 
@@ -142,13 +141,12 @@ Detalhes: [reference-gitlab-api.md](reference-gitlab-api.md).
 
 - **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 / cache + **`## Diff`** com **`Status: ok`**.
 - **Saída:** **`## Pós avaliação`** — mutations executadas, **ou** bloqueio documentado (sem alterar status/owners no Monday).
-- **Proibido sem diff válido:** `change_item_column_values` de status/owner, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (QA, Fazendo, Aguardando deploy, Aguardando correção, etc.).
+- **Proibido sem diff válido:** `change_item_column_values` de status/owner, `move_item_to_group`, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Fazendo, Aguardando correção, Revisão manual de código, etc.).
 
 | Veredito | Ações |
 |----------|--------|
 | `precisa_de_correcao` | **MR** por repo (`branch` → `master`); links no doc **Merge requests**; owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** |
-| `deve_ser_testada` | Revisar código → **Concluída**; Testar → **Aguardando testes**; tarefa → **QA** |
-| `pode_avancar_para_deploy` | Revisar código → **Concluída**; tarefa → **Aguardando deploy** |
+| `pode_avancar_para_revisao_manual` | Revisar código → **Concluída**; tarefa → grupo **Revisão manual de código** + status consolidado **Revisão manual de código** (**proibido** QA / testes / deploy) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 
@@ -188,8 +186,8 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 4. Code review  
 5. Verificação R*  
 6. Doc Revisar código  
-7. **Avaliação** → ex. `deve_ser_testada`  
-8. **Pós avaliação** → status QA, Testar aguardando, Revisar código concluída  
+7. **Avaliação** → ex. `pode_avancar_para_revisao_manual`  
+8. **Pós avaliação** → grupo/status **Revisão manual de código**, Revisar código concluída  
 
 ## Skills relacionadas
 

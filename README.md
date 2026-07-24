@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.20"
+VERSION: "0.0.21"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -81,7 +81,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `refatorar-codigo` | Refatora o diff (branch vs `master`, alterações locais ou paths indicados) para Clean & Short Code; aplica em disco, mantém comportamento. |
 | `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday (título exato), documento, subtarefas e cache `tasks-by-title.json`. |
 | `gitlab-api` | REST API GitLab (`GITLAB_TOKEN`): env, validação e garantir MRs (`source` → `master`). Usada por `revisar-tarefa` no passo 8. |
-| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
+| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs; avanço → grupo **Revisão manual de código**). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
 
 No **Cursor**, o `install/` regista o hook `beforeSubmitPrompt` para pré-buscar o diff ao enviar `/revisar-tarefa <título>` (requer `GITLAB_TOKEN`, Monday ligado em **Settings → MCP**, passo 1 via `monday-task-info`, e skill `gitlab-api`).
 

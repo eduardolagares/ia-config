@@ -2,21 +2,22 @@
 name: revisar-tarefa-pos-avaliacao
 description: >-
   Passo 8 de revisar-tarefa: executa no Monday as ações conforme o veredito do passo 7
-  (status, owners). Se precisa_de_correcao, garante MRs GitLab (branch → master), publica
-  links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
+  (status, owners, grupo). Se precisa_de_correcao, garante MRs GitLab (branch → master),
+  publica links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
+  Se pode_avancar_para_revisao_manual, move a tarefa para o grupo Revisão manual de código.
 disable-model-invocation: true
-VERSION: "1.2.4"
+VERSION: "1.3.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
-Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**).
+Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners, grupo e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**).
 
 **GitLab (MRs):** ler **`GITLAB_TOKEN` das variáveis de ambiente da máquina de quem executa** — mesma regra do passo 3 ([SKILL.md](../SKILL.md) § GitLab — autenticação). Scripts `gitlab-api-mr-ensure*` herdam o env; `ctx_execute` usa `process.env.GITLAB_TOKEN`.
 
 **Monday:** `CallMcpTool` com `server`: `plugin-monday.com-monday` (conexão Monday ligada no Cursor — Settings → MCP). Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
 
-**Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
+**Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, grupo, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
 
 ## Pré-requisito
 
@@ -24,7 +25,7 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 |------|-------------|
 | **`## Diff`** (passo 3) | Sim — **`Status: ok`** (critérios em [executar-diff](../executar-diff/SKILL.md) § Status do diff) |
 | **`## Avaliação`** | Sim — passo 7 (`Veredito`) |
-| **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código, Testar |
+| **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código (Testar não é alvo deste passo) |
 | **Passo 1 ou 3** (só `precisa_de_correcao`) | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) |
 | **GITLAB_TOKEN** | Sim — **env do executador**, para MRs em `precisa_de_correcao` |
 | **Passo 6** (recomendado) | Doc **Revisar código** — se `Ação: nenhum`, § A.2 pode **criar** doc só com MRs |
@@ -37,25 +38,29 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 | Tarefa principal | `4571892384` | `status_1` (Status consolidado) | — |
 | Subtarefas | `4571892432` | `status` | `person` |
 
+| Grupo (título exato) | Resolver |
+|----------------------|----------|
+| **Revisão manual de código** | `get_board_info` no board `4571892384` → `groups[]` pelo título; `groupId` típico `group_mm5j20e` (confirmar — não inventar) |
+
 Resolver `item_id` de cada subtarefa via cache `monday-task-info` ou passo 1.
 
 ## Entrada
 
 - **`Veredito`** do `## Avaliação` (passo 7)
-- IDs das subtarefas: **Executar**, **Revisar código**, **Testar**
+- IDs das subtarefas: **Executar**, **Revisar código**
 - `item_id` da tarefa principal
 
 ## Fluxo (ordem fixa)
 
 0. **Validar diff:** ler `Status` em `## Diff` (passo 3). Se ≠ `ok` → § **Bloqueio (diff indisponível)** e **terminar** (zero mutations Monday/GitLab).
-1. Confirmar veredito ∈ {`precisa_de_correcao`, `deve_ser_testada`, `pode_avancar_para_deploy`}.
+1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
 2. Executar **apenas** o bloco de ações do veredito (§ abaixo).
-3. Usar `change_item_column_values` — status: `{"label": "<texto exato>"}`.
+3. Status: `change_item_column_values` com `{"label": "<texto exato>"}`. Grupo: `all_api_write` com `move_item_to_group` (ver § revisão manual).
 4. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
 
-Quando o passo 0 falhar — **não** chamar `change_item_column_values`, `create_doc`, `append_blocks`, `gitlab-api-mr-ensure*` nem equivalente MCP.
+Quando o passo 0 falhar — **não** chamar `change_item_column_values`, `create_doc`, `append_blocks`, `move_item_to_group`, `gitlab-api-mr-ensure*` nem equivalente MCP.
 
 Entregar no chat:
 
@@ -66,7 +71,7 @@ Entregar no chat:
 |-------|-------|
 | Veredito (passo 7) | `<veredito>` — **não aplicado** |
 | Motivo | Diff GitLab indisponível (`Status: <parcial\|indisponível>`) |
-| Ações Monday | **nenhuma** (status/owners/doc MR inalterados) |
+| Ações Monday | **nenhuma** (status/owners/grupo/doc MR inalterados) |
 | Próximo passo | Corrigir `GITLAB_TOKEN`/cache, rodar prefetch ou repetir passo 3 até `Status: ok` (VPN já ativa no executador) |
 ```
 
@@ -187,20 +192,38 @@ Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `
 
 Se **Executar** não tiver owner → pular merge; reportar aviso; executar passos 2–3.
 
-### `deve_ser_testada`
+### `pode_avancar_para_revisao_manual`
+
+**Obrigatório** enviar a tarefa ao grupo **Revisão manual de código**. **Proibido** neste veredito: status **QA**, **Aguardando testes**, **Aguardando deploy**, grupo **QA**, grupo **Aguardando Deploy**, ou qualquer outro destino de testes/deploy.
+
+**Ordem:** subtarefa Revisar código → grupo + status consolidado da tarefa principal.
 
 | # | Alvo | Ação |
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | Status → **`Concluída`** |
-| 2 | Subtarefa **Testar** | Status → **`Aguardando testes`** |
-| 3 | Tarefa principal | Status → **`QA`** |
+| 2 | Tarefa principal | **Mover** para o grupo **Revisão manual de código** (`move_item_to_group`) |
+| 3 | Tarefa principal | Status consolidado (`status_1`) → **`Revisão manual de código`** |
 
-### `pode_avancar_para_deploy`
+#### Resolver e mover para o grupo
 
-| # | Alvo | Ação |
-|---|------|------|
-| 1 | Subtarefa **Revisar código** | Status → **`Concluída`** |
-| 2 | Tarefa principal | Status → **`Aguardando deploy`** |
+1. `get_board_info` — `boardId: 4571892384`.
+2. Em `groups[]`, achar o grupo com título **exato** `Revisão manual de código` → obter `id` (`groupId`).
+3. Se o grupo **não** existir → **parar**; reportar erro; **não** usar QA, Deploy nem outro grupo.
+4. Mover com `all_api_write` (mutation GraphQL):
+
+```graphql
+mutation ($itemId: ID!, $groupId: String!) {
+  move_item_to_group(item_id: $itemId, group_id: $groupId) {
+    id
+  }
+}
+```
+
+Variáveis: `itemId` = tarefa principal; `groupId` = id resolvido no passo 2.
+
+5. Só depois: `change_item_column_values` no status consolidado com label **`Revisão manual de código`**.
+
+**Não** alterar subtarefa **Testar**, **Executar** nem **Deploy**.
 
 ## Exemplo MCP — status subtarefa
 
@@ -218,7 +241,7 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 {
   "boardId": 4571892384,
   "itemId": 12052222930,
-  "columnValues": "{\"status_1\": {\"label\": \"Fazendo\"}}"
+  "columnValues": "{\"status_1\": {\"label\": \"Revisão manual de código\"}}"
 }
 ```
 
@@ -233,6 +256,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 |-------|-------|
 | Veredito | `<veredito>` |
 | Ações executadas | <lista resumida> |
+| Grupo | `Revisão manual de código` \| — (correção) \| `erro` |
 | Doc Merge requests | `append` \| `criado` \| `nenhum` \| `erro` \| — |
 | Erros | — (ou detalhe) |
 
@@ -246,10 +270,11 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 
 ### Detalhe (Monday)
 
-| Item | board | item_id | Coluna | Novo valor | Resultado |
-|------|-------|---------|--------|------------|-----------|
-| Revisar código | 4571892432 | … | status | Aguardando correção | ok |
-| … | … | … | … | … | … |
+| Item | board | item_id | Coluna / ação | Novo valor | Resultado |
+|------|-------|---------|---------------|------------|-----------|
+| Revisar código | 4571892432 | … | status | Concluída | ok |
+| Tarefa | 4571892384 | … | move_item_to_group | Revisão manual de código | ok |
+| Tarefa | 4571892384 | … | status_1 | Revisão manual de código | ok |
 ```
 
 ## Erros
@@ -258,11 +283,13 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 |----------|------|
 | `## Diff` ausente ou `Status` ≠ `ok` | § Bloqueio; **nenhuma** mutation Monday/GitLab |
 | Sem `## Avaliação` | Parar; executar passo 7 |
-| Veredito inválido | Parar |
+| Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
 | `GITLAB_TOKEN` ausente no env (`precisa_de_correcao`) | Parar antes de Monday; pedir `export` no shell local |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; Monday § B opcional |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
+| Grupo **Revisão manual de código** ausente | Parar; **não** enviar para QA/Deploy |
+| `move_item_to_group` falhou | Reportar; **não** fingir avanço; status consolidado só se o move já OK |
 | Subtarefa não encontrada | Parar; listar subtarefas |
 | Mutation parcial | Reportar o que falhou; não reverter automaticamente |
 
@@ -272,7 +299,8 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 - Sobrescrever/apagar conteúdo existente do doc (só **append** em **Merge requests**)
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)
-- Mudar status de **Executar** ou **Deploy** (salvo pedido explícito)
+- Mudar status de **Executar**, **Testar** ou **Deploy** (salvo pedido explícito)
+- Em `pode_avancar_para_revisao_manual`: enviar para **QA**, **Aguardando testes**, **Aguardando deploy** ou grupos **QA** / **Aguardando Deploy**
 
 ## Skills relacionadas
 

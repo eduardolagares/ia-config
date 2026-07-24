@@ -23,6 +23,12 @@ Detalhes: [../monday-task-info/reference-mcp-monday.md](../monday-task-info/refe
 | Documento | `monday_doc` |
 | Owner subtarefa | `person` |
 
+## Grupos (board principal — confirmar com `get_board_info`)
+
+| Título exato | Uso |
+|--------------|-----|
+| **Revisão manual de código** | Destino obrigatório quando veredito = `pode_avancar_para_revisao_manual` (`move_item_to_group`; `groupId` típico `group_mm5j20e`) |
+
 ## Cache local
 
 `monday-task-info/cache/tasks-by-title.json` — preenchido no passo 1 via `write-task-cache.sh` após leitura MCP. Usado pelo hook `prefetch-diff` (passo 3).
