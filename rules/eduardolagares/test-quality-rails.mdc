@@ -1,0 +1,69 @@
+---
+VERSION: "0.1.0"
+description: Critério de força dos testes Minitest — comportamento de produto, não cobertura de linha
+alwaysApply: true
+---
+# Qualidade de testes (Rails)
+
+Cada teste novo ou alterado em `test/` **protege um comportamento de produto**. Cobertura de linha é telemetria, nunca o alvo.
+
+**Pergunta central:** se o comportamento de produção mudasse, este teste falharia pelo motivo certo?
+
+Complementa `writting-tests-rails.mdc` (estrutura, layout, stack). Escrita só em `test/` → `rails-test-submodule-readonly.mdc`.
+
+## Teste conforme
+
+Um caso só entra se:
+
+- Nome em **português**, frase humana legível por pessoa de produto: cenário + expectativa.
+- Assere **um** outcome (request test: exatamente um status HTTP).
+- Falharia se o comportamento quebrasse — status, chave de body visível ao client, efeito colateral observável. **Não** “não explodiu”.
+- Exige mudança só em `test/` (ver `rails-test-submodule-readonly.mdc`).
+- Mocka apenas fronteiras externas (HTTP, mail, fila, clock, RNG) — nunca classes da aplicação.
+
+## Prioridade ao escolher o que proteger
+
+1. Auth / dinheiro / cancelamento / efeitos irreversíveis
+2. Branches de `Failure` / validação de domínio que o client percebe
+3. Contratos de happy path que o client da API depende
+4. Restante
+
+**Nunca** escolher um comportamento só porque o SimpleCov marcou a linha em vermelho.
+
+## Pular (relatar como inviável)
+
+- Exige mudança em código de produção.
+- Status instável / não determinístico.
+- Só passa via anti-padrão.
+- Linha/branch sem significado de produto: logging, wiring trivial, apresentação pura sem contrato.
+
+## Naming
+
+- Sempre português. Bom: `test "rejeita checkout quando estoque é zero"`.
+- Ruim: `test "rejects checkout when stock is zero"`, `test_calls_foo`, nomes com RF/UC/gap/cobertura/loop.
+- Ao fortalecer caso existente com nome em inglês, renomear para português no mesmo passo.
+
+## Anti-padrões (auto-rejeitar)
+
+| Proibido | Motivo |
+|---|---|
+| Multi-status / faixa de status | um status deliberado |
+| Esperar 500 | é bug ou é skip |
+| `if response.status` em volta do assert | um outcome |
+| Nome com gap/cobertura/loop/RF/UC | frase de produto |
+| Nome de teste em inglês | português obrigatório |
+| Stub de classe da aplicação | só fronteira externa |
+| “Qualquer status que não crashe” | contrato deliberado |
+| Teste escrito só para pintar linha de verde | pular |
+
+## Fortalecer o que já existe
+
+Remover ou substituir teste fraco vale tanto quanto adicionar caso novo. Teste fraco = multi-status, assert condicional, nome de cobertura, mock de classe da app.
+
+**Nunca** manter teste fraco porque “dá cobertura”. **Nunca** enfraquecer assert para ficar verde — se o comportamento virou inviável, trocar de alvo ou reportar bloqueio.
+
+## Red flags
+
+- Escolher o que testar partindo das linhas descobertas.
+- Escrever mirando um % ou uma quantidade de casos.
+- Chamar o lote de pronto quando os asserts não pegariam uma quebra real.

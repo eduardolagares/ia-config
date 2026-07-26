@@ -1,11 +1,11 @@
 ---
-VERSION: "0.0.6"
+VERSION: "0.0.7"
 description: Edits must keep tests in sync — find counterpart specs, update contracts, run focused tests
 alwaysApply: true
 ---
 # Implementation ↔ tests
 
-- Changing behavior **implies** updating or adding tests that already cover that surface — green CI alone is not enough; assertions must match the **new** contract.
+- Changing behavior **implies** updating or adding tests that already cover that surface — green CI alone is not enough; assertions must match the **new** contract. Força / anti-padrões do caso → `test-quality-rails.mdc`.
 - **Before finish:** locate counterpart tests (`test/models/x_test.rb` ↔ `app/models/x.rb`, request/system tests for routes / flows touched — naming varies by project; search by class, path, route).
 - **Contract drift:** renamed API, new branches, defaults, validations, HTTP status, side effects → change setup + assertions in those tests. Weakening tests to green is forbidden unless product explicitly drops the behavior (then delete/replace with documented intent).
 - **No orphan RED:** do not treat work complete while tests for touched code still encode old behavior — except intentional TDD RED called out in workflow.

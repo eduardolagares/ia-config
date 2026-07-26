@@ -1,13 +1,15 @@
 ---
-VERSION: "0.0.11"
-description: Minitest tests — TDD, naming, business assertions, isolation
+VERSION: "0.1.0"
+description: Minitest — estrutura, layout, stack; força do teste → test-quality-rails.mdc
 alwaysApply: true
 ---
 # Tests (Minitest)
 
-- Scope: authoring `test/**/*.rb` — structure, naming, assertions (not CI wiring).
-- Identificadores de produção em setup/helpers → `naming-rails.mdc`. Nomes de teste (frase legível) → abaixo.
-- Each case **short** and proves **one** outcome. Name is **human sentence** (product person readable): scenario + expectation — not `test_calls_foo`. Do **not** reference requirements (`RF1`, `RF2`, …) or use cases (`UC1`, `UC2`, …) in the name; the name alone must show what was validated, without ticket/spec codes.
+- Scope: authoring `test/**/*.rb` — estrutura, layout, stack (não CI wiring).
+- **Força do teste** (o que proteger, naming PT, anti-padrões, prioridade) → `test-quality-rails.mdc`.
+- Só `test/` em passagem de qualidade → `rails-test-submodule-readonly.mdc`.
+- Identificadores de produção em setup/helpers → `naming-rails.mdc`. Nomes de caso → `test-quality-rails.mdc` (português, cenário + expectativa).
+- Each case **short** and proves **one** outcome. Do **not** reference requirements (`RF1`, `RF2`, …) or use cases (`UC1`, `UC2`, …) in the name.
 - Stack: `ActiveSupport::TestCase`, `ActionDispatch::IntegrationTest`, etc. Prefer `test "…" do` or `def test_*` — not RSpec DSL unless project already uses `minitest/spec`.
 - TDD: RED → GREEN → REFACTOR; do not change prod + assertions in same step when proving behavior.
 - One behavior cluster per test method; unrelated expectations → separate test methods (same file for the same class).
@@ -26,6 +28,6 @@ alwaysApply: true
 - Migrations: **no contract tests** — do not add specs that mirror `db/migrate` (columns, indexes, FKs, `up`/`down`). Schema is the migration + `schema.rb`; prove effects through model/query/integration behavior.
 
 ```ruby
-# bad: test "works" do … multiple unrelated asserts … end
-# good: test "rejects checkout when stock is zero" do … one scenario … end
+# ruim: test "works" do … multiple unrelated asserts … end
+# bom: test "rejeita checkout quando estoque é zero" do … one scenario … end
 ```

@@ -1,0 +1,15 @@
+---
+VERSION: "0.1.0"
+description: Em passagens de teste (qualidade/cobertura), produção é read-only — só test/ muda
+alwaysApply: true
+---
+# Rails test — produção read-only
+
+Quando a tarefa é **adicionar, fortalecer ou corrigir testes** (qualidade, lacunas, regressão sem mudança de produto):
+
+- **Permitido:** `test/**`, factories/fixtures/helpers **só de teste**.
+- **Proibido:** `app/`, `lib/` de produção, jobs, migrations, rotas, views, config de runtime da app.
+
+Se o comportamento desejado **só** fica testável mudando produção → **não** editar produção neste modo; reportar como **inviável** / bloqueio (ver `test-quality-rails.mdc` § Pular).
+
+Exceção: o usuário pediu **explicitamente** implementação ou correção de produto (TDD GREEN, bugfix, feature) — aí produção pode mudar; esta rule não se aplica.

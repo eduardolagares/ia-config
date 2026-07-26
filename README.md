@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.21"
+VERSION: "0.1.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -105,7 +105,9 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
 | `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
-| `writting-tests-rails.mdc` | Testes Minitest — TDD, naming, asserções de negócio, isolamento. |
+| `writting-tests-rails.mdc` | Testes Minitest — estrutura, layout, stack; força → `test-quality-rails`. |
+| `test-quality-rails.mdc` | Critério de força — comportamento de produto, naming PT, anti-padrões; não cobertura de linha. |
+| `rails-test-submodule-readonly.mdc` | Passagem só de testes — produção read-only; só `test/` muda. |
 | `writting-tests-react.mdc` | Specs Vitest + RTL — layout `js-tests/`, naming, agrupamento, isolamento. |
 | `vitest-setup.mdc` | Bootstrap Vitest na raiz do host (config, aliases, scripts) — não specs. |
 | `karpathy-guidelines.mdc` | Diretrizes comportamentais Karpathy — gerado no install (não versionado no Git). |
