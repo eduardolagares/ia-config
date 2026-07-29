@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.4.0"
+VERSION: "2.5.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -35,6 +35,8 @@ Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 - Fallback: `## Code review` (passo 4) + `## Verificação de requisitos` (passo 5)
 
 ## Fase A — Ler documento (com blocos)
+
+Se a subtarefa **Revisar código** não existir → **criar** ([../SKILL.md](../SKILL.md) § Subtarefa Revisar código) antes de ler o doc. Sem doc após criar subtarefa → não há checkboxes a marcar; seguir para veredito com fallback passos 4–5 se necessário.
 
 `read_docs`:
 
@@ -151,14 +153,14 @@ Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtaref
 
 Só aplicar se **não** há pendências (Regra 1).
 
-Veredito **`pode_avancar_para_revisao_manual`**. **Não** ramificar por status de **Testar** nem por deploy — o próximo passo no Monday é o grupo **Revisão manual de código**.
+Veredito **`pode_avancar_para_revisao_manual`**. **Não** ramificar por status de **Testar** nem por deploy — o próximo passo no Monday é status consolidado **Revisão manual de código** (automação move o grupo).
 
 ### Vereditos (enum fixo)
 
 | Veredito | Significado |
 |----------|-------------|
 | `precisa_de_correcao` | Ainda há itens abertos de revisão (Crítico, Grave ou Padrão de código), requisitos ou análise manual |
-| `pode_avancar_para_revisao_manual` | Revisão limpa; tarefa deve ir ao grupo **Revisão manual de código** |
+| `pode_avancar_para_revisao_manual` | Revisão limpa; status consolidado → **Revisão manual de código** (automação Monday move o grupo) |
 
 ## Saída obrigatória
 
@@ -196,7 +198,7 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | Veredito | Passo 8 (se `Status: ok`) |
 |----------|---------------------------|
 | `precisa_de_correcao` | § Correção |
-| `pode_avancar_para_revisao_manual` | § Revisão manual de código (grupo + status; **proibido** QA / testes / deploy) |
+| `pode_avancar_para_revisao_manual` | § Revisão manual de código (status consolidado; automação move o grupo; **proibido** QA / testes / deploy / `move_item_to_group`) |
 
 ## Erros
 

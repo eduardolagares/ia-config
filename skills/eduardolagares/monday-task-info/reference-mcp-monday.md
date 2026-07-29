@@ -30,7 +30,6 @@ CallMcpTool
 | Board **Dia a dia** (tarefas) | `4571892384` |
 | Board subtarefas | `4571892432` |
 | Workspace principal (típico) | `7278225` |
-| Grupo **Revisão manual de código** | `group_mm5j20e` (confirmar via `get_board_info` se duvidar) |
 
 ### Colunas — tarefa (board `4571892384`)
 
@@ -41,7 +40,7 @@ CallMcpTool
 | Status consolidado | `status_1` |
 | Subelementos | `subelementos` |
 
-Labels úteis `status_1`: `Fazendo`, `Revisão manual de código`, `QA`, `Aguardando deploy`, …
+Labels úteis `status_1`: `Fazendo`, `Revisão automática de código`, `Revisão manual de código`, `QA`, `Aguardando deploy`, …
 
 ### Colunas — subtarefa (board `4571892432`)
 
@@ -216,6 +215,22 @@ Após `read_docs` com `include_blocks: true`, achar `list_item` / CHECK_LIST com
 
 (Manter o texto do bullet; só forçar `checked: true`. Último delta **obrigatório** `{text:"\\n"}`.)
 
+### Criar subtarefa Revisar código (se ausente)
+
+```json
+{
+  "toolName": "create_item",
+  "arguments": {
+    "boardId": 4571892432,
+    "name": "Revisar código",
+    "parentItemId": 12052222930,
+    "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
+  }
+}
+```
+
+`parentItemId` = tarefa principal. Usar sempre que `/revisar-tarefa` precisar da subtarefa e ela não existir.
+
 ### Criar doc na subtarefa Revisar código
 
 ```json
@@ -274,22 +289,26 @@ Owner merge (people):
 
 **Não** inventar labels — só as do `get_board_info`.
 
-### Mover para grupo (passo 8 — revisão manual)
+### Encaminhar por status consolidado (passo 8)
 
-1. `get_board_info` → `groups[]` título **Revisão manual de código** → `id` (típico `group_mm5j20e`).
-2. `all_api_write`:
+**Só** alterar `status_1` — **nunca** `move_item_to_group`. A automação do Monday move o grupo:
+
+| Label `status_1` | Grupo (automação) |
+|------------------|-------------------|
+| **Fazendo** | **Atribuídas** |
+| **Revisão automática de código** | grupo de revisão automática |
+| **Revisão manual de código** | grupo de revisão manual |
 
 ```json
 {
-  "toolName": "all_api_write",
+  "toolName": "change_item_column_values",
   "arguments": {
-    "query": "mutation ($itemId: ID!, $groupId: String!) { move_item_to_group(item_id: $itemId, group_id: $groupId) { id } }",
-    "variables": "{\"itemId\": \"12052222930\", \"groupId\": \"group_mm5j20e\"}"
+    "boardId": 4571892384,
+    "itemId": 12052222930,
+    "columnValues": "{\"status_1\": {\"label\": \"Revisão manual de código\"}}"
   }
 }
 ```
-
-`variables` é **string JSON**. Grupo ausente → **parar** (não usar QA/Deploy).
 
 ---
 
@@ -298,13 +317,13 @@ Owner merge (people):
 | Passo | Tools |
 |-------|--------|
 | 1 | `get_board_items_page`, `read_docs` (+ `get_updates` opcional) |
-| 6 | `read_docs`, `update_doc` / `create_doc` |
-| 7 | `read_docs` (`include_blocks`), `update_doc` (`update_block` + `checked`) |
-| 8 | `change_item_column_values`, `get_board_info`, `all_api_write` (`move_item_to_group`), `update_doc` / `create_doc` (Merge requests) |
+| 6 | `create_item` (subtarefa Revisar código se ausente), `read_docs`, `update_doc` / `create_doc` |
+| 7 | `read_docs` (`include_blocks`), `update_doc` (`update_block` + `checked`); criar subtarefa se ausente |
+| 8 | `create_item` (subtarefa se ausente), `change_item_column_values`, `update_doc` / `create_doc` (Merge requests / Resultado) |
 
 ## Checklist
 
 1. Monday MCP `ready`?
 2. Só `CallMcpTool` — zero token/REST.
-3. Labels e `groupId` do board real.
+3. Labels do board real (`get_board_info` se duvidar).
 4. MCP falhou → **parar**; não simular escrita.

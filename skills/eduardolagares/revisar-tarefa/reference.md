@@ -23,11 +23,36 @@ Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `re
 | Documento | `monday_doc` |
 | Owner subtarefa | `person` |
 
-## Grupos (board principal — confirmar com `get_board_info`)
+## Subtarefa **Revisar código** (criar se ausente)
 
-| Título exato | Uso |
-|--------------|-----|
-| **Revisão manual de código** | Destino obrigatório quando veredito = `pode_avancar_para_revisao_manual` (`move_item_to_group` via MCP; `groupId` típico `group_mm5j20e`) |
+Sempre que um passo precisar desta subtarefa e ela **não** existir sob a tarefa:
+
+1. `get_board_items_page` — `itemIds: [<tarefa>]`, `boardId: 4571892384`, `includeSubItems: true`.
+2. Procurar subtarefa **`Revisar código`** ou **`Revisão de código`**.
+3. Ausente → `create_item`:
+
+| Campo | Valor |
+|-------|-------|
+| `boardId` | `4571892432` |
+| `name` | `Revisar código` |
+| `parentItemId` | `item_id` da tarefa principal |
+| `columnValues` | `{"status": {"label": "A fazer"}}` (string JSON) |
+
+4. Usar o `id` retornado no restante do fluxo.
+
+**Não** criar outras subtarefas (Executar, Testar, Deploy) por esta regra — só **Revisar código**.
+
+## Status consolidado → grupo (automação Monday)
+
+**Regra:** alterar **só** `status_1` (status consolidado). A **automação do Monday** move a tarefa para o grupo. **Nunca** usar `move_item_to_group`.
+
+| Label `status_1` | Grupo (automação) |
+|------------------|-------------------|
+| **Fazendo** | **Atribuídas** |
+| **Revisão automática de código** | grupo de revisão automática |
+| **Revisão manual de código** | grupo de revisão manual |
+
+Usos no passo 8: `precisa_de_correcao` → **Fazendo**; `pode_avancar_para_revisao_manual` → **Revisão manual de código**.
 
 ## GitLab
 

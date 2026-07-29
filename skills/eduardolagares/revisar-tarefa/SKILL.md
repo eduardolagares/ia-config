@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.5.0"
+VERSION: "6.9.0"
 ---
 
 # `/revisar-tarefa`
@@ -31,9 +31,9 @@ Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/too
 | Buscar quadro | `search` (`searchType: BOARD`, `searchTerm` obrigatório) |
 | Metadados board / grupos | `get_board_info` (`boardId: 4571892384`) |
 | Item + subtarefas | `get_board_items_page` |
+| Criar subtarefa Revisar código | `create_item` (`parentItemId` = tarefa; `name: Revisar código`) |
 | Ler / append / checkbox doc | `read_docs` / `update_doc` |
 | Status / owner | `change_item_column_values` |
-| Mover grupo | `all_api_write` → `move_item_to_group` (`group_mm5j20e`) |
 | Diff via MR | `gitlab_execute_action` → `merge_request.list` → `mr_review.raw_diffs` |
 | Diff sem MR | `repository.compare` (`from: master`, `to: branch`) |
 | Criar / ajustar MR | `merge_request.create` / `merge_request.update` (`target_branch: master`) |
@@ -60,6 +60,27 @@ O Monday é **requisito** (passos 1 e 6–8). Sem MCP Monday da IDE não há con
 - **Canal único:** MCP Monday instalado na IDE de quem executa — ver [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md).
 - **Monday indisponível** = MCP Monday ausente/`needsAuth` sem resolução.
 - Nesse caso a skill **para** — **não** inventar contexto, **não** simular escrita. Reportar bloqueio (Settings → MCP → Monday).
+
+## Subtarefa **Revisar código** (criar se ausente)
+
+Em **qualquer** passo que precise da subtarefa **Revisar código** (doc, status, owners, resultado):
+
+1. Resolver via passo 1 ou `get_board_items_page` (`includeSubItems: true`) — títulos aceitos: **`Revisar código`** ou **`Revisão de código`**.
+2. Se **não** existir → **criar** com `create_item` (não parar):
+
+```json
+{
+  "boardId": 4571892432,
+  "name": "Revisar código",
+  "parentItemId": <item_id_tarefa_principal>,
+  "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
+}
+```
+
+3. Guardar o novo `item_id` no contexto do chat e seguir o passo.
+4. Se `create_item` falhar → **parar**; reportar; **não** simular subtarefa.
+
+Receita completa: [reference.md](reference.md) § Subtarefa Revisar código + [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md).
 
 ## Monday — MCP (IDE)
 
@@ -185,7 +206,7 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
   - Para cada item aberto em **Revisão de código** (Crítico, Grave ou **Padrão de código**) ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
   - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
   - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
-  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: grupo + status **Revisão manual de código** — **não** QA, testes nem deploy).
+  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: status consolidado **Revisão manual de código** — automação Monday move o grupo; **não** QA, testes nem deploy).
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.
 - **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status/grupo → passo 8).
 
@@ -197,13 +218,13 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 
 - **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 + **`## Diff`** com **`Status: ok`** + branch/repos.
 - **Saída:** **`## Pós avaliação`** — mutations executadas (incl. MRs + doc), **ou** bloqueio documentado (sem alterar status/owners no Monday).
-- **Proibido sem diff válido:** `change_item_column_values` de status/owner, `move_item_to_group`, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Fazendo, Aguardando correção, Revisão manual de código, etc.).
+- **Proibido sem diff válido:** `change_item_column_values` de status/owner, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Fazendo, Aguardando correção, Revisão manual de código, etc.).
 
 | Veredito | Ações |
 |----------|--------|
-| *(qualquer)* | **MR** por repo (`branch` → `master`) via GitLab MCP; links no doc **Revisar código** → tópico **Merge requests** (criar se ausente; skip duplicados) — **antes** das ações de status abaixo |
-| `precisa_de_correcao` | (após MRs) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** |
-| `pode_avancar_para_revisao_manual` | (após MRs) Revisar código → **Concluída**; tarefa → grupo **Revisão manual de código** + status consolidado **Revisão manual de código** (**proibido** QA / testes / deploy) |
+| *(qualquer)* | **MR** por repo + links no doc **Merge requests**; anota **veredito + data** no doc **Revisar código** (`## Resultado da revisão`) — **antes** das ações de status abaixo |
+| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** (automação Monday → grupo **Atribuídas**; **proibido** `move_item_to_group`) |
+| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; tarefa → status consolidado **Revisão manual de código** (automação Monday move o grupo; **proibido** QA / testes / deploy / `move_item_to_group`) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 
@@ -218,7 +239,7 @@ Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 7. `avaliar-tarefa`
 8. `pos-avaliacao`
 
-Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí **sempre** garante MRs + tópico **Merge requests** no doc, depois altera status/owners conforme o veredito. GitLab: **leitura** no passo 3; **escrita** (MRs) no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
+Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí **sempre** garante MRs + tópico **Merge requests** + **Resultado da revisão** (veredito + data), depois altera status/owners conforme o veredito. GitLab: **leitura** no passo 3; **escrita** (MRs) no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
 
 ## Erros
 
@@ -230,6 +251,7 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 | GitLab indisponível (`## Diff` com `Status: parcial`/`indisponível`) | **Parar**; **não** mover a tarefa no Monday (sem status/owner/MR); reportar bloqueio em `## Pós avaliação` |
 | Passo 8 sem avaliação | Voltar ao passo 7 |
 | Título ambíguo | Não escolher item aleatório |
+| Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código); se `create_item` falhar → parar |
 
 ## Exemplo
 
@@ -244,7 +266,7 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 5. Verificação R*  
 6. Doc Revisar código  
 7. **Avaliação** → ex. `pode_avancar_para_revisao_manual`  
-8. **Pós avaliação** → MRs + doc **Merge requests**; depois grupo/status **Revisão manual de código**, Revisar código concluída  
+8. **Pós avaliação** → MRs + doc **Merge requests**; anota veredito + data; status conforme veredito  
 
 ## Skills relacionadas
 

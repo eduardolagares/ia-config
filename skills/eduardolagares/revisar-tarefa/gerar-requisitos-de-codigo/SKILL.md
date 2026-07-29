@@ -5,7 +5,7 @@ description: >-
   os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.6.1"
+VERSION: "2.7.0"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -36,7 +36,7 @@ Subboard subtarefas: **`4571892432`**. Coluna doc: **`monday_doc`**.
 
 ## Estrutura do documento Monday
 
-Quatro tópicos no documento (headings **`##`**). O passo 6 preenche os dois primeiros; **`## Análise manual`** pode existir antes (itens inseridos à mão ou por outro fluxo); **`## Merge requests`** é preenchido no passo 8 em **qualquer** veredito ([pos-avaliacao](../pos-avaliacao/SKILL.md) § A.2).
+Quatro tópicos base no documento (headings **`##`**). O passo 6 preenche os dois primeiros; **`## Análise manual`** pode existir antes (itens inseridos à mão ou por outro fluxo); **`## Merge requests`** e **`## Resultado da revisão`** (veredito + data) são acrescentados no passo 8 em **qualquer** veredito ([pos-avaliacao](../pos-avaliacao/SKILL.md) § A.2 e § C).
 
 ```markdown
 # Revisar código
@@ -88,6 +88,7 @@ Nenhum.
 | **`## Requisitos não implementados`** | Checkboxes `R*` | Passo 5 |
 | **`## Análise manual`** | Checkboxes `M*` (ou bullets `- [ ]`) | Fora do passo 6 por defeito — **não** sobrescrever; passo 7 bloqueia se aberto |
 | **`## Merge requests`** | Tabela repo / MR / branch→master / URL | Passo 8 (**qualquer** veredito) — **não** publicar no passo 6 |
+| **`## Resultado da revisão`** | Veredito + data do `/revisar-tarefa` | Passo 8 (**qualquer** veredito) — **não** publicar no passo 6 |
 
 ### Agrupamento por projeto (passo 6)
 
@@ -106,6 +107,19 @@ Nenhum.
 ### 0. Resolver subtarefa Revisar código
 
 IDs do **passo 1** (markdown no chat). Se ausentes: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código` ou `Revisão de código`.
+
+Se **não** existir → **criar** ([SKILL.md](../SKILL.md) § Subtarefa Revisar código / [reference.md](../reference.md)):
+
+```json
+{
+  "boardId": 4571892432,
+  "name": "Revisar código",
+  "parentItemId": <item_id_tarefa>,
+  "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
+}
+```
+
+Guardar o novo `item_id` e seguir. Falha em `create_item` → parar.
 
 ### 1. Ler documento existente (se houver)
 
@@ -220,14 +234,14 @@ Guardar o `doc_object_id` retornado no contexto do chat para os passos 7–8.
 |----------|------|
 | Sem `## Code review` | Parar; executar passo 4 |
 | Sem `## Verificação de requisitos` | Parar; executar passo 5 |
-| Subtarefa Revisar código não encontrada | Parar; listar subtarefas |
+| Subtarefa Revisar código ausente | **Criar** (§0); se `create_item` falhar → parar |
 | MCP Monday indisponível | Parar; **não** simular doc publicado |
 | Nada a publicar após filtros | `Ação: nenhum` |
 | `create_doc` / `update_doc` falhou | Reportar erro; não fingir publicação |
 
 ## Proibido
 
-- Publicar ou alterar tópico **`## Merge requests`** (responsabilidade do passo 8)
+- Publicar ou alterar tópicos **`## Merge requests`** ou **`## Resultado da revisão`** (responsabilidade do passo 8)
 - Alterar **status** de subtarefas
 - `create_update` / comentários no item principal
 - Publicar blocos **4 - Outros** ou **5 - Lacunas** (salvo pedido explícito)
