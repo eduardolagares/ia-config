@@ -114,9 +114,11 @@ Diffs grandes: resumir no chat (~400 linhas/repo); reconsultar só via context-m
 
 ---
 
-## Passo 8 — Garantir MR (`precisa_de_correcao`)
+## Passo 8 — Garantir MR (qualquer veredito)
 
 Target sempre **`master`**. Source = branch Monday. Título = título da tarefa (ou branch).
+
+**Obrigatório** em todo desfecho do passo 8 (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, etc.): criar/reutilizar MRs e publicar no doc **Revisar código** (§ A.2 em [pos-avaliacao](pos-avaliacao/SKILL.md)).
 
 ### A) Já existe aberto `source` → `master` → `existing`
 

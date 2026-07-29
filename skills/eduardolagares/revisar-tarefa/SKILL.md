@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.4.0"
+VERSION: "6.5.0"
 ---
 
 # `/revisar-tarefa`
@@ -195,14 +195,15 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 
 `pos-avaliacao/SKILL.md`
 
-- **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 + **`## Diff`** com **`Status: ok`**.
-- **Saída:** **`## Pós avaliação`** — mutations executadas, **ou** bloqueio documentado (sem alterar status/owners no Monday).
+- **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 + **`## Diff`** com **`Status: ok`** + branch/repos.
+- **Saída:** **`## Pós avaliação`** — mutations executadas (incl. MRs + doc), **ou** bloqueio documentado (sem alterar status/owners no Monday).
 - **Proibido sem diff válido:** `change_item_column_values` de status/owner, `move_item_to_group`, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Fazendo, Aguardando correção, Revisão manual de código, etc.).
 
 | Veredito | Ações |
 |----------|--------|
-| `precisa_de_correcao` | **MR** por repo (`branch` → `master`) via GitLab MCP; links no doc **Merge requests**; owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** |
-| `pode_avancar_para_revisao_manual` | Revisar código → **Concluída**; tarefa → grupo **Revisão manual de código** + status consolidado **Revisão manual de código** (**proibido** QA / testes / deploy) |
+| *(qualquer)* | **MR** por repo (`branch` → `master`) via GitLab MCP; links no doc **Revisar código** → tópico **Merge requests** (criar se ausente; skip duplicados) — **antes** das ações de status abaixo |
+| `precisa_de_correcao` | (após MRs) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** |
+| `pode_avancar_para_revisao_manual` | (após MRs) Revisar código → **Concluída**; tarefa → grupo **Revisão manual de código** + status consolidado **Revisão manual de código** (**proibido** QA / testes / deploy) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 
@@ -217,7 +218,7 @@ Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 7. `avaliar-tarefa`
 8. `pos-avaliacao`
 
-Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí altera status/owners e, se `precisa_de_correcao`, **Merge requests** + MRs. GitLab: **leitura** no passo 3; **escrita** no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
+Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí **sempre** garante MRs + tópico **Merge requests** no doc, depois altera status/owners conforme o veredito. GitLab: **leitura** no passo 3; **escrita** (MRs) no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
 
 ## Erros
 
@@ -243,7 +244,7 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 5. Verificação R*  
 6. Doc Revisar código  
 7. **Avaliação** → ex. `pode_avancar_para_revisao_manual`  
-8. **Pós avaliação** → grupo/status **Revisão manual de código**, Revisar código concluída  
+8. **Pós avaliação** → MRs + doc **Merge requests**; depois grupo/status **Revisão manual de código**, Revisar código concluída  
 
 ## Skills relacionadas
 

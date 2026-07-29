@@ -1,17 +1,18 @@
 ---
 name: revisar-tarefa-pos-avaliacao
 description: >-
-  Passo 8 de revisar-tarefa: executa no Monday as ações conforme o veredito do passo 7
-  (status, owners, grupo). Se precisa_de_correcao, garante MRs GitLab (branch → master),
-  publica links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
-  Se pode_avancar_para_revisao_manual, move a tarefa para o grupo Revisão manual de código.
+  Passo 8 de revisar-tarefa: em qualquer veredito, garante MRs GitLab (branch → master)
+  e publica links no doc Revisar código (tópico Merge requests); depois aplica status,
+  owners e grupo conforme o veredito (correção ou revisão manual).
 disable-model-invocation: true
-VERSION: "2.3.0"
+VERSION: "2.4.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
-Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners, grupo e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**) via **MCP GitLab da IDE**.
+Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status, owners, grupo, doc) e no GitLab (MRs).
+
+**Independente do veredito** (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, ou outro desfecho futuro de status): **sempre** garantir MRs no GitLab (branch → **`master`**) e publicá-los no doc **Revisar código** (tópico **`## Merge requests`**), se ainda não existirem. Só depois executar as ações de status/owners/grupo do veredito.
 
 **GitLab (MRs):** só `CallMcpTool` no servidor GitLab MCP da IDE — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) (**create/update/list**). **Proibido:** `GITLAB_TOKEN`, REST, scripts de API.
 
@@ -36,8 +37,8 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 | **`## Diff`** (passo 3) | Sim — **`Status: ok`** (critérios em [executar-diff](../executar-diff/SKILL.md) § Status do diff) |
 | **`## Avaliação`** | Sim — passo 7 (`Veredito`) |
 | **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código (Testar não é alvo deste passo) |
-| **Passo 1 ou 3** (só `precisa_de_correcao`) | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) |
-| **GitLab MCP** | Sim — para MRs em `precisa_de_correcao` (IDE ligada + `ready` / `mcp_auth`) |
+| **Passo 1 ou 3** | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) — **sempre** (MRs em qualquer veredito) |
+| **GitLab MCP** | Sim — MRs em **qualquer** veredito (IDE ligada + `ready` / `mcp_auth`) |
 | **Passo 6** (recomendado) | Doc **Revisar código** — se `Ação: nenhum`, § A.2 pode **criar** doc só com MRs |
 | **`doc_object_id`** | Sim (§ A.2) — passo 1 / passo 6 (`subtarefa Revisar código`) |
 
@@ -59,14 +60,16 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 - **`Veredito`** do `## Avaliação` (passo 7)
 - IDs das subtarefas: **Executar**, **Revisar código**
 - `item_id` da tarefa principal
+- **Branch** + repos (`Projetos alterados` / `## Diff`) — para MRs em **qualquer** veredito
 
 ## Fluxo (ordem fixa)
 
 0. **Validar diff:** ler `Status` em `## Diff` (passo 3). Se ≠ `ok` → § **Bloqueio (diff indisponível)** e **terminar** (zero mutations Monday/GitLab).
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
-2. Executar **apenas** o bloco de ações do veredito (§ abaixo).
-3. Status: `change_item_column_values` com `{"label": "<texto exato>"}`. Grupo: tool MCP `all_api_write` com `move_item_to_group` (ver § revisão manual).
-4. Reportar cada mutation no chat (sucesso/erro por item).
+2. **Sempre** (§ **Merge requests — comum a todos os vereditos**): GitLab (criar/reutilizar MRs) → doc Monday (**Merge requests**). **Não** pular por veredito.
+3. Executar o bloco de status/owners/grupo **do veredito** (§ abaixo) — **depois** dos MRs.
+4. Status: `change_item_column_values` com `{"label": "<texto exato>"}`. Grupo: tool MCP `all_api_write` com `move_item_to_group` (ver § revisão manual).
+5. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
 
@@ -87,13 +90,13 @@ Entregar no chat:
 
 Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem executá-lo.
 
-### `precisa_de_correcao`
+## Merge requests — comum a todos os vereditos
 
-Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxes — conclusão humana). Mesmas ações de status abaixo.
+**Obrigatório** em **qualquer** veredito válido, **antes** das ações de status/owners/grupo. Inclui `precisa_de_correcao`, `pode_avancar_para_revisao_manual` e qualquer desfecho futuro de status (ex. deploy) — o destino Monday muda; **MRs + doc não**.
 
-**Ordem:** GitLab (MRs) → doc Monday (**Merge requests**) → Monday (owners + status).
+**Ordem deste bloco:** GitLab (MRs) → doc Monday (**Merge requests**).
 
-#### A. Merge requests (GitLab MCP)
+### A. Merge requests (GitLab MCP)
 
 Para **cada** `namespace/project` da tarefa (mesma lista do passo 3 — `## Diff` / **Projetos alterados** do passo 1):
 
@@ -117,11 +120,11 @@ Incluir na saída **`## Pós avaliação`** subsecção **`### Merge requests`**
 |------|------|-----|-----|
 | `baladapp/…` | `created` \| `existing` \| `updated_target` | `!<iid>` | link |
 
-Erro por repo: linha com **Erro:**; seguir nos demais (doc e status).
+Erro por repo: linha com **Erro:**; seguir nos demais (doc e status do veredito).
 
 Guardar `web_url` / `iid` / `repo` / `action` por projeto para § A.2.
 
-#### A.2. Documento Revisar código — tópico `## Merge requests`
+### A.2. Documento Revisar código — tópico `## Merge requests`
 
 **Somente** MRs com `web_url` válida (§ A). **Append** — não alterar **`## Revisão de código`** nem **`## Requisitos não implementados`**.
 
@@ -133,7 +136,7 @@ Guardar `web_url` / `iid` / `repo` / `action` por projeto para § A.2.
 4. Para cada MR com `web_url` (§ A):
    - Já no doc (mesma URL **ou** mesmo `repo` + `!iid`) → **SKIP** — reportar `SKIP MR duplicado: <repo>`
    - Novo → incluir na tabela de append
-5. Se **nenhum** MR novo após filtro → `Doc MR: nenhum`; seguir § B.
+5. Se **nenhum** MR novo após filtro → `Doc MR: nenhum`; seguir ações do veredito.
 6. Montar markdown:
 
 ```markdown
@@ -169,11 +172,15 @@ Documento gerado por /revisar-tarefa.
 
 | Erro | Ação |
 |------|------|
-| MCP Monday indisponível | Reportar; seguir § B (status) se usuário não bloqueou |
+| MCP Monday indisponível | Reportar; seguir status do veredito se usuário não bloqueou |
 | `update_doc` / `create_doc` falhou | Reportar; **não** simular link no doc |
 | Nenhum MR com `web_url` | Omitir § A.2; reportar aviso |
 
 Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `criado` \| `nenhum` \| `erro`.
+
+### `precisa_de_correcao`
+
+Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxes — conclusão humana). **Antes:** § Merge requests comum (§ A + A.2). Depois: Monday (owners + status).
 
 #### B. Monday (status / owners)
 
@@ -197,9 +204,11 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 ### `pode_avancar_para_revisao_manual`
 
+**Antes:** § Merge requests comum (§ A + A.2) — **mesmo** bloco que em correção.
+
 **Obrigatório** enviar a tarefa ao grupo **Revisão manual de código**. **Proibido** neste veredito: status **QA**, **Aguardando testes**, **Aguardando deploy**, grupo **QA**, grupo **Aguardando Deploy**, ou qualquer outro destino de testes/deploy.
 
-**Ordem:** subtarefa Revisar código → grupo + status consolidado da tarefa principal.
+**Ordem (após MRs):** subtarefa Revisar código → grupo + status consolidado da tarefa principal.
 
 | # | Alvo | Ação |
 |---|------|------|
@@ -265,7 +274,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 
 ### Merge requests (GitLab)
 
-(só se veredito = `precisa_de_correcao`; senão omitir secção)
+(sempre — qualquer veredito; após § A)
 
 | Repo | Ação | MR | URL |
 |------|------|-----|-----|
@@ -288,8 +297,8 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 | Sem `## Avaliação` | Parar; executar passo 7 |
 | Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
-| MCP GitLab indisponível (`precisa_de_correcao`) | Parar antes de Monday; pedir GitLab em Settings → MCP |
-| MR falhou em todos os repos | Reportar; § A.2 omitido; Monday § B opcional |
+| MCP GitLab indisponível | Parar antes de Monday (status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
+| MR falhou em todos os repos | Reportar; § A.2 omitido; status do veredito opcional |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Grupo **Revisão manual de código** ausente | Parar; **não** enviar para QA/Deploy |
 | `move_item_to_group` falhou | Reportar; **não** fingir avanço; status consolidado só se o move já OK |

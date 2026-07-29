@@ -31,7 +31,7 @@ Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `re
 
 ## GitLab
 
-Passo 3 (diff) e MRs (passo 8): **só** MCP GitLab da IDE — [reference-gitlab-mcp.md](reference-gitlab-mcp.md). Sem token, REST ou scripts de API.
+Passo 3 (diff) e MRs (passo 8, **qualquer** veredito): **só** MCP GitLab da IDE — [reference-gitlab-mcp.md](reference-gitlab-mcp.md). Sem token, REST ou scripts de API.
 
 ## Cache
 
