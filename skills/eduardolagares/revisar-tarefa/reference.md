@@ -60,4 +60,4 @@ Passo 3 (diff) e MRs (passo 8, **qualquer** veredito): **só** MCP GitLab da IDE
 
 ## Cache
 
-Só MCP **context-mode** — [SKILL.md](SKILL.md) § Cache. Sem context-mode → sem cache.
+**Só** MCP **context-mode** — metadados (IDs, títulos, URLs, branch); **nunca** documentos nem diffs. Sem context-mode → sem cache. Comparações sempre sobre a versão mais recente (re-fetch via Monday/GitLab MCP). Detalhe: [SKILL.md](SKILL.md) § Cache.

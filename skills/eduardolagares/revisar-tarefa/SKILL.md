@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.9.0"
+VERSION: "6.11.0"
 ---
 
 # `/revisar-tarefa`
@@ -22,6 +22,7 @@ Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/too
 |-------|-----------------|-----------|-----|
 | Monday | `user-monday-mcp` | [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md) | passos 1, 6–8 |
 | GitLab | `user-gitlab` | [reference-gitlab-mcp.md](reference-gitlab-mcp.md) | passos 3, 8 |
+| Cache | `plugin-context-mode-context-mode` | § Cache | metadados entre passos (`ctx_index` / `ctx_search`) |
 
 **Atalhos validados:**
 
@@ -42,16 +43,34 @@ Resolver `server` com `GetMcpTools` se o id da sessão for outro; se `needsAuth`
 
 ## Cache (só context-mode)
 
-Se algum passo precisar **guardar ou reconsultar** payload grande (diff, doc Monday, JSON de MCP) fora do chat curto:
+**Canal único de cache:** MCP **context-mode** da IDE (`GetMcpTools` / `mcps/*context-mode*` — ex. `plugin-context-mode-context-mode`). Tools: `ctx_index` + `ctx_search` (e `ctx_execute` / `ctx_execute_file` quando couber).
+
+| Pode indexar | Não indexar |
+|--------------|-------------|
+| IDs (`item_id`, board, subtarefa, `doc_object_id`, MR `iid` / project id) | Conteúdo de **documentos** Monday (`blocks_as_markdown`, checklist, updates longos) |
+| Títulos (tarefa, subtarefa, MR) | **Diffs** / compare / raw patches |
+| URLs (MR `web_url`, links GitLab/Monday) | Relatórios longos de code review como fonte para nova comparação |
+| Branch, lista de `namespace/project` | Qualquer snapshot de conteúdo usado depois como “verdade” do artefato |
 
 | Regra | Detalhe |
 |-------|---------|
-| **Único cache** | MCP **context-mode** da IDE (`GetMcpTools` / `mcps/*context-mode*` — ex. `plugin-context-mode-context-mode`) |
-| **Tools** | `ctx_index` + `ctx_search` (e `ctx_execute` / `ctx_execute_file` quando couber) |
-| **Indisponível** | **Não** usar cache — nem disco, nem scripts, nem inventar store. Trabalhar só com o que couber no chat (resumir / truncar e avisar) |
-| **Proibido** | `tasks-by-title.json`, ficheiros locais de cache, `write-task-cache`, prefetch |
+| **Obrigatório** | Todo cache (guardar ou reconsultar metadados entre passos) → **só** context-mode |
+| **Indisponível** | Sem context-mode `ready` → **sem cache**; trabalhar com a saída do passo atual no chat e **re-obter** artefatos via Monday/GitLab MCP |
+| **Proibido** | Tratar o chat como store de cache; ficheiros locais (`tasks-by-title.json`, `.diff` em disco, `write-task-cache`); indexar docs/diffs no context-mode |
 
-IDs pequenos do passo 1 (item, subtarefas, branch) ficam no **markdown da conversa** — isso não é “cache”; não exige context-mode.
+IDs/títulos/URLs no chat são só para o humano seguir o fluxo — **não** substituem `ctx_index` / `ctx_search` quando a skill precisa de cache.
+
+### Artefatos de conteúdo — sempre versão mais recente
+
+Toda **comparação** ou decisão (code review, verificação de R*, marcar checkboxes, publicar doc, pós-avaliação) usa o artefato **mais recente** obtido agora — **não** um snapshot antigo.
+
+| Artefato | Como obter na hora |
+|----------|-------------------|
+| Doc Monday (principal ou Revisar código) | `read_docs` de novo (IDs via context-mode ou passo atual) |
+| Diff GitLab | `mr_review.raw_diffs` ou `repository.compare` de novo |
+| Truncado no chat | **Re-obter** via MCP Monday/GitLab; **não** tratar o truncado como completo |
+
+Metadados no context-mode servem só para **endereçar** o re-fetch — nunca para saltar a leitura do conteúdo atual.
 
 ## Monday — requisito obrigatório
 

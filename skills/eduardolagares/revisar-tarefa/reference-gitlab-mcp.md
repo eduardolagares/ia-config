@@ -81,7 +81,7 @@ Alternativa estruturada (ficheiros):
 }
 ```
 
-Preferir `raw_diffs` para o fence `diff` do `## Diff`. Se truncado → `raw_diffs` / context-mode.
+Preferir `raw_diffs` para o fence `diff` do `## Diff`. Se truncado → re-obter `raw_diffs` / `repository.compare` (não cachear o patch).
 
 ### 2b) Sem MR (ou diff do MR falhou) → compare → `method: mcp_compare`
 
@@ -110,7 +110,7 @@ Preferir `raw_diffs` para o fence `diff` do `## Diff`. Se truncado → `raw_diff
 }
 ```
 
-Diffs grandes: resumir no chat (~400 linhas/repo); reconsultar só via context-mode (`ctx_index` / `ctx_search`). Sem context-mode → sem cache em disco.
+Diffs grandes: resumir no chat (~400 linhas/repo); metadados de MR/project → **só** context-mode; patch completo depois → **re-obter** via GitLab MCP. **Nunca** cachear o conteúdo do diff — [SKILL.md](SKILL.md) § Cache.
 
 ---
 

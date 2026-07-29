@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–5 (Crítico, Grave, Padrão de código, Outros, Lacunas de teste).
   Itens 1.M, 2.M e 3.M alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.6.0"
+VERSION: "1.7.1"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
@@ -14,22 +14,22 @@ Sub-skill do **passo 4** de `revisar-tarefa`. **Somente leitura** — não edita
 
 **Protocolo:** aplicar integralmente [../../code-review/SKILL.md](../../code-review/SKILL.md) (`/code-review`) — skill irmã em `skills/eduardolagares/code-review/` (não sob `revisar-tarefa/`).
 
-**Cache:** só MCP context-mode se o diff completo foi indexado no passo 3 — ver [../SKILL.md](../SKILL.md) § Cache. Sem context-mode → só o que estiver no chat / re-obter via GitLab MCP.
+**Cache:** metadados **só** via context-mode ([../SKILL.md](../SKILL.md) § Cache). Diff truncado → **re-obter** via GitLab MCP; **nunca** indexar/usar conteúdo do diff no cache.
 
 ## Fonte obrigatória do `/code-review`
 
 Ao invocar o protocolo neste passo, **declarar explicitamente** à skill `code-review`:
 
-> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff` via GitLab MCP), secção **`## Diff`** desta conversa. **Não** usar outro diff nem paths soltos indicados pelo utilizador fora do passo 3.
+> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff` via GitLab MCP), secção **`## Diff`** desta conversa — ou **re-fetch** fresco via GitLab MCP se o chat estiver truncado. **Não** usar outro diff, snapshot em cache, nem paths soltos do utilizador fora do passo 3.
 
 Regras:
 
 | Regra | Detalhe |
 |-------|---------|
-| **Única fonte primária** | Hunks em `## Diff` do passo 3 — fences ` ```diff ` por repo |
-| **Truncado** | (1) `ctx_search` no índice context-mode se o passo 3 indexou o diff; (2) senão re-obter via MCP GitLab; (3) sem context-mode e sem re-fetch → só o truncado no chat. **Proibido** cache em disco |
-| **Proibido** | Reler repo inteiro, inventar alterações, usar diff de outra branch/tarefa |
-| **Secundário** | Passo 1 (spec Monday), passo 2 (requisitos), `docs/specs/tdd/*.md` — só cruzamento de escopo, **não** substituem o diff |
+| **Única fonte primária** | Hunks atuais do passo 3 (`## Diff`) ou re-fetch GitLab MCP com os mesmos project/MR/branch |
+| **Truncado** | **Re-obter** via MCP GitLab (`mr_review.raw_diffs` / `repository.compare`). **Proibido** confiar em cache/índice antigo do patch; **proibido** cache em disco |
+| **Proibido** | Reler repo inteiro, inventar alterações, usar diff de outra branch/tarefa, comparar contra doc/diff guardado em cache |
+| **Secundário** | Passo 1 (spec Monday — **reler** `read_docs` se for cruzar conteúdo), passo 2 (requisitos), `docs/specs/tdd/*.md` — só cruzamento de escopo, **não** substituem o diff |
 
 Cada achado `N.M` nos blocos **1–5** deve referir linha/path **presente no diff do passo 3**.
 
@@ -63,7 +63,7 @@ Sem diff com conteúdo (só erros por repo) → entregar code review com stocks 
 ## Entrada
 
 - Bloco **`## Diff`** do chat (fences `diff` por repo)
-- Se truncado: context-mode (`ctx_search`) se indexado no passo 3; senão re-obter via GitLab MCP; sem context-mode → só o truncado
+- Se truncado: **re-obter** via GitLab MCP; **não** usar cache de conteúdo do diff
 - Opcional: paths de `docs/specs/tdd/*.md` nos repositórios do escopo (se existirem no workspace)
 
 ## Execução
@@ -158,7 +158,7 @@ Passo 6: [gerar-requisitos-de-codigo/SKILL.md](../gerar-requisitos-de-codigo/SKI
 |----------|------|
 | Sem `## Diff` no contexto | Parar; executar passo 3 |
 | Diff só com **Erro:** por repo | Code review por repo com erro; blocos 1–5 `Nenhum.` ou stock bloco 5 |
-| Diff truncado no chat | context-mode se disponível; senão GitLab MCP; senão só truncado (sem cache em disco) |
+| Diff truncado no chat | **Re-obter** via GitLab MCP; **não** usar índice/cache do patch |
 | Tentação de editar código | Recusar — read-only |
 
 ## Skills relacionadas

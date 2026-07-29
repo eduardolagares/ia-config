@@ -5,7 +5,7 @@ description: >-
   e entrega "## Diff". Use após gerar-requisitos-de-usuario ou com
   "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "3.2.0"
+VERSION: "3.3.1"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
@@ -18,7 +18,14 @@ Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no Gi
 
 **Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
 
-**Cache:** só MCP **context-mode** ([SKILL.md](../SKILL.md) § Cache). Sem context-mode → sem cache.
+**Cache:** metadados **só** via MCP context-mode ([SKILL.md](../SKILL.md) § Cache). **Nunca** indexar o conteúdo do diff; se precisar do patch completo, **re-obter** via GitLab MCP. Sem context-mode → sem cache de metadados.
+
+## Diffs grandes
+
+1. Resumir no chat (até **~400 linhas** por repo se truncado; avisar).
+2. Metadados (`project_id`, MR `iid`/`web_url`, branch, método) → **só** `ctx_index` no context-mode (se `ready`). Sem context-mode → sem cache.
+3. Se um passo seguinte precisar do diff completo ou o chat estiver truncado → **re-obter** via GitLab MCP (`mr_review.raw_diffs` ou `repository.compare`), usando IDs do context-mode (`ctx_search`) ou da saída atual do passo 3. **Proibido** tratar patch antigo (chat/disco/índice de conteúdo) como fonte da comparação.
+4. **Proibido** gravar `.diff` / JSON de patch em disco; **proibido** indexar o patch no context-mode.
 
 ## Receita rápida (copiar)
 
@@ -103,12 +110,6 @@ Na saída **`## Diff`**, linha obrigatória após **Branch/Base:**
 3. `baladapp-react-components` → `baladapp/baladapp-react-components`.
 4. `ingressos-repo` → `baladapp/ingressos` (submodule do projeto ingressos).
 5. Ambíguo → **uma** pergunta ao usuário.
-
-## Diffs grandes
-
-1. Resumir no chat (até **~400 linhas** por repo se truncado; avisar).
-2. Se precisar **reconsultar** o diff completo depois: só via MCP **context-mode** (`ctx_index` + `ctx_search`, ou `ctx_execute` / `ctx_execute_file`).
-3. Context-mode **ausente** / não `ready` → **não** cachear; seguir só com o resumo no chat. **Proibido** gravar `.diff` / JSON em disco como cache.
 
 ## Saída obrigatória
 

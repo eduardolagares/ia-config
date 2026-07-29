@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.5.0"
+VERSION: "2.5.1"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -30,7 +30,7 @@ Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
 - Saída do **passo 1** (`monday-task-info`) — `doc_object_id` da subtarefa **Revisar código**; status **Testar** só informativo
 - **`## Diff`** (passo 3)
-- Doc da subtarefa **Revisar código** (`read_docs` via `doc_object_id` do passo 1 ou passo 6)
+- Doc da subtarefa **Revisar código** — **sempre** `read_docs` fresco via `doc_object_id` (passo 1 ou 6); **não** reutilizar markdown antigo do doc em cache — [../SKILL.md](../SKILL.md) § Cache
 - Opcional: **`## Requisitos da tarefa`** (passo 2) — contexto para bullets `R*` no doc
 - Fallback: `## Code review` (passo 4) + `## Verificação de requisitos` (passo 5)
 

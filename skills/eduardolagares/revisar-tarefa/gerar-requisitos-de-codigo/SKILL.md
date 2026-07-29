@@ -5,7 +5,7 @@ description: >-
   os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.7.0"
+VERSION: "2.7.1"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -256,5 +256,5 @@ Guardar o `doc_object_id` retornado no contexto do chat para os passos 7–8.
 | `revisar-tarefa-verificar-requisitos-usuario` | Passo 5 — fonte R* não implementados |
 | `revisar-tarefa-avaliar-tarefa` | Passo 7 — verifica cumprimento no diff e marca checkboxes deste doc |
 | `revisar-tarefa-pos-avaliacao` | Passo 8 — MRs + tópico Merge requests + status/owners |
-| `monday-task-info` | Cache IDs subtarefa/doc |
+| `monday-task-info` | IDs subtarefa/doc (metadados; não cachear conteúdo do doc) |
 | `revisar-tarefa-gerar-requisitos-de-usuario` | Passo 2 — requisitos de usuário |
