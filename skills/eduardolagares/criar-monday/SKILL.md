@@ -7,7 +7,7 @@ description: >-
   definidos e documento anexado a partir de um .md (Mermaid renderizado como
   imagem). Use com /criar-monday ou quando escrever-tarefa acionar após gravar.
 disable-model-invocation: true
-VERSION: "1.1.2"
+VERSION: "1.2.0"
 ---
 
 # criar-monday
@@ -41,7 +41,7 @@ Antes de criar, chamar `get_board_info` nos dois boards se colunas ou grupos nã
 | Status | subtarefas | status — label **`A fazer`** |
 | person | subtarefas | responsáveis (tipo people) |
 
-Se `~/.config/revisar-tarefa/monday.env` existir, pode complementar IDs — **não** substituir confirmação de título/branch.
+Se IDs de board/coluna já estiverem no contexto da conversa ou no MCP (`get_board_info`), usá-los. **Não** usar ficheiros `.env` nem tokens de API.
 
 ## Subtarefas fixas (ordem obrigatória)
 

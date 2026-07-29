@@ -17,9 +17,10 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: curl -fsSL …/install/install.sh | bash"
       echo "Clona ${REPO_URL} (${REPO_BRANCH}) para /tmp; pergunta destino (Cursor ou .agents)."
+      echo "Sempre apaga {rules,skills}/eduardolagares no destino e cola de novo (ficheiros removidos no repo desaparecem)."
       echo "Estrutura: rules/eduardolagares/*.mdc (todas alwaysApply; karpathy gerado)"
-      echo "           skills/eduardolagares/*/SKILL.md (monday-task-info, revisar-tarefa, gitlab-api, tdd-doc, refatorar-codigo, …)"
-      echo "           Cursor: hook prefetch diff em \$CURSOR_HOME/hooks/"
+      echo "           skills/eduardolagares/*/SKILL.md (monday-task-info, revisar-tarefa, tdd-doc, refatorar-codigo, …)"
+      echo "           Cursor: Monday + GitLab em Settings → MCP (/revisar-tarefa)"
       exit 0
       ;;
     *)

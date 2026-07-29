@@ -1,24 +1,24 @@
 ---
 name: revisar-tarefa-executar-diff
 description: >-
-  Passo 3 de revisar-tarefa: obtém diff da branch vs master via cache (hook)
-  ou GitLab REST API (gitlab-api-phase3-diff-bundle) e entrega "## Diff".
-  Use após gerar-requisitos-de-usuario ou com "executar diff da tarefa", "diff gitlab revisar".
+  Passo 3 de revisar-tarefa: obtém diff da branch vs master via GitLab MCP da IDE
+  e entrega "## Diff". Use após gerar-requisitos-de-usuario ou com
+  "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "2.0.6"
+VERSION: "3.1.0"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
 
 Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no GitLab.
 
-**Canal obrigatório:** **REST API** (`GITLAB_TOKEN`). Env partilhado: skill **`gitlab-api`** (`scripts/gitlab-api-env.sh`).
+**Canal obrigatório:** **GitLab MCP** instalado na IDE de quem executa — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md).
 
-**Autenticação:** ler **`GITLAB_TOKEN` só das variáveis de ambiente da máquina de quem executa** (shell do utilizador, Terminal integrado, hook). Não colar token no chat; não inventar nem persistir em ficheiros. Ver secção **GitLab — autenticação** em [SKILL.md](../SKILL.md).
+**Proibido:** `GITLAB_TOKEN`, PAT, REST `/api/v4`, curl/`fetch` com Bearer, scripts de API.
 
-**Proibido:** GitLab MCP — ver [reference-gitlab-mcp.md](../reference-gitlab-mcp.md).
+**Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
 
-**Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** na máquina do executador ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
+**Cache:** só MCP **context-mode** ([SKILL.md](../SKILL.md) § Cache). Sem context-mode → sem cache.
 
 Invocação isolada (com passo 1 já no contexto):
 
@@ -34,8 +34,7 @@ Ou seguir automaticamente após o passo 2 no fluxo `/revisar-tarefa`.
 |------|-------------|
 | **Branch** | Sim — tabela do passo 1 (`monday-task-info`) |
 | **Repos GitLab** | Sim — `namespace/project` (updates, doc, `impacto:` ou confirmados com usuário) |
-| **Título** | Recomendado — validar cache (`--titulo`) |
-| **GITLAB_TOKEN** | Sim — **env do executador** (hook/Terminal/`process.env` no `ctx_execute`); nunca no chat |
+| **GitLab MCP** | Sim — servidor ligado e `ready` (ou `mcp_auth`) na IDE |
 
 Passo 2 (requisitos de usuário) não bloqueia a execução. Ordem completa: **1 → 2 → 3 → 4 → 5 → 6 → 7** ([avaliar-tarefa](../avaliar-tarefa/SKILL.md)) **→ 8** ([pos-avaliacao](../pos-avaliacao/SKILL.md)).
 
@@ -43,88 +42,39 @@ Sem branch → parar. Sem repo → inferir ou perguntar; não chutar path GitLab
 
 ## Fontes válidas
 
-Somente **cache** (`last-diff-bundle.json`) e **REST API** (scripts `gitlab-api-*` ou `ctx_execute` com `GITLAB_TOKEN`). Não inferir alterações lendo arquivos do disco nem marcar `method` fora de `cache` \| `api_mr_diff` \| `api_compare`.
+Somente **GitLab MCP** (`CallMcpTool` → `gitlab_execute_action`). Não inferir alterações lendo arquivos do disco nem marcar `method` fora de `mcp_mr_diff` \| `mcp_compare`.
 
 ## Ordem de execução (obrigatória)
 
-### 0. Check GitLab ready (obrigatório)
+### 0. MCP GitLab ready (obrigatório)
 
-No início do passo 3, rodar e **mostrar no chat** a tabela:
+No início do passo 3:
 
-```bash
-scripts/check-gitlab-ready.sh \
-  --branch "<branch>" --titulo "<título>"
-```
+1. `GetMcpTools` (padrão `gitlab`) — confirmar servidor GitLab da IDE e `serverStatus` `ready`.
+2. Se `needsAuth` → `mcp_auth` nesse servidor; se falhar → parar (`Status: indisponível`).
+3. Reportar no chat qual `server` está a usar.
 
-| Check | Ação do agente |
-|-------|----------------|
-| `GITLAB_TOKEN` = ok | Prosseguir |
-| `GITLAB_TOKEN` = missing | Parar; pedir `export` no shell local do executador (não no chat) |
-| `cache` = HIT | Montar `## Diff` do cache |
-| `api (shell)` = agent_shell_blocked | Normal — usar cache ou `ctx_execute` |
+### 1. Diff por repo (MCP)
 
-Detalhes: [reference-gitlab-api.md](../reference-gitlab-api.md), skill `gitlab-api`.
+Para **cada** `namespace/project` em **Projetos alterados** / passo 1:
 
-### 1. Cache (automático via hook)
+| Ordem | Ação | `method` |
+|-------|------|----------|
+| 1 | `merge_request.list` — `project_id`, `source_branch` = branch, MRs abertos | — |
+| 2 | MR → `mr_review.raw_diffs` (ou `mr_review.changes_get`) | `mcp_mr_diff` |
+| 3 | Senão → `repository.compare` — `from: master`, `to: <branch>` | `mcp_compare` |
 
-Antes do agente rodar, o hook `beforeSubmitPrompt` tenta:
+`project_id` = path `namespace/project` (ex. `baladapp/ingressos`).
 
-```bash
-scripts/prefetch-diff.sh --titulo "<título>" --source hook
-```
+Usar `gitlab_find_action` se o schema de params for incerto. Diffs grandes → § Diffs grandes.
 
-(grava cache via **REST API** — rede do Mac do executador, VPN já ativa)
+### 2. Falha total
 
-**Validar no passo 3:**
+Se o MCP falhar em todos os repos:
 
-```bash
-scripts/read-diff-bundle-cache.sh \
-  --branch "<branch>" --titulo "<título>"
-```
-
-- `CACHE_HIT` → montar `## Diff` a partir de `bundle.projects[]` e `diff_file` no JSON
-- `CACHE_MISS` → seguir para §2
-
-Prefetch manual:
-
-```bash
-scripts/prefetch-diff.sh \
-  --branch "<branch>" --repo baladapp/repo1 --repo baladapp/repo2
-```
-
-TTL padrão: **120 min** (`REVISAR_TAREFA_DIFF_CACHE_TTL_MIN`).
-
-### 2. GitLab REST API (obrigatório em cache miss)
-
-Documentação: [reference-gitlab-api.md](../reference-gitlab-api.md).
-
-**Script (Terminal integrado / hook):**
-
-```bash
-scripts/gitlab-api-phase3-diff-bundle.sh \
-  <branch> baladapp/repo1 [baladapp/repo2 ...]
-```
-
-| Ordem | Ação | `method` no JSON |
-|-------|------|------------------|
-| 1 | `gitlab-api-mr-find.sh` | — |
-| 2 | MR → `gitlab-api-mr-diff.sh` | `api_mr_diff` |
-| 3 | Senão → `gitlab-api-compare-diff.sh` | `api_compare` |
-
-**Agente (shell bloqueado):** `ctx_execute` (javascript + `fetch`) com `GITLAB_TOKEN` — mesmo fluxo MR → changes ou compare. Imprimir só resumo; diffs grandes → arquivo ou `ctx_index` + `ctx_search`.
-
-**Rede:** a API usa a VPN do executador (já ligada); o sandbox do agente pode bloquear `curl` — ver `ctx_execute` abaixo.
-
-Variáveis opcionais nos scripts: base branch (default `master`), preview de linhas, diretório temporário — ver [reference-gitlab-api.md](../reference-gitlab-api.md).
-
-### 3. Falha total
-
-Se cache e API falharem:
-
-1. Informar que o hook pode não ter encontrado Monday cache na **1ª** revisão da tarefa
-2. Sugerir `prefetch-diff.sh --branch … --repo …` no **Terminal integrado** (`GITLAB_TOKEN` no env)
-3. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — sem inventar diff nem contornar via MCP
-4. **Não** seguir para passo 8 (decisão final no Monday) — passos 4–7 podem documentar o bloqueio; status/owners ficam intactos
+1. Informar bloqueio (MCP GitLab / auth / rede)
+2. Entregar `## Diff` com **Erro:** por repo e **`Status: indisponível`** — sem inventar diff nem contornar com REST/token
+3. **Não** seguir para passo 8 — passos 4–7 podem documentar o bloqueio; status/owners ficam intactos
 
 ## Status do diff (bloqueio do passo 8)
 
@@ -132,7 +82,7 @@ Na saída **`## Diff`**, linha obrigatória após **Branch/Base:**
 
 | `Status` | Critério | Passo 8 |
 |----------|----------|---------|
-| **`ok`** | Cada repo de **Projetos alterados** (passo 1) tem subsecção com diff via cache/API; sem **Erro:**; fence `diff` com ≥1 linha de hunk | Permitido |
+| **`ok`** | Cada repo de **Projetos alterados** (passo 1) tem subsecção com diff via MCP; sem **Erro:**; fence `diff` com ≥1 linha de hunk | Permitido |
 | **`parcial`** | Pelo menos um repo **ok** e pelo menos um esperado falhou (ausente, **Erro:** ou diff vazio) | **Proibido** |
 | **`indisponível`** | Nenhum repo com diff válido; ou passo 3 abortado antes de montar diff | **Proibido** |
 
@@ -146,9 +96,9 @@ Na saída **`## Diff`**, linha obrigatória após **Branch/Base:**
 
 ## Diffs grandes
 
-- Ler `diff_file` do bundle/cache.
-- No chat: até **400 linhas** por repo se truncado; avisar path completo.
-- Usar **context-mode** (`ctx_execute`, `ctx_search`) se não couber no contexto.
+1. Resumir no chat (até **~400 linhas** por repo se truncado; avisar).
+2. Se precisar **reconsultar** o diff completo depois: só via MCP **context-mode** (`ctx_index` + `ctx_search`, ou `ctx_execute` / `ctx_execute_file`).
+3. Context-mode **ausente** / não `ready` → **não** cachear; seguir só com o resumo no chat. **Proibido** gravar `.diff` / JSON em disco como cache.
 
 ## Saída obrigatória
 
@@ -163,11 +113,10 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 
 | Campo | Valor |
 |-------|-------|
-| Método | `cache` \| `api_mr_diff` \| `api_compare` |
+| Método | `mcp_mr_diff` \| `mcp_compare` |
 | MR | `<!iid> — <url>` ou — |
 | Target | `<target_branch>` ou `master` |
-| Arquivo | `<caminho .diff>` ou — |
-| Tamanho | `<bytes>` (+ nota *truncado* se aplicável) |
+| Tamanho | `<bytes ou linhas>` (+ nota *truncado* se aplicável) |
 
 ```diff
 <diff>
@@ -188,22 +137,18 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 | Situação | Ação |
 |----------|------|
 | Branch vazia no Monday | Parar |
-| `GITLAB_TOKEN` ausente no env do executador | Parar; pedir `export` no shell local |
-| CACHE_MISS na 1ª revisão | REST API (§2) via `ctx_execute` ou prefetch |
-| Bundle exit 2 no agente | Cache/hook ou `ctx_execute`; senão prefetch manual |
-| Bundle exit 1 em todos | Reportar JSON; `Status: indisponível`; não inventar diff; passo 8 proibido |
+| MCP GitLab ausente / auth falhou | Parar; pedir GitLab ligado em Settings → MCP |
+| Diff falhou em todos os repos | `Status: indisponível`; não inventar diff; passo 8 proibido |
 | `Status` ≠ `ok` | Passo 8 proibido — ver [pos-avaliacao](../pos-avaliacao/SKILL.md) |
-| Tentação de GitLab MCP ou fonte fora cache/API | Recusar — só cache + REST API |
-| Repo ambíguo | Perguntar antes do bundle |
+| Tentação de REST/`GITLAB_TOKEN` | Recusar — só MCP da IDE |
+| Repo ambíguo | Perguntar antes do MCP |
 
 ## Skills relacionadas
 
 | Skill | Papel |
 |-------|--------|
 | `revisar-tarefa` | Orquestra passos 1–3 |
-| `monday-task-info` | Branch, projetos, cache Monday |
+| `monday-task-info` | Branch, projetos (MCP Monday) |
 | `revisar-tarefa-gerar-requisitos-de-usuario` | Passo 2 |
 | `revisar-tarefa-code-review-diff` | Passo 4 — consome `## Diff` |
-| `gitlab-api` | Auth, REST API, padrões |
-| `scripts/check-gitlab-ready.sh` | Diagnóstico token/hook/cache/API |
-| [reference-gitlab-api.md](../reference-gitlab-api.md) | REST API |
+| [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) | Canal GitLab MCP |

@@ -1,10 +1,10 @@
-# Monday — referência MCP (`revisar-tarefa`)
+# Monday / GitLab — referências MCP (`revisar-tarefa`)
 
-**Único canal Monday:** `CallMcpTool` com **`server`: `plugin-monday.com-monday`** (plugin Monday ligado no Cursor).
+## Monday
 
-Não existem scripts GraphQL nem `MONDAY_API_TOKEN` neste pacote. Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `revisar-tarefa`.
+**Canal único:** MCP Monday da IDE — [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md).
 
-Detalhes: [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md).
+Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `revisar-tarefa`. Sem token, GraphQL, REST ou scripts de API.
 
 ## IDs fixos (boards)
 
@@ -27,12 +27,12 @@ Detalhes: [../monday-task-info/reference-mcp-monday.md](../monday-task-info/refe
 
 | Título exato | Uso |
 |--------------|-----|
-| **Revisão manual de código** | Destino obrigatório quando veredito = `pode_avancar_para_revisao_manual` (`move_item_to_group`; `groupId` típico `group_mm5j20e`) |
-
-## Cache local
-
-`monday-task-info/cache/tasks-by-title.json` — preenchido no passo 1 via `write-task-cache.sh` após leitura MCP. Usado pelo hook `prefetch-diff` (passo 3).
+| **Revisão manual de código** | Destino obrigatório quando veredito = `pode_avancar_para_revisao_manual` (`move_item_to_group` via MCP; `groupId` típico `group_mm5j20e`) |
 
 ## GitLab
 
-Passo 3 e MRs (passo 8): [reference-gitlab-api.md](reference-gitlab-api.md). GitLab MCP proibido: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
+Passo 3 (diff) e MRs (passo 8): **só** MCP GitLab da IDE — [reference-gitlab-mcp.md](reference-gitlab-mcp.md). Sem token, REST ou scripts de API.
+
+## Cache
+
+Só MCP **context-mode** — [SKILL.md](SKILL.md) § Cache. Sem context-mode → sem cache.

@@ -6,6 +6,7 @@ IA_NAMESPACE="eduardolagares"
 IA_CONFIG_OBSOLETE_SKILLS=(
   agendar-revisao-tarefa
   executar-revisao-tarefa
+  gitlab-api
 )
 
 ia_config_each_rule_mdc() {
@@ -73,6 +74,29 @@ ia_config_remove_legacy_install_artifacts() {
   shopt -u nullglob
 }
 
+# Apaga por completo rules/<ns> e skills/<ns> no destino antes de colar de novo.
+# Garante que ficheiros removidos no repo desaparecem nas instalações/upgrades.
+ia_config_wipe_eduardolagares_dirs() {
+  local home="$1"
+  local dry="$2"
+  local rules_ns="$home/rules/$IA_NAMESPACE"
+  local skills_ns="$home/skills/$IA_NAMESPACE"
+
+  echo "Limpar destino $IA_NAMESPACE (substituir por completo):"
+  for p in "$rules_ns" "$skills_ns"; do
+    if [[ "$dry" == true ]]; then
+      echo "[dry-run] rm -rf $p"
+      continue
+    fi
+    if [[ -e "$p" || -L "$p" ]]; then
+      rm -rf "$p"
+      echo "  removido: $p"
+    else
+      echo "  (ausente) $p"
+    fi
+  done
+}
+
 ia_config_sync_rules_mdc_tree() {
   local repo="$1" dest_rules="$2" dry="$3"
   local src_ns="$repo/rules/$IA_NAMESPACE"
@@ -82,7 +106,9 @@ ia_config_sync_rules_mdc_tree() {
     echo "AVISO: pasta inexistente no repo: $src_ns" >&2
     return 0
   fi
+  # Destino já foi limpo por ia_config_wipe_eduardolagares_dirs no sync home.
   if [[ "$dry" == true ]]; then
+    echo "[dry-run] mkdir -p $dest_ns && copiar .mdc de $src_ns"
     ia_config_each_rule_mdc "$repo" | while IFS= read -r -d '' f; do
       local rel="${f#"$src_ns/"}"
       echo "[dry-run] cp $f → $dest_ns/$rel"
@@ -110,14 +136,15 @@ ia_config_sync_eduardolagares_skills() {
     echo "AVISO: pasta inexistente no repo: $src" >&2
     return 0
   fi
+  # Destino já foi limpo por ia_config_wipe_eduardolagares_dirs no sync home.
   if [[ "$dry" == true ]]; then
-    echo "[dry-run] rm -rf $dest && cp -R $src $dest_skills/"
+    echo "[dry-run] rm -rf $dest && cp -R $src → $dest_skills/"
     return 0
   fi
   mkdir -p "$dest_skills"
   rm -rf "$dest"
   cp -R "$src" "$dest_skills/"
-  echo "  skills/$IA_NAMESPACE/ (cópia de $src)"
+  echo "  skills/$IA_NAMESPACE/ (cópia limpa de $src)"
 }
 
 ia_config_print_sync_summary() {
@@ -214,10 +241,18 @@ ia_config_print_home_changes() {
       delete before[path]
     }
     END {
-      if (!added && !changed) {
+      for (path in before) {
+        display = path
+        if (index(path, home_prefix) == 1) {
+          display = substr(path, length(home_prefix) + 1)
+        }
+        print "  - " display
+        removed++
+      }
+      if (!added && !changed && !removed) {
         print "  (nenhum — tudo igual ao que já estava)"
       }
-      printf "  (%d adicionados, %d alterados, %d inalterados)\n", added + 0, changed + 0, same + 0
+      printf "  (%d adicionados, %d alterados, %d removidos, %d inalterados)\n", added + 0, changed + 0, removed + 0, same + 0
     }
   ' "$before_manifest" "$after_manifest"
 
@@ -228,6 +263,7 @@ ia_config_sync_cursor_home() {
   local repo="$1" cursor_home="$2" dry="$3"
   echo "Cursor: sync $IA_NAMESPACE em $cursor_home/"
   ia_config_remove_legacy_install_artifacts "$cursor_home" "$dry"
+  ia_config_wipe_eduardolagares_dirs "$cursor_home" "$dry"
   ia_config_sync_rules_mdc_tree "$repo" "$cursor_home/rules" "$dry"
   ia_config_sync_eduardolagares_skills "$repo" "$cursor_home/skills" "$dry"
 }
@@ -236,6 +272,7 @@ ia_config_sync_agents_home() {
   local repo="$1" agents_home="$2" dry="$3"
   echo "Agents: sync $IA_NAMESPACE em $agents_home/"
   ia_config_remove_legacy_install_artifacts "$agents_home" "$dry" "$agents_home/skills"
+  ia_config_wipe_eduardolagares_dirs "$agents_home" "$dry"
   ia_config_sync_rules_mdc_tree "$repo" "$agents_home/rules" "$dry"
   ia_config_sync_eduardolagares_skills "$repo" "$agents_home/skills" "$dry"
 }

@@ -1,5 +1,5 @@
 ---
-VERSION: "0.1.0"
+VERSION: "1.2.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -50,7 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/eduardolagares/ia-config/main/insta
 
 Alternativa: rodar de novo o `curl` de [Instalação](#instalação) se você quiser repetir o fluxo completo de primeira instalação.
 
-No **upgrade**, o instalador re-sincroniza `rules/eduardolagares/` e `skills/eduardolagares/` (remove artefactos legados de layouts antigos).
+No **upgrade** (e na instalação), o instalador **apaga** `{rules,skills}/eduardolagares/` no destino e cola de novo a partir do repo — ficheiros removidos no `main` deixam de existir no destino. Também remove artefactos legados de layouts antigos.
 
 Scripts: `install/install.sh`, `install/upgrade.sh`, `install/cursor.sh`, `install/agents.sh`, `install/lib/`.
 
@@ -79,11 +79,10 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 | `refatorar-codigo` | Refatora o diff (branch vs `master`, alterações locais ou paths indicados) para Clean & Short Code; aplica em disco, mantém comportamento. |
-| `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday (título exato), documento, subtarefas e cache `tasks-by-title.json`. |
-| `gitlab-api` | REST API GitLab (`GITLAB_TOKEN`): env, validação e garantir MRs (`source` → `master`). Usada por `revisar-tarefa` no passo 8. |
-| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab, code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs; avanço → grupo **Revisão manual de código**). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
+| `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday só via MCP da IDE. |
+| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab (MCP da IDE), code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs; avanço → grupo **Revisão manual de código**). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
 
-No **Cursor**, o `install/` regista o hook `beforeSubmitPrompt` para pré-buscar o diff ao enviar `/revisar-tarefa <título>` (requer `GITLAB_TOKEN`, Monday ligado em **Settings → MCP**, passo 1 via `monday-task-info`, e skill `gitlab-api`).
+No **Cursor**, `/revisar-tarefa` exige **Monday** e **GitLab** ligados em **Settings → MCP** (passo 1 via `monday-task-info`; passos 3 e 8 via MCP GitLab da IDE — sem tokens nem scripts de API).
 
 ---
 

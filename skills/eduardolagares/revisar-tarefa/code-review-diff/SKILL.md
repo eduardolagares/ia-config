@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–5 (Crítico, Grave, Padrão de código, Outros, Lacunas de teste).
   Itens 1.M, 2.M e 3.M alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.4.2"
+VERSION: "1.6.0"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
@@ -14,18 +14,20 @@ Sub-skill do **passo 4** de `revisar-tarefa`. **Somente leitura** — não edita
 
 **Protocolo:** aplicar integralmente [../../code-review/SKILL.md](../../code-review/SKILL.md) (`/code-review`) — skill irmã em `skills/eduardolagares/code-review/` (não sob `revisar-tarefa/`).
 
+**Cache:** só MCP context-mode se o diff completo foi indexado no passo 3 — ver [../SKILL.md](../SKILL.md) § Cache. Sem context-mode → só o que estiver no chat / re-obter via GitLab MCP.
+
 ## Fonte obrigatória do `/code-review`
 
 Ao invocar o protocolo neste passo, **declarar explicitamente** à skill `code-review`:
 
-> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff`), secção **`## Diff`** desta conversa (ou `diff_file` do bundle/cache se truncado). **Não** usar outro diff nem paths soltos indicados pelo utilizador fora do passo 3.
+> **Fonte da revisão:** diff extraído no **passo 3** (`executar-diff` via GitLab MCP), secção **`## Diff`** desta conversa. **Não** usar outro diff nem paths soltos indicados pelo utilizador fora do passo 3.
 
 Regras:
 
 | Regra | Detalhe |
 |-------|---------|
 | **Única fonte primária** | Hunks em `## Diff` do passo 3 — fences ` ```diff ` por repo |
-| **Fallback** | Só se truncado: `diff_file` em `last-diff-bundle.json` / `read-diff-bundle-cache.sh` |
+| **Truncado** | (1) `ctx_search` no índice context-mode se o passo 3 indexou o diff; (2) senão re-obter via MCP GitLab; (3) sem context-mode e sem re-fetch → só o truncado no chat. **Proibido** cache em disco |
 | **Proibido** | Reler repo inteiro, inventar alterações, usar diff de outra branch/tarefa |
 | **Secundário** | Passo 1 (spec Monday), passo 2 (requisitos), `docs/specs/tdd/*.md` — só cruzamento de escopo, **não** substituem o diff |
 
@@ -61,14 +63,14 @@ Sem diff com conteúdo (só erros por repo) → entregar code review com stocks 
 ## Entrada
 
 - Bloco **`## Diff`** do chat (fences `diff` por repo)
-- Opcional: `diff_file` do cache (`read-diff-bundle-cache.sh` / `last-diff-bundle.json`) se o diff no chat estiver truncado
+- Se truncado: context-mode (`ctx_search`) se indexado no passo 3; senão re-obter via GitLab MCP; sem context-mode → só o truncado
 - Opcional: paths de `docs/specs/tdd/*.md` nos repositórios do escopo (se existirem no workspace)
 
 ## Execução
 
 1. Confirmar que **`## Diff`** do passo 3 está no contexto (senão → parar e executar passo 3).
 2. Montar **lista de projetos** = todos os `### <namespace/project>` em `## Diff`; cruzar com **Projetos alterados** do passo 1.
-3. Para **cada** projeto da lista, aplicar o protocolo bld **só** nos hunks daquele `diff_file` / fence — read-only, pt-BR, ids `N.M` **por projeto** (reiniciar `M` em cada bloco de severidade **ou** numerar globalmente; preferir **global** `1.1`, `1.2`… mantendo agrupamento visual por `### <repo>`).
+3. Para **cada** projeto da lista, aplicar o protocolo **só** nos hunks daquele fence — read-only, pt-BR, ids `N.M` **por projeto** (reiniciar `M` em cada bloco de severidade **ou** numerar globalmente; preferir **global** `1.1`, `1.2`… mantendo agrupamento visual por `### <repo>`).
 4. Ler [../../code-review/SKILL.md](../../code-review/SKILL.md) e seguir **todas** as regras (read-only, pt-BR, blocos 1–5).
 5. **Aplicar code-review com fonte = diff do passo 3** — secção **Fontes (ordem fixa)**: item 1 é **exclusivamente** esse diff; regras/convenções/spec TDD entram nos itens 2–3.
 6. **Não** reler o repositório inteiro salvo para confirmar contexto de uma linha duvidosa **já visível no diff**.
@@ -156,7 +158,7 @@ Passo 6: [gerar-requisitos-de-codigo/SKILL.md](../gerar-requisitos-de-codigo/SKI
 |----------|------|
 | Sem `## Diff` no contexto | Parar; executar passo 3 |
 | Diff só com **Erro:** por repo | Code review por repo com erro; blocos 1–5 `Nenhum.` ou stock bloco 5 |
-| Diff truncado no chat | Ler `diff_file` do bundle/cache |
+| Diff truncado no chat | context-mode se disponível; senão GitLab MCP; senão só truncado (sem cache em disco) |
 | Tentação de editar código | Recusar — read-only |
 
 ## Skills relacionadas

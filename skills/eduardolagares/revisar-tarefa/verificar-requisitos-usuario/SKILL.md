@@ -4,7 +4,7 @@ description: >-
   Passo 5 de revisar-tarefa: cruza requisitos de usuário (R*) com o diff e identifica
   quais não foram implementados. Somente leitura. Alimenta o passo 6 (gerar-requisitos-de-codigo).
 disable-model-invocation: true
-VERSION: "1.0.0"
+VERSION: "1.1.0"
 ---
 
 # revisar-tarefa — verificar requisitos de usuário (passo 5)
@@ -30,7 +30,7 @@ Diff só com **Erro:** por repo → classificar como **não verificável (diff i
 ## Entrada
 
 - Lista **`R*`** do passo 2 (respeitar `Status: concluído` / ignorar-revisão — **não** reverificar)
-- Hunks do **`## Diff`** (passo 3); fallback: `diff_file` do cache
+- Hunks do **`## Diff`** (passo 3); se truncado: context-mode se indexado, senão GitLab MCP, senão só o truncado (sem cache em disco)
 - Opcional: screenshot / texto do **Documento** (passo 1) para requisitos `Verificação: manual`
 
 ## Execução

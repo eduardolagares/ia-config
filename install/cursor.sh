@@ -21,9 +21,9 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
       echo "Sync rules/skills eduardolagares → \$CURSOR_HOME/{rules,skills}/eduardolagares/"
+      echo "  Apaga {rules,skills}/eduardolagares no destino antes de colar (sync limpo)"
       echo "  Rules: todas alwaysApply + karpathy (gerado após sync)"
-      echo "  Remove legado: agendar-revisao-tarefa, executar-revisao-tarefa"
-      echo "  Hook opcional: beforeSubmitPrompt → prefetch diff (/revisar-tarefa)"
+      echo "  Remove legado: agendar/executar-revisao-tarefa, gitlab-api, hook prefetch"
       echo "  CURSOR_HOME=...  predef.: ~/.cursor"
       echo "  KARPATHY_GUIDELINES_URL=... (predef.: upstream andrej-karpathy-skills)"
       exit 0
@@ -67,7 +67,7 @@ else
   echo "Feito."
   echo "Revisar tarefa: /revisar-tarefa <título> (skill em skills/$IA_NAMESPACE/revisar-tarefa/)"
   echo "Refatorar código: /refatorar-codigo (skill em skills/$IA_NAMESPACE/refatorar-codigo/)"
-  echo "Ambiente: validate-env.sh (GitLab) + Monday em Cursor → Settings → MCP"
+  echo "Ambiente: Monday + GitLab em Cursor → Settings → MCP"
   ia_config_print_home_changes "$BEFORE_MANIFEST" "$CURSOR_HOME"
   rm -f "$BEFORE_MANIFEST"
 fi

@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.2.0"
+VERSION: "2.3.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -13,7 +13,7 @@ Sub-skill **`avaliar-tarefa`** do passo 7. **Leitura** do doc + diff; **escrita*
 
 Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
-**Monday:** `CallMcpTool`, `server`: `plugin-monday.com-monday`. Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
+**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`). **Proibido:** API/token/GraphQL diretos. Ver [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md).
 
 ## Pré-requisito
 
@@ -28,7 +28,7 @@ Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
 - Saída do **passo 1** (`monday-task-info`) — `doc_object_id` da subtarefa **Revisar código**; status **Testar** só informativo
 - **`## Diff`** (passo 3)
-- Doc da subtarefa **Revisar código** (`read_docs` via `doc_object_id` do cache ou passo 6)
+- Doc da subtarefa **Revisar código** (`read_docs` via `doc_object_id` do passo 1 ou passo 6)
 - Opcional: **`## Requisitos da tarefa`** (passo 2) — contexto para bullets `R*` no doc
 - Fallback: `## Code review` (passo 4) + `## Verificação de requisitos` (passo 5)
 

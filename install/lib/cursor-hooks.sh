@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala hook beforeSubmitPrompt para prefetch de diff (/revisar-tarefa).
+# Remove hook prefetch legado de /revisar-tarefa (diff agora via MCP GitLab na IDE).
 # Paths relativos a CURSOR_HOME (~/.cursor ou projeto/.cursor).
 set -euo pipefail
 
@@ -12,28 +12,27 @@ ia_config_install_revisar_tarefa_hook() {
   local repo="$2"
   local dry="$3"
 
-  local hook_src="${repo}/install/hooks/revisar-tarefa-prefetch-diff.sh"
   local hooks_dir="${cursor_home}/hooks"
   local hook_dest="${hooks_dir}/revisar-tarefa-prefetch-diff.sh"
   local hooks_json="${cursor_home}/hooks.json"
   local hook_cmd="${cursor_home}/hooks/revisar-tarefa-prefetch-diff.sh"
 
-  if [[ ! -f "$hook_src" ]]; then
-    echo "AVISO: hook ausente no repo: $hook_src" >&2
-    return 0
-  fi
-
-  echo "Hook revisar-tarefa → ${hook_dest}"
+  echo "Hook revisar-tarefa (legado API) → remover se existir"
 
   if [[ "$dry" == true ]]; then
-    echo "[dry-run] cp $hook_src → $hook_dest"
-    echo "[dry-run] merge beforeSubmitPrompt em $hooks_json"
+    [[ -f "$hook_dest" ]] && echo "[dry-run] rm $hook_dest"
+    [[ -f "$hooks_json" ]] && echo "[dry-run] remover beforeSubmitPrompt → $hook_cmd em $hooks_json"
     return 0
   fi
 
-  mkdir -p "$hooks_dir"
-  cp "$hook_src" "$hook_dest"
-  chmod +x "$hook_dest"
+  if [[ -f "$hook_dest" ]]; then
+    rm -f "$hook_dest"
+    echo "  removido: $hook_dest"
+  fi
+
+  if [[ ! -f "$hooks_json" ]]; then
+    return 0
+  fi
 
   python3 - "$hooks_json" "$hook_cmd" <<'PY'
 import json
@@ -43,20 +42,17 @@ from pathlib import Path
 hooks_json = Path(sys.argv[1])
 hook_cmd = sys.argv[2]
 
-entry = {"command": hook_cmd}
-
-if hooks_json.is_file():
-    data = json.loads(hooks_json.read_text(encoding="utf-8"))
-else:
-    data = {"version": 1, "hooks": {}}
-
-hooks = data.setdefault("hooks", {})
-existing = hooks.setdefault("beforeSubmitPrompt", [])
-if not any(h.get("command") == hook_cmd for h in existing):
-    existing.append(entry)
-
-hooks_json.parent.mkdir(parents=True, exist_ok=True)
+data = json.loads(hooks_json.read_text(encoding="utf-8"))
+hooks = data.get("hooks") or {}
+existing = hooks.get("beforeSubmitPrompt") or []
+filtered = [h for h in existing if h.get("command") != hook_cmd]
+if len(filtered) == len(existing):
+    raise SystemExit(0)
+hooks["beforeSubmitPrompt"] = filtered
+if not filtered:
+    hooks.pop("beforeSubmitPrompt", None)
+data["hooks"] = hooks
 hooks_json.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-print(f"  hooks.json: beforeSubmitPrompt → {hook_cmd}")
+print(f"  hooks.json: removido beforeSubmitPrompt → {hook_cmd}")
 PY
 }

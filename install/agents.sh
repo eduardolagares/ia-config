@@ -19,7 +19,8 @@ for arg in "$@"; do
     -h | --help)
       echo "Uso: $(basename "$0") [--dry-run]"
       echo "Sync rules/skills eduardolagares → \$AGENTS_HOME/{rules,skills}/eduardolagares/"
-      echo "  Remove legado: agendar-revisao-tarefa, executar-revisao-tarefa"
+      echo "  Apaga {rules,skills}/eduardolagares no destino antes de colar (sync limpo)"
+      echo "  Remove legado: agendar/executar-revisao-tarefa, gitlab-api"
       echo "  AGENTS_HOME=...  predef.: ~/.agents"
       exit 0
       ;;

@@ -6,16 +6,16 @@ description: >-
   publica links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
   Se pode_avancar_para_revisao_manual, move a tarefa para o grupo Revisão manual de código.
 disable-model-invocation: true
-VERSION: "1.3.0"
+VERSION: "2.2.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
-Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners, grupo e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**).
+Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners, grupo e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**) via **MCP GitLab da IDE**.
 
-**GitLab (MRs):** ler **`GITLAB_TOKEN` das variáveis de ambiente da máquina de quem executa** — mesma regra do passo 3 ([SKILL.md](../SKILL.md) § GitLab — autenticação). Scripts `gitlab-api-mr-ensure*` herdam o env; `ctx_execute` usa `process.env.GITLAB_TOKEN`.
+**GitLab (MRs):** só `CallMcpTool` no servidor GitLab MCP da IDE — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md). **Proibido:** `GITLAB_TOKEN`, REST, scripts de API.
 
-**Monday:** `CallMcpTool` com `server`: `plugin-monday.com-monday` (conexão Monday ligada no Cursor — Settings → MCP). Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
+**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`) — [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md). **Proibido:** `MONDAY_API_TOKEN`, GraphQL/REST contra `api.monday.com`.
 
 **Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, grupo, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
 
@@ -27,9 +27,9 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 | **`## Avaliação`** | Sim — passo 7 (`Veredito`) |
 | **Passo 1** | Sim — `item_id` tarefa + subtarefas Executar, Revisar código (Testar não é alvo deste passo) |
 | **Passo 1 ou 3** (só `precisa_de_correcao`) | **Branch** + lista de repos (`Projetos alterados` ou `## Diff`) |
-| **GITLAB_TOKEN** | Sim — **env do executador**, para MRs em `precisa_de_correcao` |
+| **GitLab MCP** | Sim — para MRs em `precisa_de_correcao` (IDE ligada + `ready` / `mcp_auth`) |
 | **Passo 6** (recomendado) | Doc **Revisar código** — se `Ação: nenhum`, § A.2 pode **criar** doc só com MRs |
-| **`doc_object_id`** | Sim (§ A.2) — cache `monday-task-info` → `subitems["Revisar código"].doc_object_id` |
+| **`doc_object_id`** | Sim (§ A.2) — passo 1 / passo 6 (`subtarefa Revisar código`) |
 
 ## IDs fixos (board Dia a dia)
 
@@ -42,7 +42,7 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owne
 |----------------------|----------|
 | **Revisão manual de código** | `get_board_info` no board `4571892384` → `groups[]` pelo título; `groupId` típico `group_mm5j20e` (confirmar — não inventar) |
 
-Resolver `item_id` de cada subtarefa via cache `monday-task-info` ou passo 1.
+Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_items_page`.
 
 ## Entrada
 
@@ -55,12 +55,12 @@ Resolver `item_id` de cada subtarefa via cache `monday-task-info` ou passo 1.
 0. **Validar diff:** ler `Status` em `## Diff` (passo 3). Se ≠ `ok` → § **Bloqueio (diff indisponível)** e **terminar** (zero mutations Monday/GitLab).
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
 2. Executar **apenas** o bloco de ações do veredito (§ abaixo).
-3. Status: `change_item_column_values` com `{"label": "<texto exato>"}`. Grupo: `all_api_write` com `move_item_to_group` (ver § revisão manual).
+3. Status: `change_item_column_values` com `{"label": "<texto exato>"}`. Grupo: tool MCP `all_api_write` com `move_item_to_group` (ver § revisão manual).
 4. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
 
-Quando o passo 0 falhar — **não** chamar `change_item_column_values`, `create_doc`, `append_blocks`, `move_item_to_group`, `gitlab-api-mr-ensure*` nem equivalente MCP.
+Quando o passo 0 falhar — **não** chamar `change_item_column_values`, `create_doc`, `append_blocks`, `move_item_to_group`, nem criar/atualizar MRs no GitLab.
 
 Entregar no chat:
 
@@ -72,7 +72,7 @@ Entregar no chat:
 | Veredito (passo 7) | `<veredito>` — **não aplicado** |
 | Motivo | Diff GitLab indisponível (`Status: <parcial\|indisponível>`) |
 | Ações Monday | **nenhuma** (status/owners/grupo/doc MR inalterados) |
-| Próximo passo | Corrigir `GITLAB_TOKEN`/cache, rodar prefetch ou repetir passo 3 até `Status: ok` (VPN já ativa no executador) |
+| Próximo passo | Corrigir MCP GitLab na IDE e repetir passo 3 até `Status: ok` (VPN já ativa no executador) |
 ```
 
 Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem executá-lo.
@@ -83,28 +83,21 @@ Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxe
 
 **Ordem:** GitLab (MRs) → doc Monday (**Merge requests**) → Monday (owners + status).
 
-#### A. Merge requests (GitLab REST API)
+#### A. Merge requests (GitLab MCP)
 
 Para **cada** `namespace/project` da tarefa (mesma lista do passo 3 — `## Diff` / **Projetos alterados** do passo 1):
 
-1. **Check:** `GITLAB_TOKEN` presente no **env da máquina do executador** (`check-gitlab-ready.sh` ou equivalente); senão parar e pedir `export` no shell local (não pedir token no chat). Monday abaixo só se MRs não forem bloqueantes — preferir parar tudo.
-2. Rodar e **mostrar no chat** o JSON resumido:
-
-```bash
-scripts/gitlab-api-mr-ensure-bundle.sh \
-  --branch "<branch>" --titulo "<título exato da tarefa>" \
-  baladapp/repo1 baladapp/repo2
-```
+1. **Check:** GitLab MCP da IDE `ready` (ou `mcp_auth`); senão parar — pedir GitLab em **Settings → MCP** (não pedir token no chat). Preferir parar tudo se MRs forem necessários.
+2. Via `gitlab_execute_action` (ver [reference-gitlab-mcp.md](../reference-gitlab-mcp.md)):
 
 | Comportamento | Detalhe |
 |---------------|---------|
 | Target | **`master`** |
 | Source | Branch da tarefa (coluna Monday) |
-| MR já aberto `source` → `master` | Reutiliza (`action: existing`) |
-| MR aberto com outro target | Atualiza target para `master` (`updated_target`) |
-| Sem MR aberto | Cria (`created`) |
-| Canal | REST API — scripts `gitlab-api-mr-ensure*`; GitLab MCP proibido |
-| Exit **2** | `ctx_execute` com `fetch` ou Terminal integrado (rede do Mac, VPN ativa) |
+| MR já aberto `source` → `master` | Reutiliza (`action: existing`) — `merge_request.list` / `get` |
+| MR aberto com outro target | `merge_request.update` → target `master` (`updated_target`) |
+| Sem MR aberto | `merge_request.create` (`created`) |
+| Canal | **só** GitLab MCP da IDE |
 
 Título do MR: título da tarefa Monday (ou branch se ausente).
 
@@ -116,18 +109,18 @@ Incluir na saída **`## Pós avaliação`** subsecção **`### Merge requests`**
 
 Erro por repo: linha com **Erro:**; seguir nos demais (doc e status).
 
-Guardar o JSON do bundle (`projects[]` com `web_url` / `iid` / `repo` / `action`) para § A.2.
+Guardar `web_url` / `iid` / `repo` / `action` por projeto para § A.2.
 
 #### A.2. Documento Revisar código — tópico `## Merge requests`
 
-**Somente** MRs com `web_url` válida no bundle (§ A). **Append** — não alterar **`## Revisão de código`** nem **`## Requisitos não implementados`**.
+**Somente** MRs com `web_url` válida (§ A). **Append** — não alterar **`## Revisão de código`** nem **`## Requisitos não implementados`**.
 
-1. Resolver `doc_object_id` da subtarefa **Revisar código** (cache `monday-task-info` ou passo 1).
+1. Resolver `doc_object_id` da subtarefa **Revisar código** (passo 1 / passo 6).
 2. `read_docs` — `mode: content`, `type: object_ids`, `ids: [<doc_object_id>]`.
 3. Extrair do markdown existente (secção **`## Merge requests`** ou variantes `## Merge requests — <data>`):
    - URLs já publicadas (`https://gitlab.baladapp.com.br/...`)
    - Pares `repo` + `!<iid>` (regex `baladapp/[\w.-]+` e `!\d+`)
-4. Para cada entrada do bundle com `web_url`:
+4. Para cada MR com `web_url` (§ A):
    - Já no doc (mesma URL **ou** mesmo `repo` + `!iid`) → **SKIP** — reportar `SKIP MR duplicado: <repo>`
    - Novo → incluir na tabela de append
 5. Se **nenhum** MR novo após filtro → `Doc MR: nenhum`; seguir § B.
@@ -162,13 +155,13 @@ Documento gerado por /revisar-tarefa.
 | … | … | … | … |
 ```
 
-8. Atualizar cache `tasks-by-title.json` — `doc_object_id` se `create_doc` retornou novo id (`ctx_execute` + `ctx_index`, `source: monday-task-info:index`).
+8. Se `create_doc` retornou novo id, usar esse `doc_object_id` no restante do passo 8 (contexto do chat).
 
 | Erro | Ação |
 |------|------|
 | MCP Monday indisponível | Reportar; seguir § B (status) se usuário não bloqueou |
 | `update_doc` / `create_doc` falhou | Reportar; **não** simular link no doc |
-| Bundle sem nenhum `web_url` | Omitir § A.2; reportar aviso |
+| Nenhum MR com `web_url` | Omitir § A.2; reportar aviso |
 
 Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `criado` \| `nenhum` \| `erro`.
 
@@ -209,7 +202,7 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 1. `get_board_info` — `boardId: 4571892384`.
 2. Em `groups[]`, achar o grupo com título **exato** `Revisão manual de código` → obter `id` (`groupId`).
 3. Se o grupo **não** existir → **parar**; reportar erro; **não** usar QA, Deploy nem outro grupo.
-4. Mover com `all_api_write` (mutation GraphQL):
+4. Mover com tool MCP `all_api_write` (`move_item_to_group` — **não** GraphQL fora do MCP):
 
 ```graphql
 mutation ($itemId: ID!, $groupId: String!) {
@@ -285,7 +278,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 | Sem `## Avaliação` | Parar; executar passo 7 |
 | Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
-| `GITLAB_TOKEN` ausente no env (`precisa_de_correcao`) | Parar antes de Monday; pedir `export` no shell local |
+| MCP GitLab indisponível (`precisa_de_correcao`) | Parar antes de Monday; pedir GitLab em Settings → MCP |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; Monday § B opcional |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Grupo **Revisão manual de código** ausente | Parar; **não** enviar para QA/Deploy |
@@ -307,5 +300,5 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 | Skill | Papel |
 |-------|--------|
 | `revisar-tarefa-avaliar-tarefa` | Passo 7 — veredito |
-| `monday-task-info` | IDs subtarefas / cache |
+| `monday-task-info` | IDs subtarefas (passo 1) |
 | `revisar-tarefa-gerar-requisitos-de-codigo` | Passo 6 — outros tópicos do doc |

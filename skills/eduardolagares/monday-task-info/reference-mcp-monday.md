@@ -1,21 +1,25 @@
-# Monday — conexão integrada ao Cursor
+# Monday — conexão MCP na IDE (`revisar-tarefa` / `monday-task-info`)
 
 ## Canal único
 
 | Usar | Proibido |
 |------|----------|
-| `CallMcpTool`, `server`: **`plugin-monday.com-monday`** | Qualquer outro `server` |
-| Tools do plugin (`get_board_items_page`, `read_docs`, `update_doc`, `change_item_column_values`, …) | Scripts ou ficheiros deste repo que chamem `api.monday.com` |
-| OAuth em **Cursor → Settings → MCP → Monday** | `MONDAY_API_TOKEN`, `monday.env`, GraphQL manual |
+| `CallMcpTool` no **servidor Monday MCP** instalado na IDE de quem executa | `MONDAY_API_TOKEN`, `monday.env` como auth, curl/`fetch` contra `api.monday.com` |
+| Tools do MCP (`get_board_items_page`, `read_docs`, `update_doc`, `change_item_column_values`, `all_api_write`, …) | GraphQL/REST manual fora do MCP; scripts que chamem a API Monday |
+| OAuth / auth do MCP em **Cursor → Settings → MCP → Monday** | Pedir token/PAT no chat; inventar dados se o MCP falhar |
 
-Schemas: `mcps/plugin-monday.com-monday/tools/<tool>.json`.
+**Resolver o `server`:** usar o id do Monday MCP **desta** IDE (`GetMcpTools` com padrão `monday`, ou pasta `mcps/*monday*`). Exemplos comuns: `plugin-monday.com-monday`, `user-monday-mcp`. **Não** hardcodar um id se o da sessão for outro — usar o que estiver ligado e `ready`.
+
+Se `serverStatus` for `needsAuth` → chamar `mcp_auth` nesse servidor (utilizador autoriza na IDE). Não pedir token no chat.
+
+Schemas: pasta `mcps/<server-id>/tools/<tool>.json` do servidor resolvido — ler antes de cada tool pouco usada.
 
 ## Checklist do agente
 
-1. Pasta `mcps/plugin-monday.com-monday/tools/` existe?
-2. Ler schema antes de cada chamada.
-3. `server` exatamente `plugin-monday.com-monday`.
-4. Erro de auth → utilizador reautoriza Monday no Cursor (não pedir PAT).
+1. Monday MCP existe e está `ready` (ou autenticar com `mcp_auth`)?
+2. `GetMcpTools` / schema antes de executar tools pouco usadas.
+3. Só `CallMcpTool` no servidor Monday da IDE — zero REST/GraphQL/token/script de API.
+4. MCP indisponível → **parar**; não inventar contexto nem simular escrita.
 
 ## IDs fixos
 
@@ -26,7 +30,7 @@ Schemas: `mcps/plugin-monday.com-monday/tools/<tool>.json`.
 
 Colunas usuais: Branch `texto`, status pai `status_1`, doc `monday_doc`, subtarefa status `status`, owner `person`.
 
-## Fluxo passo 1 (leitura)
+## Passo 1 — leitura (`monday-task-info`)
 
 ### 1. Item + subtarefas
 
@@ -40,32 +44,12 @@ Colunas usuais: Branch `texto`, status pai `status_1`, doc `monday_doc`, subtare
 
 Inferir `baladapp/<repo>` do texto retornado pelo MCP.
 
-### 4. Cache
+### 4. Contexto para passos seguintes
 
-JSON mínimo:
+Entregar a saída markdown no chat. IDs (`item_id`, `doc_object_id`, subtarefas) ficam no contexto da conversa.
 
-```json
-{
-  "item_id": "...",
-  "item_url": "...",
-  "branch": "...",
-  "status_consolidado": "...",
-  "projetos_alterados": ["baladapp/repo"],
-  "doc_object_id": "...",
-  "blocks_as_markdown": "...",
-  "subitems": {
-    "Executar": { "item_id": "...", "status": "...", "doc_object_id": null },
-    "Revisar código": { "item_id": "...", "status": "...", "doc_object_id": "..." },
-    "Testar": { "item_id": "...", "status": "...", "doc_object_id": null }
-  },
-  "fetched_at": "YYYY-MM-DDTHH:MM:SSZ"
-}
-```
+Documento / payload Monday **muito grande:** indexar só via MCP **context-mode** (`ctx_index` / `ctx_search`). Sem context-mode → sem cache; resumir no chat. **Proibido** cache em disco ou scripts.
 
-```bash
-scripts/write-task-cache.sh "<título exato>" < payload.json
-```
+## Passos 6–8 (`revisar-tarefa`) — escrita
 
-## Passos 6–8 (`revisar-tarefa`)
-
-Mesmo `server`: `update_doc`, `create_doc`, `change_item_column_values`, etc.
+Mesmo servidor Monday MCP da IDE: `update_doc`, `create_doc`, `change_item_column_values`, `all_api_write` (ex. `move_item_to_group`), etc. — **sempre** via `CallMcpTool`, nunca API direta.

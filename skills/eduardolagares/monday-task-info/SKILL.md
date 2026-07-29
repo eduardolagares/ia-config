@@ -1,31 +1,31 @@
 ---
 name: monday-task-info
 description: >-
-  Passo 1 revisar-tarefa: lê tarefa Monday só via MCP Cursor (plugin-monday.com-monday).
-  Grava cache com write-task-cache.sh. Use com /monday-task-info.
+  Passo 1 revisar-tarefa: lê tarefa Monday só via MCP da IDE.
+  Use com /monday-task-info.
 disable-model-invocation: true
-VERSION: "1.3.1"
+VERSION: "2.0.1"
 ---
 
 # monday-task-info
 
 Skill do **passo 1** de `/revisar-tarefa`. **Somente leitura** no Monday.
 
-## Conexão Monday do Cursor (único canal)
+## Conexão Monday da IDE (único canal)
 
-O Monday está ligado em **Cursor → Settings → MCP → Monday**. Toda leitura usa **`CallMcpTool`**:
+O Monday está ligado em **Cursor → Settings → MCP → Monday**. Toda leitura usa **`CallMcpTool`** no servidor Monday MCP **desta** IDE.
 
 | Parâmetro | Valor |
 |-----------|--------|
-| **`server`** | `plugin-monday.com-monday` |
+| **`server`** | id do Monday MCP da sessão (`GetMcpTools` / `mcps/*monday*` — ex. `plugin-monday.com-monday`, `user-monday-mcp`) |
 | **`toolName`** | ex.: `get_board_items_page`, `read_docs` |
-| **`arguments`** | conforme schema em `mcps/plugin-monday.com-monday/tools/*.json` |
+| **`arguments`** | conforme schema em `mcps/<server>/tools/*.json` |
 
-Exemplo:
+Exemplo (ajustar `server` ao id real da IDE):
 
 ```json
 {
-  "server": "plugin-monday.com-monday",
+  "server": "<monday-mcp-da-ide>",
   "toolName": "get_board_items_page",
   "arguments": {
     "boardId": 4571892384,
@@ -39,7 +39,7 @@ Exemplo:
 
 Fluxo completo: [reference-mcp-monday.md](reference-mcp-monday.md).
 
-**Não existe** neste repositório script, token (`MONDAY_API_TOKEN`) nem `curl` para Monday. Se o MCP falhar → **parar** e pedir para rever **Settings → MCP → Monday**. **Não** inventar dados.
+**Proibido:** `MONDAY_API_TOKEN`, GraphQL/REST contra `api.monday.com`, curl/`fetch` com token, scripts de API. Se o MCP falhar → **parar** e pedir **Settings → MCP → Monday** (ou `mcp_auth`). **Não** inventar dados.
 
 ## Entrada
 
@@ -57,13 +57,9 @@ Board **Dia a dia** (`4571892384`). Título **exato**.
 
 ## Ordem de execução
 
+0. Confirmar Monday MCP `ready` (`GetMcpTools`; `mcp_auth` se `needsAuth`).
 1. **`CallMcpTool`** — `get_board_items_page` + `read_docs`.
-2. Markdown no chat (§ Saída).
-3. **`scripts/write-task-cache.sh`** — obrigatório para o prefetch do passo 3.
-
-```bash
-scripts/write-task-cache.sh "<título exato>" < payload.json
-```
+2. Entregar markdown no chat (§ Saída). IDs ficam no contexto da conversa para os passos 2–8.
 
 ## Saída markdown (obrigatória)
 
@@ -97,10 +93,6 @@ scripts/write-task-cache.sh "<título exato>" < payload.json
 <blocks_as_markdown do read_docs>
 ```
 
-## Cache (`cache/tasks-by-title.json`)
-
-Ver esquema em [reference-mcp-monday.md](reference-mcp-monday.md) § Cache. Gravar com `write-task-cache.sh` após cada leitura MCP.
-
 ## Normalização de projetos alterados
 
 Ao montar **`## Projetos alterados`**, aplicar as normalizações abaixo:
@@ -109,7 +101,15 @@ Ao montar **`## Projetos alterados`**, aplicar as normalizações abaixo:
 
 ## Setup (utilizador)
 
-**Monday** conectado em **Cursor → Settings → MCP → Monday**. Sem scripts de setup nesta skill.
+**Monday** conectado em **Cursor → Settings → MCP → Monday**. Sem scripts nesta skill. Sem API/token fora do MCP.
+
+## Erros
+
+| Situação | Ação |
+|----------|------|
+| MCP Monday indisponível / auth falhou | Parar; Settings → MCP → Monday |
+| Tentação de API/token/script | Recusar — só MCP da IDE |
+| Título ambíguo | Não escolher item aleatório |
 
 ## Skills relacionadas
 

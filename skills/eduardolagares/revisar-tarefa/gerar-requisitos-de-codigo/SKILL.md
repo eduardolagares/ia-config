@@ -5,14 +5,14 @@ description: >-
   os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.3.0"
+VERSION: "2.5.0"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
 
 Sub-skill **`gerar-requisitos-de-codigo`** do passo 6. **Escrita** no Monday — **somente** documento da subtarefa **Revisar código** (coluna `monday_doc`). **Não** alterar status de subtarefas nem publicar updates.
 
-**Monday:** `CallMcpTool`, `server`: `plugin-monday.com-monday` apenas. Ler schema em `mcps/plugin-monday.com-monday/tools/<tool>.json` antes de cada tool.
+**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`). **Proibido:** API/token/GraphQL diretos. Ver [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md).
 
 ## Pré-requisito
 
@@ -20,7 +20,7 @@ Sub-skill **`gerar-requisitos-de-codigo`** do passo 6. **Escrita** no Monday —
 |------|-------------|
 | **`## Code review`** | Sim — passo 4 (blocos `1 - Crítico`, `2 - Grave` e `3 - Padrão de código`) |
 | **`## Verificação de requisitos`** | Sim — passo 5 (**Requisitos não implementados**) |
-| **Subtarefa Revisar código** | Sim — `item_id` do passo 1 ou cache `monday-task-info` |
+| **Subtarefa Revisar código** | Sim — `item_id` do passo 1 (markdown) |
 
 Ambos vazios (blocos 1/2/3 `Nenhum.` **e** requisitos não implementados `Nenhum.`) → encerrar com `Ação: nenhum`; **não** criar doc vazio.
 
@@ -95,7 +95,7 @@ Nenhum.
 | **Heading** | `#### <namespace/project>` (ex.: `#### baladapp/ingressos`) **dentro** de `### Crítico`, `### Grave` e `### Padrão de código` |
 | **1 repo** | Omitir `####` — bullets direto sob `### Crítico` / `### Grave` / `### Padrão de código` |
 | **Repo sem itens** | Incluir `#### <repo>` + `Nenhum.` — espelha passo 4 |
-| **Mapeamento** | Path em **Onde:** → repo do `###` correspondente no diff; dúvida → repo do `diff_file` |
+| **Mapeamento** | Path em **Onde:** → repo do `###` correspondente no diff |
 
 **Proibido:** publicar lista plana de `1.M`/`2.M`/`3.M` sem agrupar quando a tarefa tem vários projetos.
 
@@ -103,9 +103,7 @@ Nenhum.
 
 ### 0. Resolver subtarefa Revisar código
 
-Cache: `monday-task-info/cache/tasks-by-title.json` → `subitems["Revisar código"].item_id` / `doc_object_id`.
-
-Se cache miss: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código` ou `Revisão de código`.
+IDs do **passo 1** (markdown no chat). Se ausentes: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código` ou `Revisão de código`.
 
 ### 1. Ler documento existente (se houver)
 
@@ -194,14 +192,7 @@ Se **nada** passou no filtro §2 → `Ação: nenhum`; não chamar `update_doc`/
 
 Na **primeira criação**, usar a estrutura completa com ambos os tópicos (secções vazias omitidas).
 
-### 6. Atualizar cache Monday
-
-Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
-
-- `subitems["Revisar código"].doc_object_id` = objectId retornado
-- `cached_at` = ISO 8601 UTC
-
-`ctx_index` com `source: monday-task-info:index`.
+Guardar o `doc_object_id` retornado no contexto do chat para os passos 7–8.
 
 ## Saída obrigatória (chat)
 
@@ -230,7 +221,7 @@ Após sucesso, `ctx_execute` — merge em `tasks-by-title.json`:
 | Subtarefa Revisar código não encontrada | Parar; listar subtarefas |
 | MCP Monday indisponível | Parar; **não** simular doc publicado |
 | Nada a publicar após filtros | `Ação: nenhum` |
-| `create_doc` / `update_doc` falhou | Reportar erro; não atualizar cache |
+| `create_doc` / `update_doc` falhou | Reportar erro; não fingir publicação |
 
 ## Proibido
 
