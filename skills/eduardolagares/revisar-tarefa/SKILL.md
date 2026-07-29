@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.3.0"
+VERSION: "6.4.0"
 ---
 
 # `/revisar-tarefa`
@@ -13,6 +13,32 @@ VERSION: "6.3.0"
 Oito passos: contexto → requisitos → diff → code review → verificação → publicação doc → **avaliação** → **pós avaliação** (Monday).
 
 **Pacote:** `skills/eduardolagares/revisar-tarefa/` (instalada em `{dest}/skills/eduardolagares/revisar-tarefa/`). Sub-skills usam paths **relativos** a esta pasta. Sem scripts de API.
+
+## Receitas MCP (pré-estabelecidas — não rediscobrir)
+
+Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/tool + JSON). **Não** gastar turnos em `gitlab_find_action` / schema hunting se o action já está documentado.
+
+| Canal | Servidor típico | Reference | Uso |
+|-------|-----------------|-----------|-----|
+| Monday | `user-monday-mcp` | [../monday-task-info/reference-mcp-monday.md](../monday-task-info/reference-mcp-monday.md) | passos 1, 6–8 |
+| GitLab | `user-gitlab` | [reference-gitlab-mcp.md](reference-gitlab-mcp.md) | passos 3, 8 |
+
+**Atalhos validados:**
+
+| Necessidade | Tool / action |
+|-------------|---------------|
+| Listar workspaces Monday | `list_workspaces` |
+| Buscar quadro | `search` (`searchType: BOARD`, `searchTerm` obrigatório) |
+| Metadados board / grupos | `get_board_info` (`boardId: 4571892384`) |
+| Item + subtarefas | `get_board_items_page` |
+| Ler / append / checkbox doc | `read_docs` / `update_doc` |
+| Status / owner | `change_item_column_values` |
+| Mover grupo | `all_api_write` → `move_item_to_group` (`group_mm5j20e`) |
+| Diff via MR | `gitlab_execute_action` → `merge_request.list` → `mr_review.raw_diffs` |
+| Diff sem MR | `repository.compare` (`from: master`, `to: branch`) |
+| Criar / ajustar MR | `merge_request.create` / `merge_request.update` (`target_branch: master`) |
+
+Resolver `server` com `GetMcpTools` se o id da sessão for outro; se `needsAuth` → `mcp_auth`.
 
 ## Cache (só context-mode)
 

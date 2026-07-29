@@ -5,20 +5,30 @@ description: >-
   e entrega "## Diff". Use após gerar-requisitos-de-usuario ou com
   "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "3.1.0"
+VERSION: "3.2.0"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
 
 Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no GitLab.
 
-**Canal obrigatório:** **GitLab MCP** instalado na IDE de quem executa — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md).
+**Canal obrigatório:** **GitLab MCP** instalado na IDE de quem executa — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) (**receitas JSON completas**).
 
 **Proibido:** `GITLAB_TOKEN`, PAT, REST `/api/v4`, curl/`fetch` com Bearer, scripts de API.
 
 **Rede:** GitLab só via **VPN**; assume-se VPN **já ativa** ([SKILL.md](../SKILL.md) § GitLab — rede). Não pedir para ligar VPN por defeito.
 
 **Cache:** só MCP **context-mode** ([SKILL.md](../SKILL.md) § Cache). Sem context-mode → sem cache.
+
+## Receita rápida (copiar)
+
+`CallMcpTool` → `server: <gitlab>` → `toolName: gitlab_execute_action`:
+
+1. `merge_request.list` — `project_id`, `source_branch`, `state: opened`
+2. Se MR → `mr_review.raw_diffs` — `project_id`, `merge_request_iid` → `method: mcp_mr_diff`
+3. Senão → `repository.compare` — `from: master`, `to: <branch>` → `method: mcp_compare`
+
+Não chamar `gitlab_find_action` se estes actions bastarem.
 
 Invocação isolada (com passo 1 já no contexto):
 
@@ -66,7 +76,7 @@ Para **cada** `namespace/project` em **Projetos alterados** / passo 1:
 
 `project_id` = path `namespace/project` (ex. `baladapp/ingressos`).
 
-Usar `gitlab_find_action` se o schema de params for incerto. Diffs grandes → § Diffs grandes.
+Params JSON: [reference-gitlab-mcp.md](../reference-gitlab-mcp.md). Só usar `gitlab_find_action` se um action novo for necessário. Diffs grandes → § Diffs grandes.
 
 ### 2. Falha total
 

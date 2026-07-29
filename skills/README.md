@@ -1,5 +1,5 @@
 ---
-VERSION: "0.2.1"
+VERSION: "0.2.2"
 description: "Metadados da pasta skills do baladapp-ia-config; skills/eduardolagares copiadas pelo install."
 ---
 

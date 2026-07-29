@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.3.0"
+VERSION: "2.4.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -13,7 +13,9 @@ Sub-skill **`avaliar-tarefa`** do passo 7. **Leitura** do doc + diff; **escrita*
 
 Determina o **veredito** que o passo 8 (`pos-avaliacao`) executará no Monday.
 
-**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`). **Proibido:** API/token/GraphQL diretos. Ver [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md).
+**Monday:** só `CallMcpTool` — [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md) (§ documento com blocos + `update_block` / `checked`). **Proibido:** API/token/GraphQL diretos.
+
+**Receita:** `read_docs` (`include_blocks: true`) → para cada checkbox cumprido → `update_doc` com `operation_type: update_block`, `checked: true`.
 
 ## Pré-requisito
 

@@ -6,16 +6,26 @@ description: >-
   publica links no doc Revisar código (tópico Merge requests) e atualiza status/owners.
   Se pode_avancar_para_revisao_manual, move a tarefa para o grupo Revisão manual de código.
 disable-model-invocation: true
-VERSION: "2.2.0"
+VERSION: "2.3.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
 Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday — status, owners, grupo e (se **`precisa_de_correcao`**) doc **Revisar código** (tópico **`## Merge requests`**). Para esse veredito, também **garante MRs** no GitLab (branch → **`master`**) via **MCP GitLab da IDE**.
 
-**GitLab (MRs):** só `CallMcpTool` no servidor GitLab MCP da IDE — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md). **Proibido:** `GITLAB_TOKEN`, REST, scripts de API.
+**GitLab (MRs):** só `CallMcpTool` no servidor GitLab MCP da IDE — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) (**create/update/list**). **Proibido:** `GITLAB_TOKEN`, REST, scripts de API.
 
-**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`) — [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md). **Proibido:** `MONDAY_API_TOKEN`, GraphQL/REST contra `api.monday.com`.
+**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE — [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md) (**status, move, doc**). **Proibido:** `MONDAY_API_TOKEN`, GraphQL/REST contra `api.monday.com`.
+
+## Receitas rápidas
+
+| Ação | Como |
+|------|------|
+| Listar / criar / retarget MR | `gitlab_execute_action` → `merge_request.list` \| `create` \| `update` (`target_branch: master`) — JSON em reference-gitlab |
+| Status subtarefa / consolidado | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
+| Grupo **Revisão manual de código** | `get_board_info` → `group_mm5j20e` → `all_api_write` `move_item_to_group` |
+| Append **Merge requests** | `update_doc` → `add_markdown_content` |
+| Owners merge | `get_board_items_page` (`itemIds`) + `change_item_column_values` (`person.personsAndTeams`) |
 
 **Gate (obrigatório, antes de qualquer mutation):** o passo 3 deve ter entregue **`## Diff`** com **`Status: ok`**. Se `parcial`, `indisponível`, secção ausente ou diff só com **Erro:** em todos os repos → **parar**; **não** alterar status, owners, grupo, doc **Merge requests** nem criar MRs. Emitir `## Pós avaliação` em modo bloqueio (§ abaixo).
 

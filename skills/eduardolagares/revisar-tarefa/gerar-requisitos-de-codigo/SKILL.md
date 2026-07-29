@@ -5,14 +5,16 @@ description: >-
   os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.5.0"
+VERSION: "2.6.0"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
 
 Sub-skill **`gerar-requisitos-de-codigo`** do passo 6. **Escrita** no Monday — **somente** documento da subtarefa **Revisar código** (coluna `monday_doc`). **Não** alterar status de subtarefas nem publicar updates.
 
-**Monday:** só `CallMcpTool` no servidor Monday MCP da IDE (`GetMcpTools` / `mcps/*monday*`). **Proibido:** API/token/GraphQL diretos. Ver [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md).
+**Monday:** só `CallMcpTool` — [../../monday-task-info/reference-mcp-monday.md](../../monday-task-info/reference-mcp-monday.md) (`read_docs`, `update_doc` / `create_doc`). **Proibido:** API/token/GraphQL diretos.
+
+**Receita:** doc existe → `update_doc` + `add_markdown_content`; ausente → `create_doc` (`location: item`, `column_id: monday_doc`, `item_id` da subtarefa Revisar código).
 
 ## Pré-requisito
 
