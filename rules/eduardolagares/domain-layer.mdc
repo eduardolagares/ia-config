@@ -1,6 +1,6 @@
 ---
-VERSION: "0.0.2"
-description: Domain layer routing — query vs use case vs rule object vs scope
+VERSION: "0.1.0"
+description: Domain layer routing — query vs use case vs rule vs infrastructure vs scope
 alwaysApply: true
 ---
 # Domain layer routing
@@ -12,8 +12,10 @@ Escolha **uma** forma por responsabilidade — detalhes nas rules por camada:
 | Filtro/join/order/contagem read-only reutilizável | `app/domains/**/queries/` | `query_objects.mdc` |
 | Mutação ou orquestração (controller action, job) | `app/domains/**/use_cases/` | `use_cases.mdc` |
 | Uma pergunta de domínio → primitivo (`Boolean`, etc.) | `app/domains/**/rules/` | `rule_objects.mdc` |
+| I/O, gems, gateways ou parsers **só deste domínio** | `app/domains/**/infrastructure/` | `infrastructure.mdc` |
 | Filtro one-liner, só no model | `scope` no model | `models.mdc` |
 
 - Controllers/jobs **chamam** use cases / queries — não embutem regras (`controllers.mdc`).
 - Use cases **delegam** gates a rule objects — não duplicam corpo de regra (`use_cases.mdc`).
+- Use cases **chamam** infrastructure para I/O — gems não vazam para `use_cases` / `queries` / `rules` (`infrastructure.mdc`).
 - Naming de métodos/variáveis em domínio → `naming-rails.mdc`.

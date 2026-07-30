@@ -1,0 +1,64 @@
+---
+VERSION: "0.1.0"
+description: Infrastructure de domínio — I/O, gems e integrações locais em app/domains/**/infrastructure/
+alwaysApply: true
+---
+# Domain infrastructure
+
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = verbo + substantivo (`LerPlanilha`, `EmitirNotaFiscal`).
+- **When:** detalhes técnicos, frameworks, I/O ou integrações externas **exclusivos** daquele domínio — para gems e drivers não poluírem `use_cases/`, `queries/`, `rules/`. **Else:** composição AR reutilizável → query object (`query_objects.mdc`); orquestração / mutação → use case (`use_cases.mdc`); pergunta de domínio → rule object (`rule_objects.mdc`).
+- **Name:** `VerbNoun`. **NS:** `DominioX::Infrastructure::Y::`. **Path:** `app/domains/<domain>/infrastructure/**/name.rb` ↔ nested `Y::`.
+
+## Invariants
+
+- **Escopo:** código em `…/infrastructure/` só atende **esse** domínio. Outros domínios **não** importam essas classes diretamente.
+- **Contrato (duck typing):** o use case define o comportamento esperado (ex.: `.call`, `.read`); a classe implementa o método correspondente. Preferir `def self.call(...) = new(...).call` quando o caller for use case.
+- **Gems encapsuladas:** `roo`, clientes HTTP, SDKs, drivers — só nesta pasta. Para fora: dados puros (`Hash`, `Struct`, `Data`, arrays desses) — **nunca** tipos da gem.
+- **Input:** kwargs validados — **nunca** raw `params`.
+- **Sem regra de negócio:** parsing, transporte, mapeamento técnico. Gates de domínio → rule objects; orquestração → use cases.
+
+## O que entra aqui
+
+- File readers / parsers locais (ex.: `LerPlanilha`).
+- Gateways locais (API de terceiro só deste domínio, ex.: emissor de NF em Vendas).
+- Adaptadores de persistência **não-AR** ou mapeamento de dados brutos (CSV → rows). Composição `ActiveRecord::Relation` → `queries/`.
+
+## Do not
+
+- Importar infrastructure de outro domínio; colocar gem/`require` de I/O em use case / query / rule; retornar objetos da gem ao caller; regras de negócio ou `Failure` de domínio aqui; misturar com query objects AR.
+
+## Layout
+
+```text
+app/domains/dominio_vendas/
+├── use_cases/
+├── queries/
+├── rules/
+└── infrastructure/
+    └── ler_planilha.rb  # DominioVendas::Infrastructure::LerPlanilha
+```
+
+## Reference skeleton
+
+```ruby
+# frozen_string_literal: true
+
+module DominioVendas
+  module Infrastructure
+    class LerPlanilha
+      def self.call(caminho:)
+        new(caminho:).call
+      end
+
+      def initialize(caminho:)
+        @caminho = caminho
+      end
+
+      # @return [Array<Hash>]
+      def call
+        # gem (ex.: Roo) só aqui; devolve Array/Hash/Struct/Data
+      end
+    end
+  end
+end
+```

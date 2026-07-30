@@ -1,5 +1,5 @@
 ---
-VERSION: "1.9.1"
+VERSION: "1.11.1"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -75,6 +75,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 |-------|-----------|
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
 | `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
+| `criar-tarefa-no-monday` | Publica no Monday documento funcional pronto (item, doc, subtarefas, branch); entrevista só parâmetros Monday; Mermaid → PNG. |
 | `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
@@ -92,7 +93,8 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 
 | Arquivo | Tema |
 |---------|------|
-| `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule object vs scope. |
+| `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule vs infrastructure vs scope. |
+| `infrastructure.mdc` | Infrastructure de domínio — I/O, gems e integrações locais em `app/domains/**/infrastructure/`. |
 | `naming-rails.mdc` | Naming Rails — PT domínio, EN convenções, métodos, variáveis, colunas, models. |
 | `ruby.mdc` | Estilo Ruby — kwargs, fluxo de controle, sem meta desnecessária; naming → `naming-rails.mdc`. |
 | `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR. |

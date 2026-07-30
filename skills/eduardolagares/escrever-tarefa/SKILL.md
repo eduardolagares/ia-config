@@ -4,14 +4,14 @@ description: >-
   Documento funcional resumido em português brasileiro (Cenário, RFs atómicos encadeados,
   UCs em passos com referência a RF e diagrama Mermaid, Impactos); analista/PO que questiona e
   não presume; entrevista grill-me sem rascunho até entendimento completo;
-  grava em docs/tarefas/; após gravar, pode acionar criar-monday. Use com /escrever-tarefa.
+  grava em docs/tarefas/; após gravar, pode acionar criar-tarefa-no-monday. Use com /escrever-tarefa.
 disable-model-invocation: true
-VERSION: "2.4.0"
+VERSION: "2.4.1"
 ---
 
 # escrever-tarefa
 
-Documento **simples** de atividade em **português brasileiro**. **Sempre** modo entrevista (**grill-me**). Durante a entrevista e até gravar o `.md`, **não** invocar skills além de **grill-me**. Após gravar com aprovação, pode acionar **criar-monday** conforme § Monday abaixo.
+Documento **simples** de atividade em **português brasileiro**. **Sempre** modo entrevista (**grill-me**). Durante a entrevista e até gravar o `.md`, **não** invocar skills além de **grill-me**. Após gravar com aprovação, pode acionar **criar-tarefa-no-monday** conforme § Monday abaixo.
 
 ## Papel: analista de sistemas / product owner
 
@@ -198,14 +198,14 @@ Gravar **quando**:
 
 **Até lá:** só entrevista no chat; **não** criar ficheiro novo por iniciativa própria (modo referência).
 
-### Após gravar — monday (criar-monday)
+### Após gravar — monday (criar-tarefa-no-monday)
 
 **Somente depois** de gravar o `.md` com aprovação explícita do usuário:
 
 1. Confirmar path gravado (uma linha).
 2. **Perguntar:** deseja criar a tarefa no monday? (recomendação: sim, se o documento está pronto para desenvolvimento).
-3. Resposta **positiva** → localizar e seguir **`criar-monday`** (`~/.agents/skills/eduardolagares/criar-monday/SKILL.md` ou equivalente instalado).
-4. Passar o **`.md` gravado** como documentação para **criar-monday** — não reler grill-me nem reabrir entrevista de requisitos.
+3. Resposta **positiva** → localizar e seguir **`criar-tarefa-no-monday`** (`~/.agents/skills/eduardolagares/criar-tarefa-no-monday/SKILL.md` ou equivalente instalado).
+4. Passar o **`.md` gravado** como documentação para **criar-tarefa-no-monday** — não reler grill-me nem reabrir entrevista de requisitos.
 
 Resposta negativa ou silêncio → encerrar; **não** criar tarefa no monday.
 
@@ -283,8 +283,8 @@ Regras adicionais:
 
 ## Proibido
 
-- Invocar **criar-monday** antes de gravar o `.md` ou sem aprovação do usuário.
-- Mencionar ou delegar a skills além de **grill-me** (entrevista) e **criar-monday** (somente pós-gravação aprovada).
+- Invocar **criar-tarefa-no-monday** antes de gravar o `.md` ou sem aprovação do usuário.
+- Mencionar ou delegar a skills além de **grill-me** (entrevista) e **criar-tarefa-no-monday** (somente pós-gravação aprovada).
 - Apresentar rascunho ou pré-visualização do documento **antes** do entendimento completo.
 - Implementar código, migrações ou testes neste fluxo.
 - No **documento gravado**: código, pseudocódigo, nomes de classes/métodos, paths, SQL, endpoints técnicos, seção Telas separada, estimativas de esforço, texto prolixo, ambiguidade (“talvez”, “ou similar”, “TBD” sem placeholder acordado), português europeu (pt-PT), prefixo literal `CONTEXTO OU AÇÃO` / `CENÁRIO OU AÇÃO` nos agrupamentos de RF.
