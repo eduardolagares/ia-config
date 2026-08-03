@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status subtarefa / owners / coluna Ação no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.15.0"
+VERSION: "6.16.0"
 ---
 
 # `/revisar-tarefa`
@@ -32,7 +32,7 @@ Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/too
 | Buscar quadro | `search` (`searchType: BOARD`, `searchTerm` obrigatório) |
 | Metadados board / colunas | `get_board_info` (`boardId: 4571892384`) |
 | Item + subtarefas | `get_board_items_page` |
-| Criar subtarefa Revisar código | `create_item` (`parentItemId` = tarefa; `name: Revisar código`) |
+| Criar subtarefa Revisar código | `create_item` (`parentItemId` = tarefa; `name: Revisar código automaticamente`) |
 | Ler / append / checkbox doc | `read_docs` / `update_doc` |
 | Status / owner | `change_item_column_values` |
 | Diff via MR | `gitlab_execute_action` → `merge_request.list` → `mr_review.raw_diffs` |
@@ -82,15 +82,15 @@ O Monday é **requisito** (passos 1 e 6–8). Sem MCP Monday da IDE não há con
 
 ## Subtarefa **Revisar código** (criar se ausente)
 
-Em **qualquer** passo que precise da subtarefa **Revisar código** (doc, status, owners, resultado):
+Em **qualquer** passo que precise da subtarefa de revisão de código (doc, status, owners, resultado):
 
-1. Resolver via passo 1 ou `get_board_items_page` (`includeSubItems: true`) — títulos aceitos: **`Revisar código`** ou **`Revisão de código`**.
-2. Se **não** existir → **criar** com `create_item` (não parar):
+1. Resolver via passo 1 ou `get_board_items_page` (`includeSubItems: true`) — títulos aceitos (qualquer um = a subtarefa de revisão): **`Revisar código`**, **`Revisar código automático`**, **`Revisar código auto`** ou **`Revisar código automaticamente`**.
+2. Se **nenhum** existir → **criar** com `create_item` (não parar):
 
 ```json
 {
   "boardId": 4571892432,
-  "name": "Revisar código",
+  "name": "Revisar código automaticamente",
   "parentItemId": <item_id_tarefa_principal>,
   "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
 }

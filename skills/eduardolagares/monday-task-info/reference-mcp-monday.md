@@ -217,19 +217,21 @@ Após `read_docs` com `include_blocks: true`, achar `list_item` / CHECK_LIST com
 
 ### Criar subtarefa Revisar código (se ausente)
 
+Títulos aceitos na busca (qualquer um = a subtarefa de revisão): `Revisar código`, `Revisar código automático`, `Revisar código auto`, `Revisar código automaticamente`. Se nenhum existir → criar:
+
 ```json
 {
   "toolName": "create_item",
   "arguments": {
     "boardId": 4571892432,
-    "name": "Revisar código",
+    "name": "Revisar código automaticamente",
     "parentItemId": 12052222930,
     "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
   }
 }
 ```
 
-`parentItemId` = tarefa principal. Usar sempre que `/revisar-tarefa` precisar da subtarefa e ela não existir.
+`parentItemId` = tarefa principal. Usar sempre que `/revisar-tarefa` precisar da subtarefa e nenhum título aceite existir.
 
 ### Criar doc na subtarefa Revisar código
 

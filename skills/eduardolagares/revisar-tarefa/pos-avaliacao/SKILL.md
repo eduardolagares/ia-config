@@ -6,7 +6,7 @@ description: >-
   de subtarefa, owners e coluna Ação conforme o veredito. Em qualquer veredito, anota
   veredito + data no doc Revisar código; se avançar, Ação → Concluir; se reprovar, Ação → Rejeitar.
 disable-model-invocation: true
-VERSION: "2.12.0"
+VERSION: "2.12.1"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -37,7 +37,7 @@ Se o agente não gravou **Ação**, o bug é **não ter gravado Ação**.
 | Ação | Como |
 |------|------|
 | Listar / criar / retarget MR | `gitlab_execute_action` → `merge_request.list` \| `create` \| `update` (`target_branch: master`) — JSON em reference-gitlab |
-| Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código`, status `A fazer`) |
+| Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código automaticamente`, status `A fazer`) |
 | Resolver id da coluna **Ação** | `get_board_info` board `4571892384` → coluna com `title` **`Ação`** (id típico `color_mm5tr97v`) — **antes** de gravar na tarefa |
 | Status subtarefa / coluna **Ação** | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
 | Decisão da revisão (tarefa) | **Só** **Ação** → **`Concluir`** / **`Rejeitar`** — automação Monday faz o resto — ver [reference.md](../reference.md) |

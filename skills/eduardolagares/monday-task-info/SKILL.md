@@ -4,7 +4,7 @@ description: >-
   Passo 1 revisar-tarefa: lê tarefa Monday só via MCP da IDE.
   Use com /monday-task-info.
 disable-model-invocation: true
-VERSION: "2.2.0"
+VERSION: "2.2.1"
 ---
 
 # monday-task-info

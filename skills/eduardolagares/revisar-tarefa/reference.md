@@ -29,22 +29,22 @@ Labels da coluna **Ação:** **`Concluir`**, **`Rejeitar`**.
 
 ## Subtarefa **Revisar código** (criar se ausente)
 
-Sempre que um passo precisar desta subtarefa e ela **não** existir sob a tarefa:
+Sempre que um passo precisar da subtarefa de revisão de código e **nenhum** título aceite existir sob a tarefa:
 
 1. `get_board_items_page` — `itemIds: [<tarefa>]`, `boardId: 4571892384`, `includeSubItems: true`.
-2. Procurar subtarefa **`Revisar código`** ou **`Revisão de código`**.
-3. Ausente → `create_item`:
+2. Procurar subtarefa com título **`Revisar código`**, **`Revisar código automático`**, **`Revisar código auto`** ou **`Revisar código automaticamente`**. Qualquer um = a subtarefa de revisão.
+3. Nenhum → `create_item`:
 
 | Campo | Valor |
 |-------|-------|
 | `boardId` | `4571892432` |
-| `name` | `Revisar código` |
+| `name` | `Revisar código automaticamente` |
 | `parentItemId` | `item_id` da tarefa principal |
 | `columnValues` | `{"status": {"label": "A fazer"}}` (string JSON) |
 
 4. Usar o `id` retornado no restante do fluxo.
 
-**Não** criar outras subtarefas (Executar, Testar, Deploy) por esta regra — só **Revisar código**.
+**Não** criar outras subtarefas (Executar, Testar, Deploy) por esta regra — só a de revisão de código.
 
 ## Decisão da revisão → coluna **Ação** (passo 8)
 

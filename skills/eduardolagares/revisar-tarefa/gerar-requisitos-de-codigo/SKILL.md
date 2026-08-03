@@ -5,7 +5,7 @@ description: >-
   os tópicos Revisão de código (1.M/2.M/3.M) e Requisitos não implementados (R*). Cria doc
   se ausente. Respeita #ignorar em itens existentes.
 disable-model-invocation: true
-VERSION: "2.7.2"
+VERSION: "2.8.0"
 ---
 
 # revisar-tarefa — gerar requisitos de código (passo 6)
@@ -106,14 +106,14 @@ Nenhum.
 
 ### 0. Resolver subtarefa Revisar código
 
-IDs do **passo 1** (markdown no chat). Se ausentes: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código` ou `Revisão de código`.
+IDs do **passo 1** (markdown no chat). Se ausentes: `get_board_items_page` com `itemIds: [<item_id_tarefa>]`, `boardId: 4571892384`, `includeSubItems: true` → subtarefa `Revisar código`, `Revisar código automático`, `Revisar código auto` ou `Revisar código automaticamente`.
 
-Se **não** existir → **criar** ([SKILL.md](../SKILL.md) § Subtarefa Revisar código / [reference.md](../reference.md)):
+Se **nenhum** existir → **criar** ([SKILL.md](../SKILL.md) § Subtarefa Revisar código / [reference.md](../reference.md)):
 
 ```json
 {
   "boardId": 4571892432,
-  "name": "Revisar código",
+  "name": "Revisar código automaticamente",
   "parentItemId": <item_id_tarefa>,
   "columnValues": "{\"status\": {\"label\": \"A fazer\"}}"
 }
