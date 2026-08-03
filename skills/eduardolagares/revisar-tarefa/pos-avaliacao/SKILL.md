@@ -6,7 +6,7 @@ description: >-
   de subtarefa, owners e coluna Ação conforme o veredito. Em qualquer veredito, anota
   veredito + data no doc Revisar código; se avançar, Ação → Concluir; se reprovar, Ação → Rejeitar.
 disable-model-invocation: true
-VERSION: "2.9.0"
+VERSION: "2.10.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -25,8 +25,9 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtaref
 |------|------|
 | Listar / criar / retarget MR | `gitlab_execute_action` → `merge_request.list` \| `create` \| `update` (`target_branch: master`) — JSON em reference-gitlab |
 | Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código`, status `A fazer`) |
+| Resolver id da coluna **Ação** | `get_board_info` board `4571892384` → coluna com `title` **`Ação`** (id típico `color_mm5tr97v`) — **antes** de gravar na tarefa |
 | Status subtarefa / coluna **Ação** | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
-| Decisão da revisão (tarefa) | Coluna **Ação** (`color_mm5tr97v`) → **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **não** alterar `status_1` — ver [reference.md](../reference.md) |
+| Decisão da revisão (tarefa) | Coluna **Ação** → **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **nunca** `status_1` nem nomes de grupo — ver [reference.md](../reference.md) |
 | Append **Merge requests** / resultado | `update_doc` → `add_markdown_content` |
 | Owners merge | `get_board_items_page` (`itemIds`) + `change_item_column_values` (`person.personsAndTeams`) |
 
@@ -48,10 +49,28 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtaref
 
 | Entidade | Board | Coluna decisão / status | Coluna owner |
 |----------|-------|-------------------------|--------------|
-| Tarefa principal | `4571892384` | `color_mm5tr97v` (**Ação**) | — |
+| Tarefa principal | `4571892384` | **Ação** (resolver id — típico `color_mm5tr97v`) | — |
 | Subtarefas | `4571892432` | `status` | `person` |
 
 Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_items_page`. Se **Revisar código** estiver ausente → **criar** ([../SKILL.md](../SKILL.md) § Subtarefa Revisar código) antes de doc/status/owners.
+
+### Resolver coluna **Ação** (obrigatório antes de gravar na tarefa)
+
+`status_1` (**Status consolidado**) **não existe** mais no board. A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. Nomes de **grupo** (ex.: `Revisão manual de código`, `QA`) **não** são labels de coluna — a automação do Monday move o grupo **depois** de gravar **Ação**.
+
+**Antes** de qualquer `change_item_column_values` na tarefa principal:
+
+1. Chamar `get_board_info` com `boardId: 4571892384`.
+2. Em `columns`, achar a coluna com `title` exatamente **`Ação`** (tipo status). Guardar o `id` (ex.: `color_mm5tr97v`).
+3. Confirmar que os labels incluem **`Concluir`** e **`Rejeitar`**.
+4. Usar **esse** `id` no JSON: `{"<id>": {"label": "Concluir"}}` ou `"Rejeitar"`.
+
+| Se… | Então… |
+|-----|--------|
+| Coluna `title: Ação` encontrada | Usar o `id` retornado (mesmo que ≠ `color_mm5tr97v`) |
+| `color_mm5tr97v` existe mas `title` ≠ `Ação` | **Ignorar** o id fixo; seguir só pelo título **Ação** |
+| Nenhuma coluna `title: Ação` | **Parar** a mutation da tarefa; reportar erro; **não** tentar `status_1`, `status`, outro `color_*`, nem `move_item_to_group` |
+| Tentação de gravar `status_1` / label de grupo | **Proibido** — é o bug clássico desta skill |
 
 ## Entrada
 
@@ -66,9 +85,10 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
 2. **Sempre** (§ **Merge requests — comum**): GitLab (criar/reutilizar MRs) → doc Monday (**Merge requests**).
 3. **Sempre** (§ **C — Resultado da revisão**): anotar **veredito + data** no doc **Revisar código**. **Não** pular por veredito.
-4. Executar o bloco de status/owners/**Ação** **do veredito** (§ abaixo) — **depois** dos MRs e do resultado.
-5. Status subtarefa / **Ação**: `change_item_column_values` com `{"label": "<texto exato>"}`.
-6. Reportar cada mutation no chat (sucesso/erro por item).
+4. **Resolver coluna Ação** (§ acima) via `get_board_info` — **antes** do passo 5.
+5. Executar o bloco de status/owners/**Ação** **do veredito** (§ abaixo) — **depois** dos MRs, do resultado e da resolução do id.
+6. Status subtarefa / **Ação**: `change_item_column_values` com `{"label": "<texto exato>"}` no **id resolvido**.
+7. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
 
@@ -224,9 +244,9 @@ Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxe
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | **Adicionar** owner(s) da subtarefa **Executar** à coluna `person` (merge — **não** remover owners existentes) |
 | 2 | Subtarefa **Revisar código** | Status → **`Aguardando correção`** |
-| 3 | Tarefa principal | Coluna **Ação** (`color_mm5tr97v`) → **`Rejeitar`** |
+| 3 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Rejeitar`** |
 
-**Não** alterar `status_1` (status consolidado). **Não** chamar `move_item_to_group`.
+**Não** alterar `status_1` (coluna removida / legado). **Não** chamar `move_item_to_group`. **Não** usar nome de grupo como label.
 
 **Owner merge (passo 1):**
 
@@ -244,18 +264,18 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data) — **mesmo** bloco comum.
 
-**Obrigatório** preencher coluna **Ação** com **`Concluir`**. **Não** alterar `status_1`. **Não** chamar `move_item_to_group` / `get_board_info` para grupo. **Proibido** neste veredito: status consolidado **QA**, **Aguardando testes**, **Aguardando deploy**, ou qualquer outro destino de testes/deploy via `status_1`.
+**Obrigatório** preencher coluna **Ação** com **`Concluir`** (id do § Resolver). **Não** alterar `status_1`. **Não** chamar `move_item_to_group`. `get_board_info` é **obrigatório** para resolver o id da coluna **Ação** — **não** para escolher grupo. **Proibido** neste veredito: gravar labels de grupo (`Revisão manual de código`, `QA`, `Aguardando testes`, `Aguardando deploy`) em qualquer coluna.
 
-**Ordem (após MRs + § C):** subtarefa Revisar código → coluna **Ação** da tarefa principal.
+**Ordem (após MRs + § C + resolver Ação):** subtarefa Revisar código → coluna **Ação** da tarefa principal.
 
 | # | Alvo | Ação |
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | Status → **`Concluída`** |
-| 2 | Tarefa principal | Coluna **Ação** (`color_mm5tr97v`) → **`Concluir`** |
+| 2 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Concluir`** |
 
 **Não** alterar subtarefa **Testar**, **Executar** nem **Deploy**.
 **Não** chamar `move_item_to_group`.
-**Não** alterar `status_1`.
+**Não** alterar `status_1` nem inventar label com nome de grupo.
 
 ## Exemplo MCP — status subtarefa
 
@@ -269,6 +289,8 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 ## Exemplo MCP — coluna Ação (tarefa principal)
 
+Id típico `color_mm5tr97v` — **substituir** pelo id retornado em § Resolver se diferente:
+
 ```json
 {
   "boardId": 4571892384,
@@ -277,7 +299,7 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 }
 ```
 
-Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
+Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice; **não** cair em `status_1`.
 
 ## Saída obrigatória (chat)
 
@@ -307,8 +329,10 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 |------|-------|---------|---------------|------------|-----------|
 | Revisar código | 4571892432 | … | doc Resultado | veredito + data | ok |
 | Revisar código | 4571892432 | … | status | Concluída | ok |
-| Tarefa | 4571892384 | … | color_mm5tr97v (Ação) | Concluir | ok |
+| Tarefa | 4571892384 | … | \<id\> (Ação) | Concluir | ok |
 ```
+
+Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)` — **nunca** `status_1`.
 
 ## Erros
 
@@ -319,6 +343,8 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 | Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
 | MCP GitLab indisponível | Parar antes de Monday (Ação/status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
+| `get_board_info` sem coluna `title: Ação` | Reportar; **não** gravar na tarefa; status/doc da subtarefa já feitos ficam; **proibido** fallback `status_1` |
+| `change_item_column_values` com `status_1` / coluna inexistente | Tratar como bug do agente: re-resolver **Ação** e repetir **só** com o id correto — **não** sugerir restaurar `status_1` nem mover grupo manualmente como “plano B” da skill |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; ações do veredito opcionais |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código no SKILL pai); se `create_item` falhar → parar |
@@ -332,9 +358,11 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)
 - Mudar status de **Executar**, **Testar** ou **Deploy** (salvo pedido explícito)
-- Em qualquer veredito: alterar `status_1` (status consolidado) — a decisão vai na coluna **Ação**
+- Em qualquer veredito: alterar `status_1` (status consolidado removido) — a decisão vai na coluna **Ação**
+- Em qualquer veredito: gravar label com **nome de grupo** (`Revisão manual de código`, `QA`, …) em qualquer coluna
 - Em qualquer veredito: **`move_item_to_group`**
 - Em `pode_avancar_para_revisao_manual`: status consolidado **QA**, **Aguardando testes**, **Aguardando deploy** (via `status_1`)
+- Sugerir “restaurar coluna `status_1`” ou “mover grupo manualmente” como substituto de gravar **Ação**
 
 ## Skills relacionadas
 

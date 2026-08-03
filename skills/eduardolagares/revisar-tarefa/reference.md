@@ -18,13 +18,15 @@ Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `re
 | Uso | Coluna / id típico |
 |-----|-------------------|
 | Branch | `texto` |
-| **Ação** (decisão da revisão) | `color_mm5tr97v` |
-| Status consolidado (tarefa) | `status_1` — **não** alterar no passo 8 |
+| **Ação** (decisão da revisão) | Resolver por `title: Ação` — id típico `color_mm5tr97v` |
+| Status consolidado (legado) | `status_1` — **removida**; **nunca** gravar |
 | Status subtarefa | `status` |
 | Documento | `monday_doc` |
 | Owner subtarefa | `person` |
 
-Labels da coluna **Ação** (`color_mm5tr97v`): **`Concluir`**, **`Rejeitar`**.
+Labels da coluna **Ação:** **`Concluir`**, **`Rejeitar`**.
+
+**Passo 8 — resolver antes de gravar:** `get_board_info(4571892384)` → coluna com título **`Ação`** → usar o `id` retornado. Se ausente → erro (sem fallback). Nomes de grupo (`Revisão manual de código`, `QA`, …) **não** são labels.
 
 ## Subtarefa **Revisar código** (criar se ausente)
 
@@ -47,14 +49,14 @@ Sempre que um passo precisar desta subtarefa e ela **não** existir sob a tarefa
 
 ## Decisão da revisão → coluna **Ação** (passo 8)
 
-**Regra:** após a decisão, alterar **só** a coluna **Ação** (`color_mm5tr97v`) na tarefa principal — **nunca** `status_1` nem `move_item_to_group`.
+**Regra:** após a decisão, alterar **só** a coluna **Ação** (id via `get_board_info` / título) na tarefa principal — **nunca** `status_1`, **nunca** `move_item_to_group`, **nunca** label = nome de grupo.
 
 | Veredito | Label **Ação** |
 |----------|----------------|
 | `pode_avancar_para_revisao_manual` (aprovou) | **`Concluir`** |
 | `precisa_de_correcao` (reprovou) | **`Rejeitar`** |
 
-Exemplo MCP:
+Exemplo MCP (id típico; substituir se `get_board_info` devolver outro):
 
 ```json
 {

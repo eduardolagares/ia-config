@@ -1,5 +1,5 @@
 ---
-VERSION: "1.13.0"
+VERSION: "1.14.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -82,7 +82,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 | `refatorar-codigo` | Refatora o diff (branch vs `master`, alterações locais ou paths indicados) para Clean & Short Code; aplica em disco, mantém comportamento. |
 | `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday só via MCP da IDE. |
-| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab (MCP da IDE), code review, verificação, doc Revisar código, avaliação e pós-avaliação (status/MRs; avanço → grupo **Revisão manual de código**). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
+| `revisar-tarefa` | Fluxo Monday em 8 passos: contexto, requisitos, diff GitLab (MCP da IDE), code review, verificação, doc Revisar código, avaliação e pós-avaliação (MRs + coluna **Ação** Concluir/Rejeitar; automação move o grupo). Substitui `agendar-revisao-tarefa` e `executar-revisao-tarefa`. |
 
 No **Cursor**, `/revisar-tarefa` exige **Monday** e **GitLab** ligados em **Settings → MCP** (passo 1 via `monday-task-info`; passos 3 e 8 via MCP GitLab da IDE — sem tokens nem scripts de API).
 

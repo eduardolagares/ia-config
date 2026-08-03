@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status subtarefa / owners / coluna Ação no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.12.0"
+VERSION: "6.13.0"
 ---
 
 # `/revisar-tarefa`
@@ -242,8 +242,8 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 | Veredito | Ações |
 |----------|--------|
 | *(qualquer)* | **MR** por repo + links no doc **Merge requests**; anota **veredito + data** no doc **Revisar código** (`## Resultado da revisão`) — **antes** das ações abaixo |
-| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; coluna **Ação** → **`Rejeitar`** (**não** alterar `status_1`; **proibido** `move_item_to_group`) |
-| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; coluna **Ação** → **`Concluir`** (**não** alterar `status_1`; **proibido** QA / testes / deploy / `move_item_to_group`) |
+| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; coluna **Ação** → **`Rejeitar`** (resolver id por título via `get_board_info`; **nunca** `status_1` / nome de grupo / `move_item_to_group`) |
+| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; coluna **Ação** → **`Concluir`** (mesmo resolve; **nunca** `status_1` / nome de grupo / QA / testes / deploy / `move_item_to_group`) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 

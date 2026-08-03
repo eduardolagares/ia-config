@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.6.0"
+VERSION: "2.6.1"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -198,7 +198,7 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | Veredito | Passo 8 (se `Status: ok`) |
 |----------|---------------------------|
 | `precisa_de_correcao` | § Correção — coluna **Ação** → **Rejeitar** |
-| `pode_avancar_para_revisao_manual` | § Aprovação — coluna **Ação** → **Concluir** (**não** alterar `status_1`; **proibido** QA / testes / deploy / `move_item_to_group`) |
+| `pode_avancar_para_revisao_manual` | § Aprovação — coluna **Ação** → **Concluir** (resolver id por título; **nunca** `status_1` / nome de grupo / QA / testes / deploy / `move_item_to_group`) |
 
 ## Erros
 
