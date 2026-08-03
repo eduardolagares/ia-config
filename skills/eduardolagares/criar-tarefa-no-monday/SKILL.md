@@ -7,7 +7,7 @@ description: >-
   Mermaid em PNG antes de adicionar ao documento. Use com
   /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.1.1"
+VERSION: "1.1.3"
 ---
 
 # criar-tarefa-no-monday
@@ -50,13 +50,13 @@ Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 | 1 | Título do item | Nome da tarefa no Monday (pode derivar do `# Título` do documento — confirmar) |
 | 2 | Quadro | Ex.: Dia a dia |
 | 3 | Grupo | Ex.: Revisão de código |
-| 4 | Responsável(is) | Quem fica em **Owner** das subtarefas |
+| 4 | Responsável(is) | Owner de **Executar** e **Corrigir** (as demais subtarefas têm owner fixo — ver § Atribuição) |
 | 5 | Branch | Valor da coluna **Branch** (`texto`) |
 | 6 | Tipo | Coluna **Tipo** (`label`) — ex.: FUNCIONALIDADE |
 | 7 | Solicitante | Coluna **Solicitante** (`label6`) — ex.: SÓCIO TORCEDOR |
 | 8 | Status consolidado | Coluna **Status consolidado** (`status_1`) — ex.: Aguardando revisão de código |
 | 9 | Prioridade | Coluna **Priority** (`priority__1`) — opcional |
-| 10 | Subtarefas | Nomes, responsável por subtarefa, status inicial |
+| 10 | Subtarefas | Nomes + status inicial; owners conforme § Atribuição (só perguntar se o utilizador quiser override) |
 
 ### Como conduzir
 
@@ -84,7 +84,7 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 …
 ```
 
-**Subtarefas:** se o utilizador não especificar, manter em aberto e **perguntar** a lista completa — não assumir `Executar`, `Revisar código`, `Testar`, `Corrigir`, `Fazer deploy` sem confirmação.
+**Subtarefas:** se o utilizador não especificar, manter em aberto e **perguntar** a lista completa — não assumir `Executar`, `Revisar código automaticamente`, `Revisar código manualmente`, `Testar`, `Corrigir`, `Fazer deploy` sem confirmação. Owners das subtarefas padrão: ver § Atribuição (aplicar automaticamente salvo override explícito).
 
 **Título:** pode sugerir a partir do documento; o utilizador confirma ou corrige.
 
@@ -157,7 +157,19 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 ### Atribuição
 
 - Item principal do Dia a dia **não** tem coluna Person direta; responsável reflete nas subtarefas (`person`).
-- Perguntar se o responsável é o mesmo em todas as subtarefas ou por subtarefa.
+- Resolver `user_id` via `list_users_and_teams` / `get_user_context` pelo nome — **nunca** inventar IDs.
+- Com a lista padrão de subtarefas, aplicar **automaticamente** (salvo override explícito do utilizador):
+
+| Subtarefa | Owner (`person`) |
+|-----------|------------------|
+| `Revisar código automaticamente` | Eduardo Lagares |
+| `Revisar código manualmente` | Eduardo Lagares |
+| `Fazer deploy` | Eduardo Lagares |
+| `Testar` | João Sanches |
+| `Executar` | perguntar (#4) |
+| `Corrigir` | perguntar (#4) |
+
+- Na entrevista / confirmação final, **mostrar** estes owners no resumo; só mudar se o utilizador pedir.
 
 ## Saída no chat (obrigatória)
 
