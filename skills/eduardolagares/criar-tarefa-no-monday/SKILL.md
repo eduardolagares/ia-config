@@ -1,247 +1,216 @@
 ---
 name: criar-tarefa-no-monday
 description: >-
-  Cria tarefa no board Dia a Dia do monday.com no grupo Escrevendo,
-  com subtarefas fixas (Executar, Revisar código, Testar, Corrigir, Deploy),
-  coluna Ação = Avaliar na principal e status A fazer em todas as subtarefas,
-  responsáveis definidos e documento anexado a partir de um .md (Mermaid
-  renderizado como imagem). Use com /criar-tarefa-no-monday ou quando escrever-tarefa
-  acionar após gravar.
+  Cria tarefa no Monday.com a partir de documento funcional pronto (item,
+  documento, subtarefas, branch, colunas) via MCP Monday. No Dia a dia: grupo
+  Escrevendo e coluna Ação = Avaliar (fixos). Entrevista só parâmetros do
+  Monday — não redige o documento. Converte qualquer gráfico Mermaid em PNG
+  antes de adicionar ao documento. Use com /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.2.1"
+VERSION: "1.3.0"
 ---
 
 # criar-tarefa-no-monday
 
-Cria uma **tarefa no monday.com** (board **Dia a Dia**) a partir de um documento funcional `.md`. Usa o MCP **monday** (`plugin-monday-crm-monday`).
+Publica no Monday uma tarefa já especificada: item no quadro, documento na coluna **Documento**, subtarefas, branch e metadados.
 
-## Pré-requisitos
+## Entrada: documento pronto
 
-1. MCP monday conectado — se falhar autenticação, orientar OAuth (`/mcp` → conectar `monday`).
-2. **Documentação obrigatória:** caminho de um `.md` legível (parâmetro da invocação ou pergunta única pedindo o path).
-3. **Título e Branch — obrigatório pedir ao usuário:**
-   - **Título** da tarefa no monday (nome do item).
-   - **Branch** Git (valor da coluna Branch).
+O **conteúdo funcional** (UCs, telas, RFs) vem **pronto** — ficheiro (`docs/tarefas/…`), texto colado ou output de `/escrever-tarefa`. **Esta skill não entrevista** para redigir o documento.
 
-**Jamais** inventar, inferir ou usar valores sugeridos por conta própria — mesmo que o `.md`, o cenário ou o slug do arquivo sugiram um nome. Pode **recomendar** no chat, mas **só criar** depois que o usuário informar **explicitamente** título e branch (na mesma mensagem ou em resposta à pergunta).
+| Responsabilidade | Skill |
+|------------------|--------|
+| Redigir documento funcional | `escrever-tarefa` |
+| Parâmetros Monday + publicar | `criar-tarefa-no-monday` |
 
-Uma pergunta de cada vez quando faltar dado; incluir recomendação quando o contexto sugerir valor — **sem** substituir a resposta do usuário.
+Sem documento na invocação → pedir path, texto ou encaminhar para `/escrever-tarefa`. **Não** inventar UCs/RFs nem fazer grill do conteúdo.
 
-**Bloqueio:** se o usuário disser apenas “pode criar” / “cria no monday” sem título e branch → **perguntar primeiro**; **não** chamar `create_item` até ter os dois valores confirmados pelo usuário.
+**Regra central:** entrevistar **só** os parâmetros Monday antes de criar. Não reutilizar valores de sessões anteriores (quadro, grupo, branch, subtarefas, responsável, tipo, etc.).
 
-## Board e colunas (defaults)
+**Mermaid:** o Monday **não** renderiza Mermaid. **Qualquer** gráfico Mermaid do documento (flowchart, sequenceDiagram, etc.) deve ser **convertido em imagem PNG antes** de ser adicionado ao documento — nunca colar blocos ` ```mermaid ` no `create_doc` nem no markdown enviado ao Monday.
 
-| Escopo | Board ID | Observação |
-|--------|----------|------------|
-| Tarefa principal | `4571892384` | Dia a Dia |
-| Subtarefas | `4571892432` | board filho (sub_items) |
+## Monday — conexão
 
-Antes de criar, chamar `get_board_info` nos dois boards se colunas ou grupos não estiverem no contexto. Resolver por **título** da coluna ou do grupo:
+1. `GetMcpTools` para descobrir o servidor Monday disponível (`plugin-monday-crm-monday` ou equivalente).
+2. Se `serverStatus` ≠ `ready` → parar e pedir autenticação MCP.
+3. `get_user_context` — identificar o utilizador atual (`id`, `name`) para atribuição.
 
-| Coluna / Grupo | Board | Uso |
-|--------|-------|-----|
-| **Escrevendo** | principal | grupo — **sempre** criar a tarefa principal aqui (`groupId`) |
-| Branch | principal | texto — branch informada pelo usuário |
-| **Ação** | principal | status — label **`Avaliar`** (substitui o antigo Status consolidado) |
-| Status | subtarefas | status — label **`A fazer`** |
-| person | subtarefas | responsáveis (tipo people) |
+Antes de `create_item` / `change_item_column_values`, chamar `get_board_info` no quadro escolhido para obter `groupId`, `column` ids e labels de status.
 
-**Descontinuado no board (não usar):** grupo **Aguardando atribuição**; coluna **Status consolidado**.
+## Entrevista — só parâmetros Monday
 
-Se `~/.config/revisar-tarefa/monday.env` existir, pode complementar IDs — **não** substituir confirmação de título/branch pelo usuário.
+**Todas as perguntas entrevistáveis de uma vez** na primeira mensagem da entrevista (Grupo e Ação são fixos — ver checklist). O utilizador pode responder **várias de uma vez** (ou todas).
 
-## Subtarefas fixas (ordem obrigatória)
+**Fora do âmbito desta entrevista:** escopo funcional, UCs, telas, RFs, regras de negócio — já vêm no documento pronto.
 
-Criar **exatamente** estas cinco subtarefas, nesta ordem, sob a tarefa principal:
+Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 
-1. **Executar**
-2. **Revisar código**
-3. **Testar**
-4. **Corrigir**
-5. **Deploy**
+| # | Campo | Exemplo de pergunta |
+|---|--------|---------------------|
+| 1 | Título do item | Nome da tarefa no Monday (pode derivar do `# Título` do documento — confirmar) |
+| 2 | Quadro | Ex.: Dia a dia |
+| 3 | Grupo | **Fixo:** **Escrevendo** — não perguntar; não usar **Aguardando atribuição** |
+| 4 | Responsável(is) | Owner de **Executar** e **Corrigir** (as demais subtarefas têm owner fixo — ver § Atribuição) |
+| 5 | Branch | Valor da coluna **Branch** (`texto`) |
+| 6 | Tipo | Coluna **Tipo** (`label`) — ex.: FUNCIONALIDADE |
+| 7 | Solicitante | Coluna **Solicitante** (`label6`) — ex.: SÓCIO TORCEDOR |
+| 8 | **Ação** | **Fixo:** label **Avaliar** — não perguntar; substitui o antigo **Status consolidado** (descontinuado) |
+| 9 | Prioridade | Coluna **Priority** (`priority__1`) — opcional |
+| 10 | Subtarefas | Nomes + status inicial; owners conforme § Atribuição (só perguntar se o utilizador quiser override) |
 
-Cada subtarefa: status **`A fazer`**.
+**Defaults obrigatórios do board (não entrevistar, não sobrescrever):** grupo **Escrevendo**; coluna **Ação** = **Avaliar**. **Proibido** criar em **Aguardando atribuição** ou gravar **Status consolidado**.
 
-## Responsáveis (coluna person nas subtarefas)
+### Como conduzir
 
-Resolver IDs com `list_users_and_teams`:
+1. **Primeira mensagem:** listar os campos **entrevistáveis** (1–2, 4–7, 9–10) com pergunta + recomendação quando o contexto sugerir (ex.: título a partir do documento). Incluir no resumo, como já definidos: Grupo = **Escrevendo**, Ação = **Avaliar**. Não omitir campos “para perguntar depois”.
+2. **Após cada resposta do utilizador:** atualizar o estado e mostrar de novo:
+   - **Respondidos** — campo + valor confirmado (incluir Grupo e Ação como fixos)
+   - **Em aberto** — campos ainda sem resposta (com a pergunta / recomendação)
+3. Aceitar respostas parciais: o utilizador pode preencher um, vários ou todos os campos abertos na mesma mensagem.
+4. Repetir o passo 2 até não restar obrigatório em aberto. Prioridade (#9) pode ficar vazia se o utilizador disser que não quer. **Não** pedir Grupo nem Ação.
+5. **Confirmação final** (só quando o checklist obrigatório estiver completo): resumo dos parâmetros Monday (com Grupo **Escrevendo** e Ação **Avaliar**) + “posso criar?”. Não criar sem esta confirmação explícita.
 
-| Subtarefa | Responsáveis |
-|-----------|--------------|
-| Executar | _(nenhum fixo — não atribuir)_ |
-| Revisar código | **Eduardo Lagares** |
-| Testar | **Adão Teodoro de Morais Neto** **e** **João Sanches** |
-| Corrigir | _(nenhum fixo — não atribuir)_ |
-| Deploy | **Eduardo Lagares** |
-
-Formato people (Monday):
-
-```json
-{"person": {"personsAndTeams": [{"id": "<user_id>", "kind": "person"}]}}
-```
-
-Vários responsáveis na mesma subtarefa: incluir todos no array `personsAndTeams`.
-
-## Ação (tarefa principal) e Status (subtarefas)
-
-| Escopo | Coluna | Label |
-|--------|--------|-------|
-| Tarefa principal | **Ação** | **`Avaliar`** |
-| Cada subtarefa | Status | **`A fazer`** |
-
-Definir na criação (`columnValues` em `create_item`) ou em seguida com `change_item_column_values` — **nunca** deixar a principal sem **Ação = Avaliar** nem subtarefa sem **Status = A fazer**.
-
-Exemplo coluna Ação (principal) — usar o `column_id` real resolvido via `get_board_info`:
-
-```json
-{"<column_id_acao>": {"label": "Avaliar"}}
-```
-
-Exemplo coluna status (subtarefa):
-
-```json
-{"status": {"label": "A fazer"}}
-```
-
-Usar o `column_id` real de cada board. Se `change_item_column_values` falhar por label inexistente, reportar erro — **não** inventar índice. **Não** escrever em **Status consolidado**.
-
-## Grupo
-
-A **tarefa principal** deve ser criada **sempre** no grupo **`Escrevendo`**.
-
-1. Obter o `groupId` desse grupo via `get_board_info` (board principal `4571892384`), resolvendo pelo título exato.
-2. Passar `groupId` em `create_item` ao criar a tarefa principal.
-3. Se o grupo não existir ou o `groupId` não for encontrado, reportar erro — **não** criar em outro grupo (inclui **não** usar **Aguardando atribuição**).
-
-## Documento da tarefa
-
-A documentação `.md` vira o **doc monday** no campo **Documento** da **tarefa principal** — e **somente** ali (não colar Mermaid cru).
-
-### Local do documento (obrigatório)
-
-- Criar o documento **exclusivamente** no campo **Documento** da tarefa principal (`location: item`, `item_id` da tarefa principal).
-- **Proibido** criar documentos em subtarefas ou em qualquer subelemento.
-- **Proibido** criar documentos soltos na área de trabalho (workspace) ou fora do item principal.
-
-### Mermaid → imagem (obrigatório)
-
-Para **cada** bloco ` ```mermaid ` no `.md`:
-
-1. Extrair o código Mermaid.
-2. **Gerar imagem PNG** — preferir render local:
-   ```bash
-   npx -y @mermaid-js/mermaid-cli -i /tmp/diagram-N.mmd -o /tmp/diagram-N.png -b transparent
-   ```
-3. **Substituir** o bloco no conteúdo do doc por referência visual — **nunca** colar o texto Mermaid no monday.
-4. Inserir imagem no doc monday:
-   - **Preferência:** upload via `get_asset_upload_url` → PUT do PNG → usar `asset_id` em `update_doc` (`create_block`, `block_type: image`) ou URL pública resultante.
-   - **Fallback** se CLI/upload falhar: [mermaid.ink](https://mermaid.ink) — `![UC n — fluxo](https://mermaid.ink/img/<base64url do código mermaid>)` no markdown.
-
-Montar o markdown final na ordem do arquivo original: texto → imagem → texto → imagem…
-
-### Criar doc no item
-
-Após criar a tarefa principal (`item_id` conhecido), preencher **apenas** o campo **Documento** dessa tarefa:
-
-```text
-create_doc — location: item, item_id: <id da tarefa principal>, doc_name: <Título>, markdown: <conteúdo processado>
-```
-
-Se houver imagens via `asset_id`, alternar `add_markdown_content` (texto) e `create_block` (imagem) com `update_doc` — **sempre** no doc da tarefa principal.
-
-## Fluxo de execução
-
-```
-1. Ler .md (parâmetro)
-2. Perguntar Título e Branch (se faltarem) — aguardar resposta; nunca preencher por conta própria
-3. get_board_info — boards principal e subtarefas; resolver grupo **Escrevendo**, coluna **Ação** e Status das subtarefas
-4. list_users_and_teams — Eduardo Lagares, João Sanches, Adão Teodoro de Morais Neto
-5. Processar .md — Mermaid → PNG/imagem
-6. create_item — tarefa principal (board 4571892384)
-   - groupId = **Escrevendo** (obrigatório)
-   - name = Título
-   - columnValues: Branch + Ação = **Avaliar**
-7. Para cada subtarefa (parentItemId = item principal):
-   - create_item — name = nome fixo da subtarefa; columnValues: Status = **A fazer**
-   - change_item_column_values — Status = **A fazer** (se não definido na criação)
-   - change_item_column_values — person (quando aplicável)
-8. create_doc / update_doc — documento no campo Documento da tarefa principal (nunca em subtarefas nem solto no workspace)
-9. Responder no chat com URL da tarefa e resumo
-```
-
-## MCP — ferramentas
-
-Ler schema em `mcps/plugin-monday-crm-monday/tools/` antes de chamar.
-
-| Etapa | Ferramenta |
-|-------|------------|
-| Board/colunas | `get_board_info` |
-| Usuários | `list_users_and_teams` |
-| Item / subtarefa | `create_item` |
-| Colunas | `change_item_column_values` |
-| Doc | `create_doc`, `update_doc` |
-| Imagem | `get_asset_upload_url`, `finalize_asset_upload` |
-
-Servidor MCP: **`plugin-monday-crm-monday`**.
-
-## Saída no chat
-
-Após sucesso:
+Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 
 ```markdown
-## Tarefa monday criada
+### Parâmetros Monday
 
-| Campo | Valor |
-|-------|-------|
-| Título | … |
-| Grupo | Escrevendo |
-| Branch | … |
-| Ação | Avaliar (principal) |
-| Status subtarefas | A fazer |
-| URL | … |
-| Doc | … (se disponível) |
+**Respondidos:**
+- Título: …
+- Quadro: …
+…
 
-### Subtarefas
-
-| Nome | Status | Responsáveis |
-|------|--------|--------------|
-| Executar | A fazer | — |
-| … | … | … |
+**Em aberto:**
+- 5. Branch — valor da coluna Branch? (ex.: `feat/…`)
+- 6. Tipo — …?
+…
 ```
 
-Se alguma etapa falhar após criar o item, reportar o que foi criado e o que falhou — **não** simular sucesso.
+**Subtarefas:** se o utilizador não especificar, manter em aberto e **perguntar** a lista completa — não assumir `Executar`, `Revisar código automaticamente`, `Revisar código manualmente`, `Testar`, `Corrigir`, `Fazer deploy` sem confirmação. Owners das subtarefas padrão: ver § Atribuição (aplicar automaticamente salvo override explícito).
 
-## Invocação
+**Título:** pode sugerir a partir do documento; o utilizador confirma ou corrige.
+
+## Referência — quadro Dia a dia (só após confirmação do utilizador)
+
+Valores usados no time; **só aplicar se o utilizador confirmar** este quadro:
+
+| Campo | ID / coluna |
+|-------|-------------|
+| Board | Dia a dia — `4571892384` |
+| Grupo **Escrevendo** | resolver `groupId` via `get_board_info` pelo título exato **Escrevendo** |
+| Branch | `texto` |
+| Documento | `monday_doc` |
+| **Ação** | resolver `column_id` via `get_board_info` pelo título **Ação** — label **`Avaliar`** |
+| Tipo | `label` |
+| Solicitante | `label6` |
+| Subtarefas | coluna `subelementos` → board `4571892432` |
+| Owner subtarefa | coluna `person` no subitem |
+| Status subtarefa | coluna `status` — label `A fazer` |
+
+**Descontinuado (não usar):** grupo **Aguardando atribuição**; coluna **Status consolidado** (`status_1`).
+
+## Diagramas Mermaid no documento (obrigatório)
+
+**Qualquer** gráfico Mermaid — UC, fluxo, sequência, estado, etc. — deve ser **renderizado como PNG antes** de entrar no documento Monday. O Monday só exibe imagem; código Mermaid aparece como bloco de código sem renderização.
+
+**Proibido:** adicionar ao documento blocos ` ```mermaid `, texto Mermaid cru ou diagramas não convertidos.
+
+### Renderizar
+
+Para cada diagrama:
+
+```bash
+curl -sS -X POST "https://kroki.io/mermaid/png" \
+  -H "Content-Type: text/plain" \
+  --data-binary @diagrama.mmd \
+  -o diagrama.png
+```
+
+Alternativa para `public_url` no Monday: URL Kroki comprimida (base64url + deflate) — ver [reference-mermaid-monday.md](reference-mermaid-monday.md).
+
+### Inserir no documento
+
+1. **Não** enviar blocos ` ```mermaid ` no `create_doc` / `add_markdown_content`.
+2. Criar documento só com texto (títulos, prosa, RFs).
+3. `read_docs` com `include_blocks: true` — localizar o bloco de texto **antes** de cada diagrama (ex.: prosa do UC).
+4. `update_doc` → `create_block` com `block_type: "image"`, `public_url` (Kroki) ou `asset_id`, `after_block_id` = id do bloco de texto do UC.
+5. **Não** usar só `replace_block` no bloco mermaid antigo — reposiciona imagens no fim do doc. Preferir `create_block` com `after_block_id`.
+6. Verificar posição: imagem imediatamente após a prosa de cada UC, antes do próximo título.
+
+## Fluxo de criação
 
 ```
-/criar-tarefa-no-monday docs/tarefas/2026-06-16-173000-exemplo.md
-/criar-tarefa-no-monday @docs/tarefas/arquivo.md
+1. Obter documento pronto (ler ficheiro ou aceitar texto na invocação)
+2. Entrevista — só parâmetros Monday (checklist acima)
+3. get_board_info(boardId confirmado)
+4. create_item — name, groupId = **Escrevendo**, columnValues (**Ação** = **Avaliar**, tipo, solicitante)
+5. Converter **todos** os gráficos Mermaid do documento em PNG **antes** de publicar
+6. create_doc — location: item, item_id, column_id: monday_doc, markdown **sem** nenhum bloco mermaid
+7. update_doc → create_block (imagem) com `after_block_id` após cada bloco de texto que tinha diagrama
+8. create_items — subtarefas com parentItemId, person + status por subtarefa
+9. change_item_column_values — branch em texto (e outros campos se faltarem)
+10. Responder com URLs do item, documento e subtarefas
 ```
 
-Sem `.md` na invocação: pedir o path (uma mensagem) antes de perguntar título/branch.
+### columnValues — formato
 
-## Integração com escrever-tarefa
+Ação (principal): `{"<column_id_acao>": {"label": "Avaliar"}}` — `column_id` via `get_board_info`  
+Texto (branch): string direta em `texto`  
+People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`  
+**Não** escrever em **Status consolidado**.
 
-Quando acionada por **escrever-tarefa**, usar o `.md` recém-gravado como documentação. Ainda assim **perguntar Título e Branch** e **aguardar** resposta explícita do usuário — **jamais** derivar do slug do arquivo, do cenário ou de recomendação no chat.
+### Atribuição
 
-## Escopo e limites
+- Item principal do Dia a dia **não** tem coluna Person direta; responsável reflete nas subtarefas (`person`).
+- Resolver `user_id` via `list_users_and_teams` / `get_user_context` pelo nome — **nunca** inventar IDs.
+- Com a lista padrão de subtarefas, aplicar **automaticamente** (salvo override explícito do utilizador):
 
-- Executar **somente** o que estiver **explicitamente** descrito nesta skill.
-- **Não** improvisar passos, ferramentas, colunas, boards ou locais de documento além do previsto aqui.
-- Se surgir necessidade de alguma ação **não descrita** nesta skill, **perguntar ao usuário** o que fazer **antes** de executar — não assumir nem contornar por conta própria.
+| Subtarefa | Owner (`person`) |
+|-----------|------------------|
+| `Revisar código automaticamente` | Eduardo Lagares |
+| `Revisar código manualmente` | Eduardo Lagares |
+| `Fazer deploy` | Eduardo Lagares |
+| `Testar` | João Sanches |
+| `Executar` | perguntar (#4) |
+| `Corrigir` | perguntar (#4) |
 
-## Proibido
+- Na entrevista / confirmação final, **mostrar** estes owners no resumo; só mudar se o utilizador pedir.
 
-- Criar a tarefa principal fora do grupo **Escrevendo** (inclui **Aguardando atribuição**).
-- Usar a coluna **Status consolidado** (descontinuada) ou deixar a principal sem **Ação = Avaliar**.
-- Deixar qualquer subtarefa sem status **A fazer**.
-- Criar subtarefas com nomes ou ordem diferentes das cinco fixas.
-- Colar blocos ` ```mermaid ` no doc monday.
-- Criar documentos em subtarefas, subelementos ou soltos na área de trabalho — o doc fica **apenas** no campo **Documento** da tarefa principal.
-- Atribuir Revisar código ou Deploy a outra pessoa que não Eduardo Lagares.
-- Omitir João Sanches ou Adão Teodoro de Morais Neto em **Testar**.
-- Pular pergunta de Título ou Branch.
-- Inventar, inferir ou usar título ou branch sem o usuário ter informado explicitamente (inclui “pode criar” sem os dois valores).
-- Usar recomendação do chat ou slug do `.md` como valor final de título ou branch.
-- Inventar labels se **Avaliar** (Ação) ou **A fazer** (Status das subtarefas) não existirem no board.
-- Executar qualquer ação fora do escopo desta skill sem autorização prévia do usuário.
+## Saída no chat (obrigatória)
+
+```markdown
+## Tarefa criada
+
+**Item:** [título](url)
+- Quadro / Grupo (Escrevendo) / Ação (Avaliar) / Tipo / Solicitante / Branch
+
+**Documento:** [nome](doc_url)
+- Diagramas: N imagens (se aplicável)
+
+**Subtarefas:**
+1. Nome — responsável — status — url
+...
+```
+
+## Erros comuns
+
+| Problema | Ação |
+|----------|------|
+| Imagens no fim do doc | `delete_block` + `create_block` com `after_block_id` correto |
+| Mermaid como código no Monday | Remover; substituir por imagem |
+| Label de status inexistente | `get_board_info` → labels exatos; ou `createLabelsIfMissing: true` |
+| Grupo/coluna descontinuados | Não usar **Aguardando atribuição** nem **Status consolidado**; usar **Escrevendo** e **Ação = Avaliar** |
+| MCP Monday indisponível | Parar; não inventar IDs |
+
+## Skills relacionadas
+
+| Skill | Quando |
+|-------|--------|
+| `escrever-tarefa` | **Antes** — quando ainda não há documento funcional pronto |
+| `monday-task-info` | Ler tarefa existente (somente leitura) |
+
+**Ordem típica:** `/escrever-tarefa` → documento pronto → `/criar-tarefa-no-monday` com o ficheiro ou texto.
+
+## Referência adicional
+
+- Kroki + posicionamento de imagens: [reference-mermaid-monday.md](reference-mermaid-monday.md)
