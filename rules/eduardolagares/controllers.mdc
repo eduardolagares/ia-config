@@ -1,6 +1,6 @@
 ---
-VERSION: "0.0.6"
-description: Thin controllers — Pundit, strong params, REST, use cases / queries
+VERSION: "0.0.7"
+description: Thin controllers — Pundit, strong params, REST; integração/request obrigatória e limitada
 alwaysApply: true
 ---
 # Controllers
@@ -10,7 +10,7 @@ alwaysApply: true
 - Strong params: `params.require(:x).permit(...)`.
 - Formatting for views → presenter (`app/presenters/`), not controller ivar assembly of strings.
 - RESTful actions: `index` `show` `new` `create` `edit` `update` `destroy`; `respond_to` + `format.html` when needed.
-- Tests: **integration/request** (`test/integration/`, `test/requests/`), not controller unit tests.
+- Tests: **integration/request** (`test/integration/`, `test/requests/`), not controller unit tests — **obrigatório** por action/tela tocada; escopo **limitado** a status + render (`implementation.mdc`, `writting-tests-rails.mdc`).
 - Action body ≤ **10 lines**. Writes / multi-step flow → `app/domains/**/use_cases/` (`use_cases.mdc`). Heavy AR reads → query object (`query_objects.mdc`). Trivial wiring → `private` controller method.
 - `before_action` only for setup (find record, `authorize`) — **not** business branching.
 - Validation re-render: `status: :unprocessable_entity` (e.g. `render :new, status: :unprocessable_entity`).

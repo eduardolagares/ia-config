@@ -1,12 +1,13 @@
 ---
-VERSION: "0.0.7"
-description: Edits must keep tests in sync — find counterpart specs, update contracts, run focused tests
+VERSION: "0.1.0"
+description: Edits keep tests in sync — integration/request obrigatório e limitado por tela; contratos e testes focados
 alwaysApply: true
 ---
 # Implementation ↔ tests
 
 - Changing behavior **implies** updating or adding tests that already cover that surface — green CI alone is not enough; assertions must match the **new** contract. Força / anti-padrões do caso → `test-quality-rails.mdc`.
 - **Before finish:** locate counterpart tests (`test/models/x_test.rb` ↔ `app/models/x.rb`, request/system tests for routes / flows touched — naming varies by project; search by class, path, route).
+- **Tela / action HTTP:** ao criar ou alterar controller, view ou rota de uma tela (HTML ou API), verificar se existe teste de integração/request (`test/integration/`, `test/requests/`) para aquela superfície. Se não existir, **criar**. O teste garante renderização/resposta e o status HTTP correto (`200`, `201`, `404`, `409`, `422`, …). Escopo **limitado** — não revalidar o negócio; detalhes → unitários. Como escrever → `writting-tests-rails.mdc`.
 - **Contract drift:** renamed API, new branches, defaults, validations, HTTP status, side effects → change setup + assertions in those tests. Weakening tests to green is forbidden unless product explicitly drops the behavior (then delete/replace with documented intent).
 - **No orphan RED:** do not treat work complete while tests for touched code still encode old behavior — except intentional TDD RED called out in workflow.
 - **Run scope:** after edits, run tests tied to changed files (single file / line filter) — not only unrelated suite green.

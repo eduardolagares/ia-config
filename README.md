@@ -1,5 +1,5 @@
 ---
-VERSION: "1.16.0"
+VERSION: "1.16.1"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -99,15 +99,15 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | `naming-rails.mdc` | Naming Rails — PT domínio, EN convenções, métodos, variáveis, colunas, models. |
 | `ruby.mdc` | Estilo Ruby — kwargs, fluxo de controle, sem meta desnecessária; naming → `naming-rails.mdc`. |
 | `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR. |
-| `controllers.mdc` | Controllers magros — Pundit, strong params, REST, use cases / queries. |
-| `implementation.mdc` | Edits mantêm testes em sincronia — spec contraparte, contratos, testes focados. |
+| `controllers.mdc` | Controllers magros — Pundit, strong params, REST; integração/request obrigatória e limitada. |
+| `implementation.mdc` | Edits mantêm testes em sincronia — integração/request por tela (status + render); contratos; testes focados. |
 | `migrations.mdc` | Migrations Rails — gerador, versão, reversibilidade, índices, FKs, naming de colunas. |
 | `models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
 | `query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
 | `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
 | `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
-| `writting-tests-rails.mdc` | Testes Minitest — estrutura, layout, stack; força → `test-quality-rails`. |
+| `writting-tests-rails.mdc` | Testes Minitest — estrutura; integração/request obrigatória e limitada; força → `test-quality-rails`. |
 | `test-quality-rails.mdc` | Critério de força — comportamento de produto, naming PT, anti-padrões; não cobertura de linha. |
 | `rails-test-submodule-readonly.mdc` | Passagem só de testes — produção read-only; só `test/` muda. |
 | `writting-tests-react.mdc` | Specs Vitest + RTL — layout `js-tests/`, naming, agrupamento, isolamento. |

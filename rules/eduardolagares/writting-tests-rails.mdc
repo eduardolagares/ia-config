@@ -1,6 +1,6 @@
 ---
-VERSION: "0.1.0"
-description: Minitest — estrutura, layout, stack; força do teste → test-quality-rails.mdc
+VERSION: "0.2.0"
+description: Minitest — estrutura; integração/request obrigatória e limitada (status + render); força → test-quality-rails
 alwaysApply: true
 ---
 # Tests (Minitest)
@@ -18,7 +18,7 @@ alwaysApply: true
 - Test **public** API — no `send(:private_method)`.
 - File layout: `test/**` mirrors `app/**`; **one** `*_test.rb` per class under test — keep that class's cases in that single file; do **not** split one class across multiple test files; do **not** put more than one production class under test in the same file.
 - System tests: critical flows only (slow); default unit/integration.
-- Integration / request (controller surface): **one test per status code** — each case asserts a single expected status (and that outcome). Do **not** assert `500` / `:internal_server_error` as a valid expected result; a 500 means the app blew up — fix the bug or reshape the scenario to a deliberate client/domain status (`422`, `403`, `404`, …). Status `401` / `403` are valid **only** when the case is specifically about authentication or authorization/permission — never as a stand-in for other failures. Do **not** assert model internals (columns, validations, associations, AR attributes) — that belongs in the model unit test; request tests assert HTTP outcome (status, redirect, flash, response body/keys the client sees).
+- Integration / request (controller surface): **obrigatório e limitado**. Ao tocar tela/action HTTP sem teste em `test/integration/` ou `test/requests/`, **criar** (`implementation.mdc`). Prova só que a superfície **renderiza/responde** com o status deliberado (`200`, `201`, `404`, `409`, `422`, …) — **um** status por caso. **Não** revalidar regras, cálculos ou edge cases de negócio (isso é unitário: model / use case / rule / query). Do **not** assert `500` / `:internal_server_error` as a valid expected result; a 500 means the app blew up — fix the bug or reshape the scenario to a deliberate client/domain status. Status `401` / `403` are valid **only** when the case is specifically about authentication or authorization/permission — never as a stand-in for other failures. Do **not** assert model internals (columns, validations, associations, AR attributes); request tests assert HTTP outcome (status, redirect, flash, response body/keys the client sees).
 - HTTP: WebMock / VCR — no real network in CI.
 - Order: rely on Minitest random order — never `i_suck_and_my_tests_are_order_dependent!`.
 - Fixtures **xor** factories per project convention — not both mixed without reason.
