@@ -7,7 +7,7 @@ description: >-
   até entendimento completo; grava em docs/tarefas/; após gravar, pode acionar criar-tarefa-no-monday.
   Use com /escrever-tarefa.
 disable-model-invocation: true
-VERSION: "2.7.1"
+VERSION: "2.7.2"
 ---
 
 # escrever-tarefa
