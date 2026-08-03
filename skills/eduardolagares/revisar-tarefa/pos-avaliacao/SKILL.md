@@ -3,17 +3,17 @@ name: revisar-tarefa-pos-avaliacao
 description: >-
   Passo 8 de revisar-tarefa: em qualquer veredito, garante MRs GitLab (branch → master)
   e publica links no doc Revisar código (tópico Merge requests); depois aplica status
-  e owners conforme o veredito. Em qualquer veredito, anota veredito + data no doc Revisar
-  código; se avançar, define status consolidado Revisão manual de código (automação Monday).
+  de subtarefa, owners e coluna Ação conforme o veredito. Em qualquer veredito, anota
+  veredito + data no doc Revisar código; se avançar, Ação → Concluir; se reprovar, Ação → Rejeitar.
 disable-model-invocation: true
-VERSION: "2.8.0"
+VERSION: "2.9.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
-Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status, owners, doc) e no GitLab (MRs).
+Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtarefa, owners, coluna **Ação**, doc) e no GitLab (MRs).
 
-**Independente do veredito** (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, ou outro desfecho futuro): **sempre** (1) garantir MRs no GitLab e publicá-los no doc, (2) anotar **veredito + data** em **`## Resultado da revisão`**. Só depois executar status/owners do veredito.
+**Independente do veredito** (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, ou outro desfecho futuro): **sempre** (1) garantir MRs no GitLab e publicá-los no doc, (2) anotar **veredito + data** em **`## Resultado da revisão`**. Só depois executar status/owners/**Ação** do veredito.
 
 **GitLab (MRs):** só `CallMcpTool` no servidor GitLab MCP da IDE — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) (**create/update/list**). **Proibido:** `GITLAB_TOKEN`, REST, scripts de API.
 
@@ -25,8 +25,8 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status, owners,
 |------|------|
 | Listar / criar / retarget MR | `gitlab_execute_action` → `merge_request.list` \| `create` \| `update` (`target_branch: master`) — JSON em reference-gitlab |
 | Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código`, status `A fazer`) |
-| Status subtarefa / consolidado | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
-| Encaminhar por status | **Só** `status_1` → label; automação Monday move o grupo (**nunca** `move_item_to_group`) — ver [reference.md](../reference.md) |
+| Status subtarefa / coluna **Ação** | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
+| Decisão da revisão (tarefa) | Coluna **Ação** (`color_mm5tr97v`) → **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **não** alterar `status_1` — ver [reference.md](../reference.md) |
 | Append **Merge requests** / resultado | `update_doc` → `add_markdown_content` |
 | Owners merge | `get_board_items_page` (`itemIds`) + `change_item_column_values` (`person.personsAndTeams`) |
 
@@ -46,9 +46,9 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status, owners,
 
 ## IDs fixos (board Dia a dia)
 
-| Entidade | Board | Coluna status | Coluna owner |
-|----------|-------|---------------|--------------|
-| Tarefa principal | `4571892384` | `status_1` (Status consolidado) | — |
+| Entidade | Board | Coluna decisão / status | Coluna owner |
+|----------|-------|-------------------------|--------------|
+| Tarefa principal | `4571892384` | `color_mm5tr97v` (**Ação**) | — |
 | Subtarefas | `4571892432` | `status` | `person` |
 
 Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_items_page`. Se **Revisar código** estiver ausente → **criar** ([../SKILL.md](../SKILL.md) § Subtarefa Revisar código) antes de doc/status/owners.
@@ -66,8 +66,8 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
 2. **Sempre** (§ **Merge requests — comum**): GitLab (criar/reutilizar MRs) → doc Monday (**Merge requests**).
 3. **Sempre** (§ **C — Resultado da revisão**): anotar **veredito + data** no doc **Revisar código**. **Não** pular por veredito.
-4. Executar o bloco de status/owners **do veredito** (§ abaixo) — **depois** dos MRs e do resultado.
-5. Status: `change_item_column_values` com `{"label": "<texto exato>"}`.
+4. Executar o bloco de status/owners/**Ação** **do veredito** (§ abaixo) — **depois** dos MRs e do resultado.
+5. Status subtarefa / **Ação**: `change_item_column_values` com `{"label": "<texto exato>"}`.
 6. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
@@ -83,7 +83,7 @@ Entregar no chat:
 |-------|-------|
 | Veredito (passo 7) | `<veredito>` — **não aplicado** |
 | Motivo | Diff GitLab indisponível (`Status: <parcial\|indisponível>`) |
-| Ações Monday | **nenhuma** (status/owners/doc MR inalterados) |
+| Ações Monday | **nenhuma** (status subtarefa/owners/**Ação**/doc MR inalterados) |
 | Próximo passo | Corrigir MCP GitLab na IDE e repetir passo 3 até `Status: ok` (VPN já ativa no executador) |
 ```
 
@@ -91,7 +91,7 @@ Opcional: uma linha no chat com o veredito que **teria** sido aplicado — sem e
 
 ## Merge requests — comum a todos os vereditos
 
-**Obrigatório** em **qualquer** veredito válido, **antes** das ações de status/owners. Inclui `precisa_de_correcao`, `pode_avancar_para_revisao_manual` e qualquer desfecho futuro de status (ex. deploy) — o destino Monday muda; **MRs + doc não**.
+**Obrigatório** em **qualquer** veredito válido, **antes** das ações de status/owners/**Ação**. Inclui `precisa_de_correcao`, `pode_avancar_para_revisao_manual` e qualquer desfecho futuro — o destino Monday (coluna **Ação**) muda; **MRs + doc não**.
 
 **Ordem deste bloco:** GitLab (MRs) → doc Monday (**Merge requests**).
 
@@ -119,7 +119,7 @@ Incluir na saída **`## Pós avaliação`** subsecção **`### Merge requests`**
 |------|------|-----|-----|
 | `baladapp/…` | `created` \| `existing` \| `updated_target` | `!<iid>` | link |
 
-Erro por repo: linha com **Erro:**; seguir nos demais (doc e status do veredito).
+Erro por repo: linha com **Erro:**; seguir nos demais (doc e ações do veredito).
 
 Guardar `web_url` / `iid` / `repo` / `action` por projeto para § A.2.
 
@@ -171,7 +171,7 @@ Documento gerado por /revisar-tarefa.
 
 | Erro | Ação |
 |------|------|
-| MCP Monday indisponível | Reportar; seguir status do veredito se usuário não bloqueou |
+| MCP Monday indisponível | Reportar; seguir ações do veredito se usuário não bloqueou |
 | `update_doc` / `create_doc` falhou | Reportar; **não** simular link no doc |
 | Nenhum MR com `web_url` | Omitir § A.2; reportar aviso |
 
@@ -179,7 +179,7 @@ Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `
 
 ## C. Documento Revisar código — resultado (qualquer veredito)
 
-**Obrigatório** em **qualquer** veredito válido, **depois** dos MRs (§ A/A.2) e **antes** das ações de status/owners. Registo histórico: **qual veredito** e **em que data**. **Append** — não alterar tópicos de revisão/R*/análise/MRs.
+**Obrigatório** em **qualquer** veredito válido, **depois** dos MRs (§ A/A.2) e **antes** das ações de status/owners/**Ação**. Registo histórico: **qual veredito** e **em que data**. **Append** — não alterar tópicos de revisão/R*/análise/MRs.
 
 1. Resolver `doc_object_id` (passo 1 / passo 6 / § A.2). Se a subtarefa **Revisar código** não existir → **criar** ([../SKILL.md](../SKILL.md) § Subtarefa Revisar código) antes do append.
 2. `read_docs` — se já existir heading `## Resultado da revisão — <YYYY-MM-DD>` **hoje** com o **mesmo** veredito → **SKIP**; reportar `Doc resultado: já anotado`.
@@ -193,7 +193,7 @@ Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `
 **Veredito:** `precisa_de_correcao` (`/revisar-tarefa`).
 
 - Há pendências abertas (revisão, requisitos ou análise manual)
-- Subtarefa Revisar código → **Aguardando correção**; tarefa → **Fazendo** (grupo **Atribuídas** via automação)
+- Subtarefa Revisar código → **Aguardando correção**; coluna **Ação** → **Rejeitar**
 ```
 
 **`pode_avancar_para_revisao_manual`:**
@@ -204,7 +204,7 @@ Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `
 **Veredito:** `pode_avancar_para_revisao_manual` (`/revisar-tarefa`).
 
 - Revisão automatizada passou — sem pendências abertas
-- Status consolidado → **Revisão manual de código** (automação Monday move o grupo)
+- Coluna **Ação** → **Concluir**
 ```
 
 Outro veredito futuro: mesmo heading com `**Veredito:** \`<nome>\`` + 1–2 bullets do desfecho.
@@ -212,21 +212,21 @@ Outro veredito futuro: mesmo heading com `**Veredito:** \`<nome>\`` + 1–2 bull
 4. Publicar com `update_doc` → `add_markdown_content`. Se doc ausente → `create_doc` com `# Revisar código` + bloco acima (mesmo padrão de § A.2).
 5. Em **`## Pós avaliação`**: linha `Doc Resultado` = `append` \| `criado` \| `já anotado` \| `erro`.
 
-Falha no append → reportar; **seguir** status do veredito (não bloquear só por falha de anotação).
+Falha no append → reportar; **seguir** ações do veredito (não bloquear só por falha de anotação).
 
 ### `precisa_de_correcao`
 
-Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxes — conclusão humana). **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data). Depois: Monday (owners + status).
+Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxes — conclusão humana). **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data). Depois: Monday (owners + status subtarefa + coluna **Ação**).
 
-#### B. Monday (status / owners)
+#### B. Monday (status / owners / Ação)
 
 | # | Alvo | Ação |
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | **Adicionar** owner(s) da subtarefa **Executar** à coluna `person` (merge — **não** remover owners existentes) |
 | 2 | Subtarefa **Revisar código** | Status → **`Aguardando correção`** |
-| 3 | Tarefa principal | Status consolidado (`status_1`) → **`Fazendo`** (automação Monday move para o grupo **Atribuídas**) |
+| 3 | Tarefa principal | Coluna **Ação** (`color_mm5tr97v`) → **`Rejeitar`** |
 
-**Não** chamar `move_item_to_group` — grupo **Atribuídas** vem da automação ao setar **Fazendo**.
+**Não** alterar `status_1` (status consolidado). **Não** chamar `move_item_to_group`.
 
 **Owner merge (passo 1):**
 
@@ -244,17 +244,18 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data) — **mesmo** bloco comum.
 
-**Obrigatório** definir status consolidado **`Revisão manual de código`**. A **automação já existente no Monday** move a tarefa para o grupo correspondente — **não** chamar `move_item_to_group` / `get_board_info` para grupo (mesma regra que **Fazendo** → **Atribuídas** e **Revisão automática de código** → seu grupo). **Proibido** neste veredito: status **QA**, **Aguardando testes**, **Aguardando deploy**, ou qualquer outro destino de testes/deploy.
+**Obrigatório** preencher coluna **Ação** com **`Concluir`**. **Não** alterar `status_1`. **Não** chamar `move_item_to_group` / `get_board_info` para grupo. **Proibido** neste veredito: status consolidado **QA**, **Aguardando testes**, **Aguardando deploy**, ou qualquer outro destino de testes/deploy via `status_1`.
 
-**Ordem (após MRs + § C):** subtarefa Revisar código → status consolidado da tarefa principal.
+**Ordem (após MRs + § C):** subtarefa Revisar código → coluna **Ação** da tarefa principal.
 
 | # | Alvo | Ação |
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | Status → **`Concluída`** |
-| 2 | Tarefa principal | Status consolidado (`status_1`) → **`Revisão manual de código`** (automação Monday move o grupo) |
+| 2 | Tarefa principal | Coluna **Ação** (`color_mm5tr97v`) → **`Concluir`** |
 
 **Não** alterar subtarefa **Testar**, **Executar** nem **Deploy**.
 **Não** chamar `move_item_to_group`.
+**Não** alterar `status_1`.
 
 ## Exemplo MCP — status subtarefa
 
@@ -266,17 +267,17 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 }
 ```
 
-## Exemplo MCP — status tarefa principal
+## Exemplo MCP — coluna Ação (tarefa principal)
 
 ```json
 {
   "boardId": 4571892384,
   "itemId": 12052222930,
-  "columnValues": "{\"status_1\": {\"label\": \"Revisão manual de código\"}}"
+  "columnValues": "{\"color_mm5tr97v\": {\"label\": \"Concluir\"}}"
 }
 ```
 
-Labels devem existir no board. Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
+Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
 
 ## Saída obrigatória (chat)
 
@@ -287,7 +288,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 |-------|-------|
 | Veredito | `<veredito>` |
 | Ações executadas | <lista resumida> |
-| Grupo | — (automação Monday após status) \| — (correção) |
+| Coluna Ação | `Concluir` \| `Rejeitar` \| — |
 | Doc Merge requests | `append` \| `criado` \| `nenhum` \| `erro` \| — |
 | Doc Resultado | `append` \| `criado` \| `já anotado` \| `erro` \| — (sempre) |
 | Erros | — (ou detalhe) |
@@ -306,7 +307,7 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 |------|-------|---------|---------------|------------|-----------|
 | Revisar código | 4571892432 | … | doc Resultado | veredito + data | ok |
 | Revisar código | 4571892432 | … | status | Concluída | ok |
-| Tarefa | 4571892384 | … | status_1 | Revisão manual de código | ok |
+| Tarefa | 4571892384 | … | color_mm5tr97v (Ação) | Concluir | ok |
 ```
 
 ## Erros
@@ -317,11 +318,11 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 | Sem `## Avaliação` | Parar; executar passo 7 |
 | Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
-| MCP GitLab indisponível | Parar antes de Monday (status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
-| MR falhou em todos os repos | Reportar; § A.2 omitido; status do veredito opcional |
+| MCP GitLab indisponível | Parar antes de Monday (Ação/status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
+| MR falhou em todos os repos | Reportar; § A.2 omitido; ações do veredito opcionais |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código no SKILL pai); se `create_item` falhar → parar |
-| Subtarefa Executar não encontrada | Reportar aviso no merge de owners; seguir status se possível |
+| Subtarefa Executar não encontrada | Reportar aviso no merge de owners; seguir Ação/status se possível |
 | Mutation parcial | Reportar o que falhou; não reverter automaticamente |
 
 ## Proibido
@@ -331,8 +332,9 @@ Labels devem existir no board. Se `change_item_column_values` falhar por label i
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)
 - Mudar status de **Executar**, **Testar** ou **Deploy** (salvo pedido explícito)
-- Em qualquer veredito: **`move_item_to_group`** (grupo é da automação Monday via `status_1`)
-- Em `pode_avancar_para_revisao_manual`: status **QA**, **Aguardando testes**, **Aguardando deploy**
+- Em qualquer veredito: alterar `status_1` (status consolidado) — a decisão vai na coluna **Ação**
+- Em qualquer veredito: **`move_item_to_group`**
+- Em `pode_avancar_para_revisao_manual`: status consolidado **QA**, **Aguardando testes**, **Aguardando deploy** (via `status_1`)
 
 ## Skills relacionadas
 

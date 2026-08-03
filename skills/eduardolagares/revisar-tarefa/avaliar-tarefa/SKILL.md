@@ -4,7 +4,7 @@ description: >-
   Passo 7 de revisar-tarefa: verifica no diff se itens abertos do doc Revisar código foram
   cumpridos, marca checkboxes no Monday, emite veredito e pendências restantes.
 disable-model-invocation: true
-VERSION: "2.5.1"
+VERSION: "2.6.0"
 ---
 
 # revisar-tarefa — avaliar tarefa (passo 7)
@@ -147,20 +147,20 @@ A tarefa **não pode avançar** se existir **qualquer** item ainda aberto em:
 
 Itens **`3.M`** (Padrão de código) têm **o mesmo peso** que **`1.M`** e **`2.M`**: qualquer um aberto → **`precisa_de_correcao`**.
 
-Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtarefa **Revisar código** → **Aguardando correção**; tarefa principal → **Fazendo**).
+Se **há pendências** → veredito **`precisa_de_correcao`** (passo 8: subtarefa **Revisar código** → **Aguardando correção**; coluna **Ação** → **Rejeitar**).
 
 ### Regra 2 — Sem pendências: avanço para revisão manual
 
 Só aplicar se **não** há pendências (Regra 1).
 
-Veredito **`pode_avancar_para_revisao_manual`**. **Não** ramificar por status de **Testar** nem por deploy — o próximo passo no Monday é status consolidado **Revisão manual de código** (automação move o grupo).
+Veredito **`pode_avancar_para_revisao_manual`**. **Não** ramificar por status de **Testar** nem por deploy — o próximo passo no Monday é coluna **Ação** → **Concluir**.
 
 ### Vereditos (enum fixo)
 
 | Veredito | Significado |
 |----------|-------------|
 | `precisa_de_correcao` | Ainda há itens abertos de revisão (Crítico, Grave ou Padrão de código), requisitos ou análise manual |
-| `pode_avancar_para_revisao_manual` | Revisão limpa; status consolidado → **Revisão manual de código** (automação Monday move o grupo) |
+| `pode_avancar_para_revisao_manual` | Revisão limpa; coluna **Ação** → **Concluir** |
 
 ## Saída obrigatória
 
@@ -197,8 +197,8 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 
 | Veredito | Passo 8 (se `Status: ok`) |
 |----------|---------------------------|
-| `precisa_de_correcao` | § Correção |
-| `pode_avancar_para_revisao_manual` | § Revisão manual de código (status consolidado; automação move o grupo; **proibido** QA / testes / deploy / `move_item_to_group`) |
+| `precisa_de_correcao` | § Correção — coluna **Ação** → **Rejeitar** |
+| `pode_avancar_para_revisao_manual` | § Aprovação — coluna **Ação** → **Concluir** (**não** alterar `status_1`; **proibido** QA / testes / deploy / `move_item_to_group`) |
 
 ## Erros
 
@@ -219,5 +219,5 @@ Só executar [pos-avaliacao](../pos-avaliacao/SKILL.md) se **`## Diff` · `Statu
 | `revisar-tarefa-executar-diff` | Passo 3 — evidência de cumprimento |
 | `revisar-tarefa-gerar-requisitos-de-codigo` | Passo 6 — doc fonte de pendências |
 | `revisar-tarefa-verificar-requisitos-usuario` | Passo 5 — critério para `R*` |
-| `revisar-tarefa-pos-avaliacao` | Passo 8 — executa veredito (status/owners) |
+| `revisar-tarefa-pos-avaliacao` | Passo 8 — executa veredito (Ação / status subtarefa / owners) |
 | `monday-task-info` | Passo 1 — subtarefas + `doc_object_id` |

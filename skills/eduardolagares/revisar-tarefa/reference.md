@@ -18,10 +18,13 @@ Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `re
 | Uso | Coluna / id típico |
 |-----|-------------------|
 | Branch | `texto` |
-| Status consolidado (tarefa) | `status_1` |
+| **Ação** (decisão da revisão) | `color_mm5tr97v` |
+| Status consolidado (tarefa) | `status_1` — **não** alterar no passo 8 |
 | Status subtarefa | `status` |
 | Documento | `monday_doc` |
 | Owner subtarefa | `person` |
+
+Labels da coluna **Ação** (`color_mm5tr97v`): **`Concluir`**, **`Rejeitar`**.
 
 ## Subtarefa **Revisar código** (criar se ausente)
 
@@ -42,17 +45,24 @@ Sempre que um passo precisar desta subtarefa e ela **não** existir sob a tarefa
 
 **Não** criar outras subtarefas (Executar, Testar, Deploy) por esta regra — só **Revisar código**.
 
-## Status consolidado → grupo (automação Monday)
+## Decisão da revisão → coluna **Ação** (passo 8)
 
-**Regra:** alterar **só** `status_1` (status consolidado). A **automação do Monday** move a tarefa para o grupo. **Nunca** usar `move_item_to_group`.
+**Regra:** após a decisão, alterar **só** a coluna **Ação** (`color_mm5tr97v`) na tarefa principal — **nunca** `status_1` nem `move_item_to_group`.
 
-| Label `status_1` | Grupo (automação) |
-|------------------|-------------------|
-| **Fazendo** | **Atribuídas** |
-| **Revisão automática de código** | grupo de revisão automática |
-| **Revisão manual de código** | grupo de revisão manual |
+| Veredito | Label **Ação** |
+|----------|----------------|
+| `pode_avancar_para_revisao_manual` (aprovou) | **`Concluir`** |
+| `precisa_de_correcao` (reprovou) | **`Rejeitar`** |
 
-Usos no passo 8: `precisa_de_correcao` → **Fazendo**; `pode_avancar_para_revisao_manual` → **Revisão manual de código**.
+Exemplo MCP:
+
+```json
+{
+  "boardId": 4571892384,
+  "itemId": 12052222930,
+  "columnValues": "{\"color_mm5tr97v\": {\"label\": \"Concluir\"}}"
+}
+```
 
 ## GitLab
 

@@ -2,10 +2,10 @@
 name: revisar-tarefa
 description: >-
   Coleta contexto de tarefa no Monday, gera e verifica requisitos, diff GitLab, code review,
-  publica achados, avalia veredito e atualiza status/owners no Monday. Use com /revisar-tarefa
+  publica achados, avalia veredito e atualiza status subtarefa / owners / coluna Ação no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.11.0"
+VERSION: "6.12.0"
 ---
 
 # `/revisar-tarefa`
@@ -224,10 +224,10 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 - **Lógica:**
   - Para cada item aberto em **Revisão de código** (Crítico, Grave ou **Padrão de código**) ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
   - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
-  - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; tarefa → **Fazendo**).
-  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: status consolidado **Revisão manual de código** — automação Monday move o grupo; **não** QA, testes nem deploy).
+  - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; coluna **Ação** → **Rejeitar**).
+  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: coluna **Ação** → **Concluir**; **não** alterar status consolidado / QA / testes / deploy).
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.
-- **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status/grupo → passo 8).
+- **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status subtarefa / **Ação** → passo 8).
 
 ## Passo 8 — Pós avaliação (`pos-avaliacao`)
 
@@ -236,14 +236,14 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 `pos-avaliacao/SKILL.md`
 
 - **Entrada:** **`## Avaliação`** (passo 7) + IDs do passo 1 + **`## Diff`** com **`Status: ok`** + branch/repos.
-- **Saída:** **`## Pós avaliação`** — mutations executadas (incl. MRs + doc), **ou** bloqueio documentado (sem alterar status/owners no Monday).
-- **Proibido sem diff válido:** `change_item_column_values` de status/owner, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Fazendo, Aguardando correção, Revisão manual de código, etc.).
+- **Saída:** **`## Pós avaliação`** — mutations executadas (incl. MRs + doc), **ou** bloqueio documentado (sem alterar status/owners/**Ação** no Monday).
+- **Proibido sem diff válido:** `change_item_column_values` de status/owner/**Ação**, MRs GitLab e append em **Merge requests** — **nenhuma** decisão final no Monday (Aguardando correção, **Ação** Concluir/Rejeitar, etc.).
 
 | Veredito | Ações |
 |----------|--------|
-| *(qualquer)* | **MR** por repo + links no doc **Merge requests**; anota **veredito + data** no doc **Revisar código** (`## Resultado da revisão`) — **antes** das ações de status abaixo |
-| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; tarefa → **Fazendo** (automação Monday → grupo **Atribuídas**; **proibido** `move_item_to_group`) |
-| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; tarefa → status consolidado **Revisão manual de código** (automação Monday move o grupo; **proibido** QA / testes / deploy / `move_item_to_group`) |
+| *(qualquer)* | **MR** por repo + links no doc **Merge requests**; anota **veredito + data** no doc **Revisar código** (`## Resultado da revisão`) — **antes** das ações abaixo |
+| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; coluna **Ação** → **`Rejeitar`** (**não** alterar `status_1`; **proibido** `move_item_to_group`) |
+| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; coluna **Ação** → **`Concluir`** (**não** alterar `status_1`; **proibido** QA / testes / deploy / `move_item_to_group`) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 
@@ -258,7 +258,7 @@ Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 7. `avaliar-tarefa`
 8. `pos-avaliacao`
 
-Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí **sempre** garante MRs + tópico **Merge requests** + **Resultado da revisão** (veredito + data), depois altera status/owners conforme o veredito. GitLab: **leitura** no passo 3; **escrita** (MRs) no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
+Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código** (passo 6: append revisão + R*; passo 7: marca itens **cumpridos**). Passo **8** só corre com **`## Diff` · `Status: ok`**; aí **sempre** garante MRs + tópico **Merge requests** + **Resultado da revisão** (veredito + data), depois altera status subtarefa / owners / coluna **Ação** conforme o veredito. GitLab: **leitura** no passo 3; **escrita** (MRs) no passo 8 condicionada a diff **ok** — ambos só via MCP da IDE.
 
 ## Erros
 
@@ -285,7 +285,7 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 5. Verificação R*  
 6. Doc Revisar código  
 7. **Avaliação** → ex. `pode_avancar_para_revisao_manual`  
-8. **Pós avaliação** → MRs + doc **Merge requests**; anota veredito + data; status conforme veredito  
+8. **Pós avaliação** → MRs + doc **Merge requests**; anota veredito + data; coluna **Ação** / status subtarefa conforme veredito  
 
 ## Skills relacionadas
 
