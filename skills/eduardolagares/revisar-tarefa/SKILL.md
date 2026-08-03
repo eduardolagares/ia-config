@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status subtarefa / owners / coluna Ação no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.13.0"
+VERSION: "6.15.0"
 ---
 
 # `/revisar-tarefa`
@@ -30,7 +30,7 @@ Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/too
 |-------------|---------------|
 | Listar workspaces Monday | `list_workspaces` |
 | Buscar quadro | `search` (`searchType: BOARD`, `searchTerm` obrigatório) |
-| Metadados board / grupos | `get_board_info` (`boardId: 4571892384`) |
+| Metadados board / colunas | `get_board_info` (`boardId: 4571892384`) |
 | Item + subtarefas | `get_board_items_page` |
 | Criar subtarefa Revisar código | `create_item` (`parentItemId` = tarefa; `name: Revisar código`) |
 | Ler / append / checkbox doc | `read_docs` / `update_doc` |
@@ -180,7 +180,7 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 - **Entrada:** branch e projetos/repos da saída do Passo 1.
 - **Saída:** secção **`## Diff`** — branch vs **`master`** por repo, com linha **`Status:`** `ok` \| `parcial` \| `indisponível` (ver `executar-diff`).
 - **Canal:** só GitLab MCP da IDE; ver [executar-diff/SKILL.md](executar-diff/SKILL.md) e [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
-- **Bloqueio:** se **`Status: indisponível`** ou **`parcial`** (GitLab indisponível — requisito da skill), **parar** e **não mover a tarefa no Monday** — passo 8 proibido; ver § GitLab — requisito obrigatório e § Passo 8.
+- **Bloqueio:** se **`Status: indisponível`** ou **`parcial`** (GitLab indisponível — requisito da skill), **parar** e **não** alterar Ação/status no Monday — passo 8 proibido; ver § GitLab — requisito obrigatório e § Passo 8.
 
 ## Passo 4 — Code review do diff (`code-review-diff`)
 
@@ -225,7 +225,7 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
   - Para cada item aberto em **Revisão de código** (Crítico, Grave ou **Padrão de código**) ou **Requisitos não implementados** (exceto `#ignorar`), cruzar com o diff; se **cumprido** → marcar checkbox no doc Monday (`update_doc` / `checked: true`).
   - **`## Análise manual`:** itens abertos **bloqueiam** avanço e **não** são marcados pelo agente (conclusão só humana no Monday).
   - Ainda existe `- [ ]` em **Revisão de código** (inclui **Padrão de código**), **Requisitos não implementados** ou **Análise manual** → **não pode avançar** → veredito **`precisa_de_correcao`** (passo 8: **Revisar código** → Aguardando correção; coluna **Ação** → **Rejeitar**).
-  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: coluna **Ação** → **Concluir**; **não** alterar status consolidado / QA / testes / deploy).
+  - Senão → **`pode_avancar_para_revisao_manual`** (passo 8: **Ação** → **Concluir**; automação Monday faz o restante).
 - **Saída:** **`## Avaliação`** com veredito e ids marcados cumpridos.
 - **Escrita Monday:** somente checkboxes cumpridos no doc **Revisar código** (status subtarefa / **Ação** → passo 8).
 
@@ -242,8 +242,8 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 | Veredito | Ações |
 |----------|--------|
 | *(qualquer)* | **MR** por repo + links no doc **Merge requests**; anota **veredito + data** no doc **Revisar código** (`## Resultado da revisão`) — **antes** das ações abaixo |
-| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; coluna **Ação** → **`Rejeitar`** (resolver id por título via `get_board_info`; **nunca** `status_1` / nome de grupo / `move_item_to_group`) |
-| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; coluna **Ação** → **`Concluir`** (mesmo resolve; **nunca** `status_1` / nome de grupo / QA / testes / deploy / `move_item_to_group`) |
+| `precisa_de_correcao` | (após MRs + resultado) owner **Executar** → **Revisar código**; Revisar código → **Aguardando correção**; **Ação** → **`Rejeitar`** (só isso na tarefa; automação Monday faz o resto) |
+| `pode_avancar_para_revisao_manual` | (após MRs + resultado) Revisar código → **Concluída**; **Ação** → **`Concluir`** (só isso na tarefa; automação Monday faz o resto) |
 
 Ver detalhes e formato MCP: [pos-avaliacao/SKILL.md](pos-avaliacao/SKILL.md).
 
@@ -266,8 +266,8 @@ Não pular passos 1–7. Passos **6** e **7** escrevem no doc **Revisar código*
 |----------|------|
 | MCP Monday indisponível | Parar no passo 1; passos 6–8 não simular escrita |
 | Passo N sem saída do N−1 | Voltar ao passo em falta |
-| MCP GitLab indisponível / sem auth | GitLab indisponível → **parar** no passo 3; **não** mover a tarefa no Monday; passo 8 **proibido** |
-| GitLab indisponível (`## Diff` com `Status: parcial`/`indisponível`) | **Parar**; **não** mover a tarefa no Monday (sem status/owner/MR); reportar bloqueio em `## Pós avaliação` |
+| MCP GitLab indisponível / sem auth | GitLab indisponível → **parar** no passo 3; **não** alterar Ação/status no Monday; passo 8 **proibido** |
+| GitLab indisponível (`## Diff` com `Status: parcial`/`indisponível`) | **Parar**; **não** alterar Ação/status/owner/MR no Monday; reportar bloqueio em `## Pós avaliação` |
 | Passo 8 sem avaliação | Voltar ao passo 7 |
 | Título ambíguo | Não escolher item aleatório |
 | Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código); se `create_item` falhar → parar |

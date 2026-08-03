@@ -37,10 +37,10 @@ CallMcpTool
 |--------|-------------|
 | Branch | `texto` |
 | Documento | `monday_doc` |
-| Status consolidado | `status_1` |
+| **Ação** | `color_mm5tr97v` (confirmar com `get_board_info` se o id mudar) |
 | Subelementos | `subelementos` |
 
-Labels úteis `status_1`: `Fazendo`, `Revisão automática de código`, `Revisão manual de código`, `QA`, `Aguardando deploy`, …
+Labels úteis **Ação:** `Concluir`, `Rejeitar`.
 
 ### Colunas — subtarefa (board `4571892432`)
 
@@ -77,7 +77,7 @@ Labels úteis `status`: `Aguardando correção`, `Concluída`, `Fazendo`, `A faz
 
 `search` **exige** `searchTerm` não vazio. Para listar boards de um workspace sem frase → `workspace_info`.
 
-### Metadados do board (grupos, colunas, labels)
+### Metadados do board (colunas, labels)
 
 ```json
 {
@@ -261,7 +261,7 @@ Status subtarefa:
 }
 ```
 
-Status consolidado (tarefa):
+Coluna **Ação** (tarefa — aprovar / reprovar):
 
 ```json
 {
@@ -269,7 +269,7 @@ Status consolidado (tarefa):
   "arguments": {
     "boardId": 4571892384,
     "itemId": 12052222930,
-    "columnValues": "{\"status_1\": {\"label\": \"Revisão manual de código\"}}"
+    "columnValues": "{\"color_mm5tr97v\": {\"label\": \"Concluir\"}}"
   }
 }
 ```
@@ -289,15 +289,9 @@ Owner merge (people):
 
 **Não** inventar labels — só as do `get_board_info`.
 
-### Encaminhar por status consolidado (passo 8)
+### Decisão da revisão (passo 8)
 
-**Só** alterar `status_1` — **nunca** `move_item_to_group`. A automação do Monday move o grupo:
-
-| Label `status_1` | Grupo (automação) |
-|------------------|-------------------|
-| **Fazendo** | **Atribuídas** |
-| **Revisão automática de código** | grupo de revisão automática |
-| **Revisão manual de código** | grupo de revisão manual |
+Na tarefa principal, **só** gravar coluna **Ação**: **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou). A automação do Monday faz o restante. Resolver o id por `title: Ação` via `get_board_info` se necessário.
 
 ```json
 {
@@ -305,7 +299,7 @@ Owner merge (people):
   "arguments": {
     "boardId": 4571892384,
     "itemId": 12052222930,
-    "columnValues": "{\"status_1\": {\"label\": \"Revisão manual de código\"}}"
+    "columnValues": "{\"color_mm5tr97v\": {\"label\": \"Concluir\"}}"
   }
 }
 ```

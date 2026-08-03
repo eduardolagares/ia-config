@@ -6,12 +6,25 @@ description: >-
   de subtarefa, owners e coluna Ação conforme o veredito. Em qualquer veredito, anota
   veredito + data no doc Revisar código; se avançar, Ação → Concluir; se reprovar, Ação → Rejeitar.
 disable-model-invocation: true
-VERSION: "2.10.0"
+VERSION: "2.12.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
 
 Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtarefa, owners, coluna **Ação**, doc) e no GitLab (MRs).
+
+## Contrato de avanço (tarefa principal) — ler primeiro
+
+**Única** mutation na tarefa principal para aprovar ou reprovar:
+
+| Veredito | Coluna **Ação** |
+|----------|-----------------|
+| `pode_avancar_para_revisao_manual` | **`Concluir`** |
+| `precisa_de_correcao` | **`Rejeitar`** |
+
+**Basta** isso. A **automação do Monday** faz o restante. Depois de `change_item_column_values` em **Ação** com sucesso, o avanço da tarefa **está concluído** para esta skill.
+
+Se o agente não gravou **Ação**, o bug é **não ter gravado Ação**.
 
 **Independente do veredito** (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, ou outro desfecho futuro): **sempre** (1) garantir MRs no GitLab e publicá-los no doc, (2) anotar **veredito + data** em **`## Resultado da revisão`**. Só depois executar status/owners/**Ação** do veredito.
 
@@ -27,7 +40,7 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtaref
 | Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código`, status `A fazer`) |
 | Resolver id da coluna **Ação** | `get_board_info` board `4571892384` → coluna com `title` **`Ação`** (id típico `color_mm5tr97v`) — **antes** de gravar na tarefa |
 | Status subtarefa / coluna **Ação** | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
-| Decisão da revisão (tarefa) | Coluna **Ação** → **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **nunca** `status_1` nem nomes de grupo — ver [reference.md](../reference.md) |
+| Decisão da revisão (tarefa) | **Só** **Ação** → **`Concluir`** / **`Rejeitar`** — automação Monday faz o resto — ver [reference.md](../reference.md) |
 | Append **Merge requests** / resultado | `update_doc` → `add_markdown_content` |
 | Owners merge | `get_board_items_page` (`itemIds`) + `change_item_column_values` (`person.personsAndTeams`) |
 
@@ -56,7 +69,7 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 
 ### Resolver coluna **Ação** (obrigatório antes de gravar na tarefa)
 
-`status_1` (**Status consolidado**) **não existe** mais no board. A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. Nomes de **grupo** (ex.: `Revisão manual de código`, `QA`) **não** são labels de coluna — a automação do Monday move o grupo **depois** de gravar **Ação**.
+A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. Labels válidos: **`Concluir`** \| **`Rejeitar`**.
 
 **Antes** de qualquer `change_item_column_values` na tarefa principal:
 
@@ -64,13 +77,13 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 2. Em `columns`, achar a coluna com `title` exatamente **`Ação`** (tipo status). Guardar o `id` (ex.: `color_mm5tr97v`).
 3. Confirmar que os labels incluem **`Concluir`** e **`Rejeitar`**.
 4. Usar **esse** `id` no JSON: `{"<id>": {"label": "Concluir"}}` ou `"Rejeitar"`.
+5. Após sucesso → reportar `ok` na linha da tarefa; **parar** (não há passo seguinte na tarefa principal).
 
 | Se… | Então… |
 |-----|--------|
 | Coluna `title: Ação` encontrada | Usar o `id` retornado (mesmo que ≠ `color_mm5tr97v`) |
 | `color_mm5tr97v` existe mas `title` ≠ `Ação` | **Ignorar** o id fixo; seguir só pelo título **Ação** |
-| Nenhuma coluna `title: Ação` | **Parar** a mutation da tarefa; reportar erro; **não** tentar `status_1`, `status`, outro `color_*`, nem `move_item_to_group` |
-| Tentação de gravar `status_1` / label de grupo | **Proibido** — é o bug clássico desta skill |
+| Nenhuma coluna `title: Ação` | **Parar** a mutation da tarefa; reportar “coluna Ação ausente”; **nada** além disso |
 
 ## Entrada
 
@@ -246,7 +259,7 @@ Inclui pendências só em **`## Análise manual`** (passo 7 não marca checkboxe
 | 2 | Subtarefa **Revisar código** | Status → **`Aguardando correção`** |
 | 3 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Rejeitar`** |
 
-**Não** alterar `status_1` (coluna removida / legado). **Não** chamar `move_item_to_group`. **Não** usar nome de grupo como label.
+Reprovar na tarefa = **só** o passo 3. A automação do Monday faz o restante.
 
 **Owner merge (passo 1):**
 
@@ -264,7 +277,7 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data) — **mesmo** bloco comum.
 
-**Obrigatório** preencher coluna **Ação** com **`Concluir`** (id do § Resolver). **Não** alterar `status_1`. **Não** chamar `move_item_to_group`. `get_board_info` é **obrigatório** para resolver o id da coluna **Ação** — **não** para escolher grupo. **Proibido** neste veredito: gravar labels de grupo (`Revisão manual de código`, `QA`, `Aguardando testes`, `Aguardando deploy`) em qualquer coluna.
+**Avanço = só isto:** coluna **Ação** → **`Concluir`** (id do § Resolver). Critério de sucesso: a mutation de **Ação** retornou ok. A automação do Monday faz o restante.
 
 **Ordem (após MRs + § C + resolver Ação):** subtarefa Revisar código → coluna **Ação** da tarefa principal.
 
@@ -274,8 +287,7 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 | 2 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Concluir`** |
 
 **Não** alterar subtarefa **Testar**, **Executar** nem **Deploy**.
-**Não** chamar `move_item_to_group`.
-**Não** alterar `status_1` nem inventar label com nome de grupo.
+Se o passo 2 falhar → re-resolver **Ação** e repetir o passo 2.
 
 ## Exemplo MCP — status subtarefa
 
@@ -299,7 +311,7 @@ Id típico `color_mm5tr97v` — **substituir** pelo id retornado em § Resolver 
 }
 ```
 
-Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice; **não** cair em `status_1`.
+Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
 
 ## Saída obrigatória (chat)
 
@@ -311,6 +323,7 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 | Veredito | `<veredito>` |
 | Ações executadas | <lista resumida> |
 | Coluna Ação | `Concluir` \| `Rejeitar` \| — |
+| Avanço tarefa | `ok` se **Ação** gravada; senão detalhe do erro |
 | Doc Merge requests | `append` \| `criado` \| `nenhum` \| `erro` \| — |
 | Doc Resultado | `append` \| `criado` \| `já anotado` \| `erro` \| — (sempre) |
 | Erros | — (ou detalhe) |
@@ -332,7 +345,7 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 | Tarefa | 4571892384 | … | \<id\> (Ação) | Concluir | ok |
 ```
 
-Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)` — **nunca** `status_1`.
+Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)`. Se **Ação** = `ok`, o trabalho na tarefa principal terminou.
 
 ## Erros
 
@@ -343,8 +356,8 @@ Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)` 
 | Veredito inválido (incl. legados `deve_ser_testada` / `pode_avancar_para_deploy`) | Parar — **não** mapear para QA/deploy; corrigir passo 7 |
 | MCP Monday indisponível | Parar; **não** simular mutations |
 | MCP GitLab indisponível | Parar antes de Monday (Ação/status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
-| `get_board_info` sem coluna `title: Ação` | Reportar; **não** gravar na tarefa; status/doc da subtarefa já feitos ficam; **proibido** fallback `status_1` |
-| `change_item_column_values` com `status_1` / coluna inexistente | Tratar como bug do agente: re-resolver **Ação** e repetir **só** com o id correto — **não** sugerir restaurar `status_1` nem mover grupo manualmente como “plano B” da skill |
+| `get_board_info` sem coluna `title: Ação` | Reportar só isso; **não** gravar na tarefa |
+| Falhou gravar **Ação** (id errado / label) | Re-resolver por título e repetir **só** `Concluir`/`Rejeitar` |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; ações do veredito opcionais |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código no SKILL pai); se `create_item` falhar → parar |
@@ -358,11 +371,7 @@ Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)` 
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)
 - Mudar status de **Executar**, **Testar** ou **Deploy** (salvo pedido explícito)
-- Em qualquer veredito: alterar `status_1` (status consolidado removido) — a decisão vai na coluna **Ação**
-- Em qualquer veredito: gravar label com **nome de grupo** (`Revisão manual de código`, `QA`, …) em qualquer coluna
-- Em qualquer veredito: **`move_item_to_group`**
-- Em `pode_avancar_para_revisao_manual`: status consolidado **QA**, **Aguardando testes**, **Aguardando deploy** (via `status_1`)
-- Sugerir “restaurar coluna `status_1`” ou “mover grupo manualmente” como substituto de gravar **Ação**
+- Qualquer mutation na tarefa principal **exceto** coluna **Ação** (`Concluir` / `Rejeitar`)
 
 ## Skills relacionadas
 
