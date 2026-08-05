@@ -1,5 +1,5 @@
 ---
-VERSION: "1.18.0"
+VERSION: "1.19.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -109,6 +109,7 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
 | `writting-tests-rails.mdc` | Testes Minitest — estrutura; integração/request obrigatória e limitada; força → `test-quality-rails`. |
 | `test-quality-rails.mdc` | Critério de força — comportamento de produto, naming PT, anti-padrões; não cobertura de linha. |
+| `screen-integration-tests.mdc` | Tela criada/alterada → teste de integração/request com um status HTTP deliberado. |
 | `rails-test-submodule-readonly.mdc` | Passagem só de testes — produção read-only; só `test/` muda. |
 | `writting-tests-react.mdc` | Specs Vitest + RTL — layout `js-tests/`, naming, agrupamento, isolamento. |
 | `vitest-setup.mdc` | Bootstrap Vitest na raiz do host (config, aliases, scripts) — não specs. |
