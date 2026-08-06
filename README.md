@@ -1,5 +1,5 @@
 ---
-VERSION: "1.18.0"
+VERSION: "1.19.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -95,6 +95,7 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | Arquivo | Tema |
 |---------|------|
 | `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule vs infrastructure vs scope. |
+| `git-branch-naming.mdc` | Nome de branch git — `dev-<kebab-case>`; sem `feat/`/`fix/`/etc. |
 | `infrastructure.mdc` | Infrastructure de domínio — I/O, gems e integrações locais em `app/domains/**/infrastructure/`. |
 | `naming-rails.mdc` | Naming Rails — PT domínio, EN convenções, métodos, variáveis, colunas, models. |
 | `ruby.mdc` | Estilo Ruby — kwargs, fluxo de controle, sem meta desnecessária; naming → `naming-rails.mdc`. |

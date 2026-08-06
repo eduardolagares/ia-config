@@ -1,0 +1,53 @@
+---
+VERSION: "1.0.0"
+description: Padrão de nome de branch git Baladapp (dev-xxxxxx)
+alwaysApply: true
+---
+
+# Nome de branch git
+
+Ao criar branch nova (`git checkout -b`, `git worktree add -b`, agentes, planos):
+
+## Formato
+
+```
+dev-<descricao-em-kebab-case>
+```
+
+- Prefixo fixo: `dev-`
+- Resto: minúsculas, palavras separadas por hífen
+- Descrição curta do que a branch faz (verbo ou tema)
+
+## Bloqueado
+
+Não usar prefixos de tipo Conventional / GitFlow:
+
+- `feat/`
+- `fix/`
+- `chore/`
+- `hotfix/`
+- `feature/`
+- `bugfix/`
+
+Não usar `PascalCase`, `snake_case` nem espaços no nome.
+
+## Exemplos
+
+```text
+# OK
+dev-relatorio-socios-vitoria
+dev-biometria-form-dados-faltantes
+dev-facilitar-marcar-assinatura-item-como-utilizado
+dev-corrigir-estorno-manualmente
+
+# BLOQUEADO
+feat/biometria-form-faltantes
+fix/acao-rapida-complemento
+feature/relatorio-socios
+hotfix/estorno
+```
+
+## Heurística
+
+Se o nome tiver `/` depois de um tipo (`feat`, `fix`, …) → reescrever para `dev-…`.
+Worktree path pode espelhar o slug sem o prefixo `dev-` (ex.: `../ingressos-wt-biometria-form`); a **branch** sempre `dev-…`.
