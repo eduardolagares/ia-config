@@ -1,5 +1,5 @@
 ---
-VERSION: "1.20.0"
+VERSION: "1.21.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -76,6 +76,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
 | `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
 | `gerar-plano-de-implementacao` | No projeto a alterar: avalia estrutura de código + grill-me; cobre RFs/UCs/Impactos com nomes concretos; grava em `docs/planos-de-implementacao/`. |
+| `spec-implementer` | Doc Cenário/RF/UC → código + testes; plano em `docs/specs/`; pergunta só o crítico; nunca reporta pronto com testes vermelhos. |
 | `criar-tarefa-no-monday` | Publica no Monday documento funcional pronto (item, doc, subtarefas, branch); entrevista só parâmetros Monday; Mermaid → PNG. |
 | `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
 | `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
