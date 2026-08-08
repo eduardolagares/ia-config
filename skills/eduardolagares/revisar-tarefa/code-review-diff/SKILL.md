@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–5 (Crítico, Grave, Padrão de código, Outros, Lacunas de teste).
   Itens 1.M, 2.M e 3.M alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.7.1"
+VERSION: "1.7.2"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
@@ -27,7 +27,7 @@ Regras:
 | Regra | Detalhe |
 |-------|---------|
 | **Única fonte primária** | Hunks atuais do passo 3 (`## Diff`) ou re-fetch GitLab MCP com os mesmos project/MR/branch |
-| **Truncado** | **Re-obter** via MCP GitLab (`mr_review.raw_diffs` / `repository.compare`). **Proibido** confiar em cache/índice antigo do patch; **proibido** cache em disco |
+| **Truncado** | **Re-obter** via MCP GitLab (`mr_review.raw_diffs` — único action com hunks). **Proibido** confiar em cache/índice antigo do patch; **proibido** cache em disco |
 | **Proibido** | Reler repo inteiro, inventar alterações, usar diff de outra branch/tarefa, comparar contra doc/diff guardado em cache |
 | **Secundário** | Passo 1 (spec Monday — **reler** `read_docs` se for cruzar conteúdo), passo 2 (requisitos), `docs/specs/tdd/*.md` — só cruzamento de escopo, **não** substituem o diff |
 

@@ -5,7 +5,7 @@ description: >-
   publica achados, avalia veredito e atualiza status subtarefa / owners / coluna Ação no Monday. Use com /revisar-tarefa
   ou "revisar tarefa monday".
 disable-model-invocation: true
-VERSION: "6.16.0"
+VERSION: "6.17.0"
 ---
 
 # `/revisar-tarefa`
@@ -35,8 +35,8 @@ Antes de cada passo que toca Monday/GitLab, usar as receitas prontas (action/too
 | Criar subtarefa Revisar código | `create_item` (`parentItemId` = tarefa; `name: Revisar código automaticamente`) |
 | Ler / append / checkbox doc | `read_docs` / `update_doc` |
 | Status / owner | `change_item_column_values` |
-| Diff via MR | `gitlab_execute_action` → `merge_request.list` → `mr_review.raw_diffs` |
-| Diff sem MR | `repository.compare` (`from: master`, `to: branch`) |
+| Diff (único caminho com hunks) | `gitlab_execute_action` → `merge_request.list` → `mr_review.raw_diffs` |
+| Sem MR aberto | `repository.compare` só confirma conteúdo (não traz hunks) → `merge_request.create` → `mr_review.raw_diffs` |
 | Criar / ajustar MR | `merge_request.create` / `merge_request.update` (`target_branch: master`) |
 
 Resolver `server` com `GetMcpTools` se o id da sessão for outro; se `needsAuth` → `mcp_auth`.
@@ -67,7 +67,7 @@ Toda **comparação** ou decisão (code review, verificação de R*, marcar chec
 | Artefato | Como obter na hora |
 |----------|-------------------|
 | Doc Monday (principal ou Revisar código) | `read_docs` de novo (IDs via context-mode ou passo atual) |
-| Diff GitLab | `mr_review.raw_diffs` ou `repository.compare` de novo |
+| Diff GitLab | `mr_review.raw_diffs` de novo (único action com hunks) |
 | Truncado no chat | **Re-obter** via MCP Monday/GitLab; **não** tratar o truncado como completo |
 
 Metadados no context-mode servem só para **endereçar** o re-fetch — nunca para saltar a leitura do conteúdo atual.
@@ -180,6 +180,7 @@ Detalhes: [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
 - **Entrada:** branch e projetos/repos da saída do Passo 1.
 - **Saída:** secção **`## Diff`** — branch vs **`master`** por repo, com linha **`Status:`** `ok` \| `parcial` \| `indisponível` (ver `executar-diff`).
 - **Canal:** só GitLab MCP da IDE; ver [executar-diff/SKILL.md](executar-diff/SKILL.md) e [reference-gitlab-mcp.md](reference-gitlab-mcp.md).
+- **MR:** hunks só existem via `mr_review.raw_diffs`; branch sem MR aberto → o passo 3 abre o MR (`target: master`) e o passo 8 reutiliza-o como `existing`.
 - **Bloqueio:** se **`Status: indisponível`** ou **`parcial`** (GitLab indisponível — requisito da skill), **parar** e **não** alterar Ação/status no Monday — passo 8 proibido; ver § GitLab — requisito obrigatório e § Passo 8.
 
 ## Passo 4 — Code review do diff (`code-review-diff`)

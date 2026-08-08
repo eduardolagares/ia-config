@@ -5,12 +5,12 @@ description: >-
   e entrega "## Diff". Use após gerar-requisitos-de-usuario ou com
   "executar diff da tarefa", "diff gitlab revisar".
 disable-model-invocation: true
-VERSION: "3.3.1"
+VERSION: "3.4.0"
 ---
 
 # revisar-tarefa — executar DIFF (passo 3)
 
-Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no GitLab.
+Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. Leitura no GitLab, com **uma** escrita permitida: abrir o MR da branch quando ele ainda não existe (§ Fonte dos hunks).
 
 **Canal obrigatório:** **GitLab MCP** instalado na IDE de quem executa — [reference-gitlab-mcp.md](../reference-gitlab-mcp.md) (**receitas JSON completas**).
 
@@ -20,11 +20,25 @@ Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no Gi
 
 **Cache:** metadados **só** via MCP context-mode ([SKILL.md](../SKILL.md) § Cache). **Nunca** indexar o conteúdo do diff; se precisar do patch completo, **re-obter** via GitLab MCP. Sem context-mode → sem cache de metadados.
 
+## Fonte dos hunks
+
+Neste GitLab MCP, **`mr_review.raw_diffs` é o único action que devolve patch com hunks**. `repository.compare`, `repository.commit_diff` e `mr_review.changes_get` devolvem só commits e lista de ficheiros — `unidiff: true` **não** resolve. Não gastar turnos a tentar.
+
+Consequência: **sem MR não há diff revisável**. Se a branch não tiver MR aberto, o passo 3 **abre** o MR (`source` → `master`) e só então lê `raw_diffs`.
+
+| Guarda | Regra |
+|--------|-------|
+| Antes de criar | `repository.compare` (`from: master`, `to: <branch>`) tem de mostrar **≥1 commit e ≥1 ficheiro** |
+| Branch vazia vs `master` | **Não** criar MR; **Erro:** `branch sem diferenças vs master` nesse repo |
+| Título do MR | Título da tarefa Monday (passo 1); sem título → nome da branch |
+| Duplicação | Passo 8 reencontra o MR via `merge_request.list` e regista `existing` — **nunca** abrir um segundo |
+| `method` | Sempre `mcp_mr_diff`. **`mcp_compare` foi removido** — compare é inventário, não diff |
+
 ## Diffs grandes
 
 1. Resumir no chat (até **~400 linhas** por repo se truncado; avisar).
 2. Metadados (`project_id`, MR `iid`/`web_url`, branch, método) → **só** `ctx_index` no context-mode (se `ready`). Sem context-mode → sem cache.
-3. Se um passo seguinte precisar do diff completo ou o chat estiver truncado → **re-obter** via GitLab MCP (`mr_review.raw_diffs` ou `repository.compare`), usando IDs do context-mode (`ctx_search`) ou da saída atual do passo 3. **Proibido** tratar patch antigo (chat/disco/índice de conteúdo) como fonte da comparação.
+3. Se um passo seguinte precisar do diff completo ou o chat estiver truncado → **re-obter** via `mr_review.raw_diffs`, usando IDs do context-mode (`ctx_search`) ou da saída atual do passo 3. **Proibido** tratar patch antigo (chat/disco/índice de conteúdo) como fonte da comparação.
 4. **Proibido** gravar `.diff` / JSON de patch em disco; **proibido** indexar o patch no context-mode.
 
 ## Receita rápida (copiar)
@@ -33,7 +47,7 @@ Sub-skill dedicada ao **passo 3** de `revisar-tarefa`. **Somente leitura** no Gi
 
 1. `merge_request.list` — `project_id`, `source_branch`, `state: opened`
 2. Se MR → `mr_review.raw_diffs` — `project_id`, `merge_request_iid` → `method: mcp_mr_diff`
-3. Senão → `repository.compare` — `from: master`, `to: <branch>` → `method: mcp_compare`
+3. Senão → `repository.compare` (`from: master`, `to: <branch>`) para conferir conteúdo → `merge_request.create` (`target_branch: master`) → voltar ao ponto 2
 
 Não chamar `gitlab_find_action` se estes actions bastarem.
 
@@ -59,7 +73,7 @@ Sem branch → parar. Sem repo → inferir ou perguntar; não chutar path GitLab
 
 ## Fontes válidas
 
-Somente **GitLab MCP** (`CallMcpTool` → `gitlab_execute_action`). Não inferir alterações lendo arquivos do disco nem marcar `method` fora de `mcp_mr_diff` \| `mcp_compare`.
+Somente **GitLab MCP** (`CallMcpTool` → `gitlab_execute_action`). Não inferir alterações lendo arquivos do disco; `method` é sempre `mcp_mr_diff`.
 
 ## Ordem de execução (obrigatória)
 
@@ -75,11 +89,13 @@ No início do passo 3:
 
 Para **cada** `namespace/project` em **Projetos alterados** / passo 1:
 
-| Ordem | Ação | `method` |
-|-------|------|----------|
-| 1 | `merge_request.list` — `project_id`, `source_branch` = branch, MRs abertos | — |
-| 2 | MR → `mr_review.raw_diffs` (ou `mr_review.changes_get`) | `mcp_mr_diff` |
-| 3 | Senão → `repository.compare` — `from: master`, `to: <branch>` | `mcp_compare` |
+| Ordem | Ação | Resultado |
+|-------|------|-----------|
+| 1 | `merge_request.list` — `project_id`, `source_branch` = branch, MRs abertos | `iid` ou nenhum |
+| 2 | MR → `mr_review.raw_diffs` | hunks → `method: mcp_mr_diff` |
+| 3 | Sem MR → `repository.compare` — `from: master`, `to: <branch>` | inventário (commits + ficheiros), **sem** hunks |
+| 4 | Inventário vazio | **Erro:** `branch sem diferenças vs master`; não criar MR |
+| 5 | Inventário com conteúdo → `merge_request.create` (`target_branch: master`) | `iid` → voltar à ordem 2 |
 
 `project_id` = path `namespace/project` (ex. `baladapp/ingressos`).
 
@@ -124,8 +140,8 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 
 | Campo | Valor |
 |-------|-------|
-| Método | `mcp_mr_diff` \| `mcp_compare` |
-| MR | `<!iid> — <url>` ou — |
+| Método | `mcp_mr_diff` |
+| MR | `<!iid> — <url>` (+ *criado no passo 3* se aplicável) |
 | Target | `<target_branch>` ou `master` |
 | Tamanho | `<bytes ou linhas>` (+ nota *truncado* se aplicável) |
 
@@ -149,6 +165,9 @@ Entregar **somente** o bloco abaixo. **Não** repetir passos 1 ou 2.
 |----------|------|
 | Branch vazia no Monday | Parar |
 | MCP GitLab ausente / auth falhou | Parar; pedir GitLab ligado em Settings → MCP |
+| Compare devolveu só commits/ficheiros | Esperado — não é erro do MCP; seguir para criar o MR e ler `raw_diffs` |
+| Branch sem diferenças vs `master` | **Erro:** no repo; não criar MR; tende a `parcial` / `indisponível` |
+| `merge_request.create` falhou | **Erro:** no repo; sem hunks não há `ok` |
 | Diff falhou em todos os repos | `Status: indisponível`; não inventar diff; passo 8 proibido |
 | `Status` ≠ `ok` | Passo 8 proibido — ver [pos-avaliacao](../pos-avaliacao/SKILL.md) |
 | Tentação de REST/`GITLAB_TOKEN` | Recusar — só MCP da IDE |

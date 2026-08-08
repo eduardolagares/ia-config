@@ -39,7 +39,9 @@ Não chamar `gitlab_find_action` em loop se o action abaixo já está listado.
 
 ---
 
-## Passo 3 — Diff (leitura)
+## Passo 3 — Diff
+
+**Limitação verificada deste MCP (não retestar):** `repository.compare` e `repository.commit_diff` devolvem **só** commits e a tabela de ficheiros — o renderer **omite os hunks**, e `unidiff: true` **não** muda isso. O **único** action que devolve patch unificado é **`mr_review.raw_diffs`**. Logo: **sem MR não há diff revisável**.
 
 Ordem **obrigatória** por cada `namespace/project`:
 
@@ -57,7 +59,7 @@ Ordem **obrigatória** por cada `namespace/project`:
 }
 ```
 
-### 2a) Com MR → diff unificado (preferido) → `method: mcp_mr_diff`
+### 2) Com MR → diff unificado → `method: mcp_mr_diff`
 
 ```json
 {
@@ -69,21 +71,13 @@ Ordem **obrigatória** por cada `namespace/project`:
 }
 ```
 
-Alternativa estruturada (ficheiros):
+Única fonte do fence `diff` do `## Diff`. Se truncado → re-obter `raw_diffs` (não cachear o patch).
 
-```json
-{
-  "action": "mr_review.changes_get",
-  "params": {
-    "project_id": "baladapp/ingressos",
-    "merge_request_iid": 410
-  }
-}
-```
+`mr_review.changes_get` devolve **só** a tabela de ficheiros, sem hunks — serve de inventário, **nunca** de fonte do fence.
 
-Preferir `raw_diffs` para o fence `diff` do `## Diff`. Se truncado → re-obter `raw_diffs` / `repository.compare` (não cachear o patch).
+### 3) Sem MR → inventário com compare, depois criar o MR
 
-### 2b) Sem MR (ou diff do MR falhou) → compare → `method: mcp_compare`
+**3a)** `repository.compare` — **só** para confirmar que a branch tem conteúdo (commits + ficheiros). **Proibido** usar esta saída como diff ou marcar `method: mcp_compare`.
 
 ```json
 {
@@ -98,7 +92,13 @@ Preferir `raw_diffs` para o fence `diff` do `## Diff`. Se truncado → re-obter 
 
 `from` = base (`master`); `to` = branch da tarefa.
 
-### 3) Detalhe do MR (opcional)
+**3b)** 0 commits ou 0 ficheiros → parar esse repo com **Erro:** `branch sem diferenças vs master`. **Não** criar MR.
+
+**3c)** ≥1 commit e ≥1 ficheiro → criar o MR (§ Passo 8 C, target `master`) e voltar ao ponto 2 com o `iid` devolvido → `method: mcp_mr_diff`.
+
+Registar no `## Diff` que o MR nasceu no passo 3. O passo 8 reencontra-o via `merge_request.list` e regista como `existing` — **não** abrir um segundo MR.
+
+### 4) Detalhe do MR (opcional)
 
 ```json
 {
@@ -122,7 +122,7 @@ Target sempre **`master`**. Source = branch Monday. Título = título da tarefa 
 
 ### A) Já existe aberto `source` → `master` → `existing`
 
-Usar `merge_request.list` (acima). Reutilizar `iid` + `web_url`.
+Usar `merge_request.list` (acima). Reutilizar `iid` + `web_url`. Inclui MR aberto pelo passo 3.
 
 ### B) Aberto com outro target → `updated_target`
 
@@ -179,4 +179,5 @@ Ou `gitlab_find_action` com `query: "project get"` / `"merge request create"`.
 2. Só `gitlab_execute_action` com actions desta página — não reinventar.
 3. `project_id` = `namespace/project`; MR = IID.
 4. Base/target = `master`.
-5. MCP falhou → **parar**; não inventar diff/MR; passo 8 proibido se `## Diff` ≠ `ok`.
+5. Hunks **só** de `mr_review.raw_diffs`. Sem MR → compare para inventário → criar MR → `raw_diffs`.
+6. MCP falhou → **parar**; não inventar diff/MR; passo 8 proibido se `## Diff` ≠ `ok`.
