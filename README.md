@@ -1,5 +1,5 @@
 ---
-VERSION: "1.21.0"
+VERSION: "1.22.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -78,8 +78,8 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `gerar-plano-de-implementacao` | No projeto a alterar: avalia estrutura de código + grill-me; cobre RFs/UCs/Impactos com nomes concretos; grava em `docs/planos-de-implementacao/`. |
 | `spec-implementer` | Doc Cenário/RF/UC → código + testes; plano em `docs/specs/`; pergunta só o crítico; nunca reporta pronto com testes vermelhos. |
 | `criar-tarefa-no-monday` | Publica no Monday documento funcional pronto (item, doc, subtarefas, branch); entrevista só parâmetros Monday; Mermaid → PNG. |
-| `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
-| `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
+| `tdd-doc` | **Depreciada** — use `spec-implementer` (ou `escrever-tarefa`). Legado: spec TDD em markdown, sem código. |
+| `tdd-dev` | **Depreciada** — use `spec-implementer`. Legado: ciclo TDD RED/GREEN por RF/fase/completo; segue `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 | `refatorar-codigo` | Refatora o diff (branch vs `master`, alterações locais ou paths indicados) para Clean & Short Code; aplica em disco, mantém comportamento. |
 | `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday só via MCP da IDE. |
@@ -128,7 +128,7 @@ O **upgrade** remove skills legadas `agendar-revisao-tarefa` e `executar-revisao
 
 O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
-**Por quê:** a skill `tdd-dev` referencia **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/`) — menos tokens e comportamento alinhado. Sem essa instalação, esse trecho é ignorado (sem erro).
+**Por quê:** skills do pacote (ex. legado `tdd-dev`) podem referenciar **caveman** quando existir no ambiente — menos tokens e comportamento alinhado. Sem essa instalação, esse trecho é ignorado (sem erro).
 
 ---
 

@@ -1,14 +1,24 @@
 ---
 name: tdd-dev
 description: >-
-  Ciclo TDD RED/GREEN (Por RF / Por fase / Completo); spec PT em docs/specs/tdd/;
-  pareia com tdd-doc; menu 1–7; commit só opções 1|5. Use com /tdd-dev, "tdd-dev",
-  ou para implementar spec TDD existente.
+  DEPRECATED — use /spec-implementer. Legado: ciclo TDD RED/GREEN (Por RF / Por
+  fase / Completo); spec PT em docs/specs/tdd/; pareia com tdd-doc; menu 1–7;
+  commit só opções 1|5. Só invoque se o utilizador insistir no protocolo legado.
 disable-model-invocation: true
-VERSION: "1.0.0"
+VERSION: "1.1.0"
 ---
 
 # tdd-dev — protocol (agent)
+
+## DEPRECATED
+
+**Substituída por `spec-implementer` (`/spec-implementer`).**
+
+Ao ativar esta skill:
+
+1. Em pt-BR, diga que `tdd-dev` está **depreciada**.
+2. Aponte para `/spec-implementer` (doc Cenário/RF/UC → código + testes + `docs/specs/`).
+3. **Não** execute o protocolo abaixo, salvo se o utilizador pedir **explicitamente** continuar com o legado (`tdd-dev` / protocolo TDD antigo).
 
 ## Language split (mandatory)
 
