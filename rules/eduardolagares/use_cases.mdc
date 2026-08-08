@@ -1,6 +1,6 @@
 ---
-VERSION: "0.0.5"
-description: Use cases — Dry::Monads Result, domain NS, no dry-transaction
+VERSION: "0.1.2"
+description: Use cases — Dry::Monads Result, #call como roteiro linear, sem dry-transaction
 alwaysApply: true
 ---
 # Use cases
@@ -8,6 +8,44 @@ alwaysApply: true
 - **When:** one class per controller action / `ApplicationJob` that mutates state or orchestrates steps. **Else:** read-only relation → query object (`query_objects.mdc`); single domain yes/no → rule object (`rule_objects.mdc`).
 - **Name:** `VerbNoun`. **NS:** `DominioX::UseCases::Y::`. **Path:** `app/domains/<domain>/use_cases/**/verb_noun.rb` ↔ nested `Y::` (same as `rules/`, `queries/`).
 
+## `#call` — roteiro por padrão
+
+`#call` **orquestra** o fluxo: lê-se de cima a baixo. Extraia passos para privados quando o corpo crescer ou misturar preocupações.
+
+**Exceção — corpo curto:** se a execução inteira for pequena e linear (poucas linhas, sem ramos/I/O pesado), `#call` **pode** conter a implementação direto. Não invente privados só por formalidade.
+
+Quando orquestra (padrão em fluxos com vários passos):
+
+1. **Gates primeiro** — `return Failure(...)` / rule `.result` no topo; falha cedo.
+2. **Passos em sequência** — cada passo relevante é `yield` num método privado que devolve `Success` | `Failure`, **ou** chamada explícita a outro use case / infrastructure.
+3. **Side-effects opcionais por último** — `maybe_*` depois da mutação principal; só `Success`.
+4. **Um `Success` / `Failure` final** — payload claro; sem misturar `nil` e record no mesmo caminho feliz.
+
+Forma esperada (fluxo com passos):
+
+```ruby
+def call
+  return Failure(:forbidden) unless ::DominioX::Rules::Y::Pode.result(...)
+
+  registro = yield criar_registro
+  yield maybe_enviar_email(registro:)
+  Success(registro)
+end
+```
+
+### Extrair de `#call` (quando não for curto)
+
+- Lógica de negócio longa, `where`/`find` compostos, parsing de gem, HTML/I18n
+- `if/else` aninhados ou `case` grandes — método privado que devolve `Result`
+- `yield` condicional (`yield x if cond`) — o passo decide internamente ou usa `maybe_*`
+- Mais de ~10–12 linhas sem nomes de passo claros
+- Misturar “calcular + salvar + notificar + formatar” no mesmo bloco
+
+### Privados do fluxo
+
+- Nome = efeito de domínio (`criar_pedido`, `aplicar_desconto`), não `step_1` / `process`
+- Cada um: **uma** responsabilidade; devolve `Result` se o fluxo pode falhar ali
+- Detalhe longo fica no privado; `#call` lista a ordem (ou executa tudo se for curto)
 ## Invariants
 
 - `include Dry::Monads[:result, :do]` on the class. No app base use-case class. No `dry-transaction`.
@@ -40,7 +78,7 @@ end
 
 ## Do not
 
-- Hash-as-input; conditional `yield`; `maybe_*` returning `Failure`; helpers returning non-`Result`; `< ApplicationUseCase`; file not under `…/use_cases/` mirroring NS; use case for trivial query; passing ids when objects are available at call site; presentation in use case.
+- Hash-as-input; conditional `yield`; `maybe_*` returning `Failure`; helpers returning non-`Result`; `< ApplicationUseCase`; file not under `…/use_cases/` mirroring NS; use case for trivial query; passing ids when objects are available at call site; presentation in use case; `#call` longo/confuso sem extrair (ver secção `#call`).
 
 ## Reference skeleton
 
@@ -58,8 +96,21 @@ module DominioOrders
         end
 
         def call
-          return Failure(:forbidden) unless ::DominioOrders::Rules::Orders::CustomerMayOrder.result(user: @user, event: @event)
-          # yield steps returning Result; then Success(order) or Failure(:sym)
+          return Failure(:forbidden) unless ::DominioOrders::Rules::Orders::ClientePodePedir.result(user: @user, event: @event)
+
+          order = yield criar_pedido
+          yield maybe_enviar_confirmacao(order:)
+          Success(order)
+        end
+
+        private
+
+        def criar_pedido
+          # persiste / orquestra; Success(order) ou Failure(:sym)
+        end
+
+        def maybe_enviar_confirmacao(order:)
+          # side-effect opcional; sempre Success(...)
         end
       end
     end

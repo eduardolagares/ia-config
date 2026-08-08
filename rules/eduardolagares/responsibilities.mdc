@@ -1,0 +1,60 @@
+---
+VERSION: "0.2.1"
+description: Uma responsabilidade por classe/método — layers existentes, estrutura do projeto, sem inventar pasta
+alwaysApply: true
+---
+# Responsibilities
+
+**Onde** a responsabilidade mora → `domain-layer.mdc`. Esta rule: **uma** responsabilidade por unidade e o que é proibido misturar.
+
+## Antes de criar classe (obrigatório)
+
+1. **Layer existente** — a responsabilidade encaixa em query / use case / rule / infrastructure / scope / model / controller / job / presenter? (`domain-layer.mdc`). Se encaixa, **use essa layer** — não invente `*Service` paralelo.
+2. **Estrutura do projeto** — localize pastas/namespaces já usados para essa layer (ex.: `app/domains/.../use_cases/`). Coloque a classe **lá**, no mesmo padrão de path e naming dos vizinhos.
+3. **Estrutura nova** — só se o utilizador **pedir explicitamente**. Sem pedido: não criar `app/services/`, `lib/domain/`, pasta de layer que o repo ainda não tem, nem “organização melhor” fora do que já existe.
+
+Se a layer existe nas rules mas o projeto **ainda não tem** a pasta → pergunte (fechada) ou coloque no lar mais próximo já usado no repo; **não** inaugure árvore nova sozinho.
+
+## Unidade = um job
+
+- Classe: descreve-se numa frase **sem** "e". Precisa de "e" → split ou camada errada.
+- Método: um efeito. Nome com "and" / dois verbos → split.
+- Use case: um fluxo (uma action/job). Não acumule Create+Update+Cancel na mesma classe.
+- Use case / query: `#call` **orquestra por padrão**; corpo **curto** pode executar inline (`use_cases.mdc`, `query_objects.mdc`).
+- Rule: uma pergunta via `#result` (**nunca** `#call`); costuma ser expressão curta inline (`rule_objects.mdc`).
+- Query: uma composição de leitura. Infrastructure: um I/O concreto.
+
+## Não misturar (sempre separar)
+
+| Mistura | Separar em |
+|---------|------------|
+| HTTP/params + regra de negócio | controller magro + use case / rule |
+| Orquestração + "pode X?" | use case + rule object |
+| SQL/filtro + mutação | query/scope + use case |
+| Gem/HTTP externo + regra | infrastructure + use case |
+| Formatação/I18n/HTML + domínio | presenter/view + domínio |
+| Mail/job/API em callback AR | use case / job depois do save |
+
+## Extrair vs manter
+
+- Inline curto usado **uma** vez → privado no dono (não extrair "por organização").
+- Extrair objeto de domínio quando: reuso real, teste isolado exige, **ou** a unidade falhou o teste da frase sem "e".
+- Não criar `*Service` / `*Manager` guarda-chuva — escolha a camada (`naming-rails.mdc`).
+
+## Sinais de violação (corrigir antes de concluir)
+
+- Classe nova fora das layers / pastas que o projeto já usa (sem pedido explícito de estrutura nova)
+- Método longo com vários `if` e efeitos colaterais misturados
+- `#call` (use case/query) ou `#result` (rule) longo e confuso quando o conteúdo já não é curto
+- Classe com "validação + persistência + notificação + API" no mesmo ficheiro
+- Controller com `if` de negócio além de mapear `Result` → HTTP
+- Model `after_*` que manda email, enfileira job ou chama API
+
+## Gate
+
+- [ ] Layer existente escolhida (`domain-layer.mdc`)
+- [ ] Path/namespace espelha estrutura **já presente** no projeto
+- [ ] Sem árvore/pasta nova sem pedido explícito do utilizador
+- [ ] Cada classe/método novo tem um job claro
+- [ ] Sem mistura da tabela acima
+- [ ] Sem abstração especulativa

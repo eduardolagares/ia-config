@@ -1,5 +1,5 @@
 ---
-VERSION: "1.23.0"
+VERSION: "1.28.2"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -96,18 +96,19 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | Arquivo | Tema |
 |---------|------|
 | `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule vs infrastructure vs scope. |
+| `responsibilities.mdc` | Uma responsabilidade por classe/método; layers + estrutura do projeto; extrair só com motivo. |
 | `git-branch-naming.mdc` | Nome de branch git — `dev-<kebab-case>`; sem `feat/`/`fix/`/etc. |
 | `infrastructure.mdc` | Infrastructure de domínio — I/O, gems e integrações locais em `app/domains/**/infrastructure/`. |
-| `naming-rails.mdc` | Naming Rails — PT domínio, EN convenções, métodos, variáveis, colunas, models. |
+| `naming-rails.mdc` | Naming Rails — ficheiros, classes, métodos; rule = pergunta; query = resultado + `Query`. |
 | `ruby.mdc` | Estilo Ruby — kwargs, fluxo de controle, sem meta desnecessária; naming → `naming-rails.mdc`. |
 | `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR. |
 | `controllers.mdc` | Controllers magros — Pundit, strong params, REST; integração/request obrigatória e limitada. |
 | `implementation.mdc` | Edits mantêm testes em sincronia — integração/request por tela (status + render); contratos; testes focados. |
 | `migrations.mdc` | Migrations Rails — gerador, versão, reversibilidade, índices, FKs, naming de colunas. |
 | `models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
-| `query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
-| `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
-| `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
+| `query_objects.mdc` | Query objects — nome = resultado + `Query`, `relation:` / `@relation`, `self.call`, YARD. |
+| `rule_objects.mdc` | Rule objects — pergunta de domínio em PT, `#result` primitivo, read-only. |
+| `use_cases.mdc` | Use cases — `Dry::Monads::Result`, `#call` como roteiro linear, sem `dry-transaction`. |
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
 | `writting-tests-rails.mdc` | Testes Minitest — estrutura; integração/request obrigatória e limitada; força → `test-quality-rails`. |
 | `test-quality-rails.mdc` | Critério de força — comportamento de produto, naming PT, anti-padrões; não cobertura de linha. |

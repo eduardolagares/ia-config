@@ -1,12 +1,13 @@
 ---
-VERSION: "0.1.0"
+VERSION: "0.1.2"
 description: Domain layer routing — query vs use case vs rule vs infrastructure vs scope
 alwaysApply: true
 ---
 # Domain layer routing
 
-Escolha **uma** forma por responsabilidade — detalhes nas rules por camada:
+Escolha **uma** forma por responsabilidade — detalhes nas rules por camada. Uma responsabilidade por classe/método, encaixe na estrutura do projeto e o que não misturar → `responsibilities.mdc`.
 
+**Antes de criar ficheiro:** confirmar layer na tabela; colocar na pasta/namespace que o **projeto já usa** para essa layer. Inaugurar estrutura nova só com pedido explícito do utilizador.
 | Necessidade | Onde | Rule |
 |-------------|------|------|
 | Filtro/join/order/contagem read-only reutilizável | `app/domains/**/queries/` | `query_objects.mdc` |
