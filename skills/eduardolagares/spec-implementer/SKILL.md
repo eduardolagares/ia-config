@@ -9,7 +9,7 @@ description: >-
   genuinamente crítico, salva plano e decisões em docs/specs/, e nunca reporta
   pronto sem os testes passando.
 disable-model-invocation: true
-VERSION: "1.0.0"
+VERSION: "1.1.0"
 ---
 
 # Spec Implementer
@@ -19,6 +19,20 @@ possível dentro do correto. Agir, não perguntar: leia o código antes de
 questionar o usuário. Processo (TDD, etc.) não é o objetivo — siga o que as
 skills/regras do projeto já definem; essa skill não prescreve convenção de
 implementação, só o fluxo doc → plano → código → teste → relatório.
+
+## 0. Rules são lei — carregar antes de implementar
+
+Rules do **agente** (ex.: `~/.cursor/rules/`, `~/.agents/rules/`) e do **projeto**
+(ex.: `.cursor/rules/`, `AGENTS.md`, conventions no repo) são **lei**, não
+sugestão. **Antes** de criar o spec e de escrever código:
+
+1. Localize e **leia** as rules aplicáveis (globais do agente + específicas do
+   projeto / stack / camada tocada).
+2. Implemente **só** dentro delas — naming, camadas, testes, estilo, escopo.
+3. Conflito entre RF e rule → não ignore a rule; decida com a menor mudança
+   compatível ou pergunte (fechada) se o RF exige violar a rule.
+
+Não começar a codar sem ter carregado essas rules.
 
 ## 1. Ler o doc e criar o spec antes de codar
 
@@ -54,7 +68,7 @@ entrada, mesma numeração, mais uma seção de código:
   ```diff
   <trecho real da mudança — não só descrever em prosa>
   ```
-- Teste: <o que cobre>
+- Teste: <o que cobre> | ou: não automatizável → ver Casos de teste para QA
 
 ## Perguntas feitas ao usuário
 - <pergunta> → <resposta>
@@ -68,6 +82,11 @@ resumir vários numa linha. Todo trecho de código alterado ou criado precisa
 estar explícito na seção de código, com diff. Atualize o arquivo conforme
 implementa; o relatório no chat (§5) só aponta pra ele.
 
+**Código / comportamento sem teste automatizado:** qualquer pedaço que não
+puder ser travado por teste automático **deve** constar em "Casos de teste
+para QA" no spec (o quê, valores de exemplo, resultado esperado) — nunca só
+no chat. Status do RF: "aguardando QA", nunca "pronto".
+
 ## 2. Responder suas próprias perguntas primeiro
 
 Antes de perguntar, procure no código: onde a view/classe já mora, convenções
@@ -75,9 +94,14 @@ e padrões já usados em lógica parecida, testes existentes na área.
 
 Só pergunte ao usuário quando **tudo** isso for verdade: (1) o código não
 responde, (2) duas implementações razoáveis dariam resultados visivelmente
-diferentes, (3) errar sai caro de refazer. Pergunta única, fechada ("A ou
+diferentes, (3) errar sai caro de refazer. Cada pergunta: fechada ("A ou
 B?"), registrada em "Perguntas feitas ao usuário". Caso contrário, decida
 sozinho, registre a suposição na subseção do RF, e siga.
+
+**Lote de perguntas:** se precisar de **mais de uma**, liste **todas** de uma
+vez no mesmo turno (numeradas, cada uma fechada). Não faça pingue-pongue
+pergunta → resposta → próxima pergunta. Espere as respostas do lote e só
+então continue.
 
 ## 3. Implementar
 
@@ -88,17 +112,17 @@ revisáveis. Não altere nada fora do que os RFs pedem — RFs que travam
 comportamento atual (ex. "não mudar a fonte") são guardrail, não sugestão.
 Não commite automaticamente.
 
-Para RFs não travável por teste automatizado (ex. posicionamento visual),
-escreva o teste que for possível e registre o resto em "Casos de teste para
-QA" — um caso de teste pronto pra QA rodar (o quê testar, valores de exemplo
-do doc, resultado esperado), não um lembrete pro usuário. Status desses RFs:
-"aguardando QA", nunca "pronto".
+Para RFs (ou trechos) não traváveis por teste automatizado (ex. posicionamento
+visual), escreva o teste que for possível e **obrigatoriamente** registre o
+resto em "Casos de teste para QA" no spec — caso pronto pra QA rodar, não
+lembrete. Status: "aguardando QA", nunca "pronto".
 
 ## 4. Gate de teste — nunca pular
 
 Rode os testes da área tocada. Todos verdes antes de reportar qualquer coisa
 como pronta; se algo falhar, corrija ou diga claramente o que está vermelho e
-por quê.
+por quê. O que ficou sem automação já deve estar listado no spec (§1 / Casos
+de teste para QA).
 
 ## 5. Relatório final
 
@@ -106,6 +130,6 @@ Em pt-BR, curto — detalhe mora no spec:
 - Caminho do `docs/specs/<slug>.md`.
 - Status por RF (pronto / aguardando QA / bloqueado por pergunta).
 - Suposições tomadas.
-- Quais RFs têm caso de teste pra QA e por quê.
+- Quais RFs/trechos têm caso de teste manual no spec e por quê (não automatizável).
 
 Não re-renderize o conteúdo do spec no chat.
