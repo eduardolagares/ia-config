@@ -161,7 +161,6 @@ Alternativa para `public_url` no Monday: URL Kroki comprimida (base64url + defla
 10. Responder com URLs do item, documento e subtarefas (listar subtarefas na mesma ordem fixa)
 ```
 
-
 ### columnValues — formato
 
 Ação (principal): `{"<column_id_acao>": {"label": "Avaliar"}}` — `column_id` via `get_board_info`  
