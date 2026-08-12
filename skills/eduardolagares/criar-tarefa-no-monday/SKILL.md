@@ -7,7 +7,7 @@ description: >-
   Monday — não redige o documento. Converte qualquer gráfico Mermaid em PNG
   antes de adicionar ao documento. Use com /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.3.2"
+VERSION: "1.3.1"
 ---
 
 # criar-tarefa-no-monday
@@ -51,7 +51,7 @@ Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 | 2 | Quadro | Ex.: Dia a dia |
 | 3 | Grupo | **Fixo:** **Escrevendo** — não perguntar; não usar **Aguardando atribuição** |
 | 4 | Responsável(is) | Owner de **Executar** e **Corrigir** (as demais subtarefas têm owner fixo — ver § Atribuição) |
-| 5 | Branch | Valor da coluna **Branch** (`texto`), obrigatoriamente no formato `dev-<descricao-em-kebab-case>` |
+| 5 | Branch | Valor da coluna **Branch** (`texto`) |
 | 6 | Tipo | Coluna **Tipo** (`label`) — ex.: FUNCIONALIDADE |
 | 7 | Solicitante | Coluna **Solicitante** (`label6`) — ex.: SÓCIO TORCEDOR |
 | 8 | **Ação** | **Fixo:** label **Avaliar** — não perguntar; substitui o antigo **Status consolidado** (descontinuado) |
@@ -62,7 +62,7 @@ Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 
 ### Como conduzir
 
-1. **Primeira mensagem:** listar os campos **entrevistáveis** (1–2, 4–7, 9–10) com pergunta + recomendação quando o contexto sugerir (ex.: título a partir do documento e branch no formato `dev-<descricao-em-kebab-case>`). Incluir no resumo, como já definidos: Grupo = **Escrevendo**, Ação = **Avaliar**. Não omitir campos “para perguntar depois”.
+1. **Primeira mensagem:** listar os campos **entrevistáveis** (1–2, 4–7, 9–10) com pergunta + recomendação quando o contexto sugerir (ex.: título a partir do documento). Incluir no resumo, como já definidos: Grupo = **Escrevendo**, Ação = **Avaliar**. Não omitir campos “para perguntar depois”.
 2. **Após cada resposta do utilizador:** atualizar o estado e mostrar de novo:
    - **Respondidos** — campo + valor confirmado (incluir Grupo e Ação como fixos)
    - **Em aberto** — campos ainda sem resposta (com a pergunta / recomendação)
@@ -81,7 +81,7 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 …
 
 **Em aberto:**
-- 5. Branch — valor da coluna Branch? (ex.: `dev-nome-do-branch`)
+- 5. Branch — valor da coluna Branch? (ex.: `feat/…`)
 - 6. Tipo — …?
 …
 ```
@@ -98,8 +98,6 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 6. `Fazer deploy`
 
 **Título:** pode sugerir a partir do documento; o utilizador confirma ou corrige.
-
-**Branch:** toda sugestão deve começar com `dev-` e seguir `dev-<descricao-em-kebab-case>`, pois o pipeline só reconhece branches `dev-*`. Se o utilizador informar outro formato, pedir a correção ou propor a versão normalizada antes da confirmação final. Nunca publicar uma branch sem o prefixo `dev-`.
 
 ## Referência — quadro Dia a dia (só após confirmação do utilizador)
 
@@ -162,6 +160,7 @@ Alternativa para `public_url` no Monday: URL Kroki comprimida (base64url + defla
 9. change_item_column_values — branch em texto (e outros campos se faltarem)
 10. Responder com URLs do item, documento e subtarefas (listar subtarefas na mesma ordem fixa)
 ```
+
 
 ### columnValues — formato
 
