@@ -1,14 +1,14 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.6"
 description: Rails clean code — time zones, errors, AR boundaries; naming → naming-rails.mdc
 alwaysApply: true
 ---
 # Clean code (Rails)
 
 - Naming / Ruby grammar → `naming-rails.mdc` + `ruby.mdc`.
+- One responsibility per class/method; what not to mix → `responsibilities.mdc`.
 - No magic numbers → named constants or AR `enum`.
 - Predicate methods end with `?` (`ativo?`, `faturavel?`).
-- One responsibility per method; name contains “and” → split.
 - Comments: **why** only; no dead code (git has history).
 - AR callbacks (`after_create`, `before_save`, …) **only** for invariants on the record itself. Mail, jobs, integrations, external I/O → **out** of callbacks (use case / job / subscriber pattern per project).
 - Async / retry → `ApplicationJob`.

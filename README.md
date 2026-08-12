@@ -1,5 +1,5 @@
 ---
-VERSION: "1.19.0"
+VERSION: "1.28.2"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -76,9 +76,10 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
 | `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
 | `gerar-plano-de-implementacao` | No projeto a alterar: avalia estrutura de código + grill-me; cobre RFs/UCs/Impactos com nomes concretos; grava em `docs/planos-de-implementacao/`. |
+| `spec-implementer` | Doc Cenário/RF/UC → código + testes; plano em `docs/specs/`; pergunta só o crítico; nunca reporta pronto com testes vermelhos. |
 | `criar-tarefa-no-monday` | Publica no Monday documento funcional pronto (item, doc, subtarefas, branch); entrevista só parâmetros Monday; Mermaid → PNG. |
-| `tdd-doc` | Monta o spec de requisitos + TDD (RED/GREEN) em markdown, sem implementar código no chat. |
-| `tdd-dev` | Ciclo TDD de implementação (RED/GREEN) por RF, fase ou completo; menu de iteração; segue spec de `tdd-doc`. |
+| `tdd-doc` | **Depreciada** — use `spec-implementer` (ou `escrever-tarefa`). Legado: spec TDD em markdown, sem código. |
+| `tdd-dev` | **Depreciada** — use `spec-implementer`. Legado: ciclo TDD RED/GREEN por RF/fase/completo; segue `tdd-doc`. |
 | `code-review` | Revisão sénior **read-only** em pt-BR: correção, fluxos, segurança, contratos, persistência, concorrência. |
 | `refatorar-codigo` | Refatora o diff (branch vs `master`, alterações locais ou paths indicados) para Clean & Short Code; aplica em disco, mantém comportamento. |
 | `monday-task-info` | Passo 1 de `revisar-tarefa`: contexto Monday só via MCP da IDE. |
@@ -95,17 +96,19 @@ Regras `.mdc` copiadas para `rules/eduardolagares/` no destino. **Todas** usam *
 | Arquivo | Tema |
 |---------|------|
 | `domain-layer.mdc` | Router da camada de domínio — query vs use case vs rule vs infrastructure vs scope. |
+| `responsibilities.mdc` | Uma responsabilidade por classe/método; layers + estrutura do projeto; extrair só com motivo. |
+| `git-branch-naming.mdc` | Nome de branch git — `dev-<kebab-case>`; sem `feat/`/`fix/`/etc. |
 | `infrastructure.mdc` | Infrastructure de domínio — I/O, gems e integrações locais em `app/domains/**/infrastructure/`. |
-| `naming-rails.mdc` | Naming Rails — PT domínio, EN convenções, métodos, variáveis, colunas, models. |
+| `naming-rails.mdc` | Naming Rails — ficheiros, classes, métodos; rule = pergunta; query = resultado + `Query`. |
 | `ruby.mdc` | Estilo Ruby — kwargs, fluxo de controle, sem meta desnecessária; naming → `naming-rails.mdc`. |
 | `clean_code_ruby.mdc` | Clean code Rails — time zones, erros, fronteiras AR. |
 | `controllers.mdc` | Controllers magros — Pundit, strong params, REST; integração/request obrigatória e limitada. |
 | `implementation.mdc` | Edits mantêm testes em sincronia — integração/request por tela (status + render); contratos; testes focados. |
 | `migrations.mdc` | Migrations Rails — gerador, versão, reversibilidade, índices, FKs, naming de colunas. |
 | `models.mdc` | Models AR magros — validações, scopes, enums; orquestração fora. |
-| `query_objects.mdc` | Query objects — read-only, `relation:` / `@relation`, `self.call`, YARD. |
-| `rule_objects.mdc` | Rule objects — uma pergunta de domínio, `#result` primitivo, read-only. |
-| `use_cases.mdc` | Use cases — `Dry::Monads::Result`, namespace por domínio, sem `dry-transaction`. |
+| `query_objects.mdc` | Query objects — nome = resultado + `Query`, `relation:` / `@relation`, `self.call`, YARD. |
+| `rule_objects.mdc` | Rule objects — pergunta de domínio em PT, `#result` primitivo, read-only. |
+| `use_cases.mdc` | Use cases — `Dry::Monads::Result`, `#call` como roteiro linear, sem `dry-transaction`. |
 | `views.mdc` | Views — ViewComponent, presenters, I18n, templates burros. |
 | `writting-tests-rails.mdc` | Testes Minitest — estrutura; integração/request obrigatória e limitada; força → `test-quality-rails`. |
 | `test-quality-rails.mdc` | Critério de força — comportamento de produto, naming PT, anti-padrões; não cobertura de linha. |
@@ -127,7 +130,7 @@ O **upgrade** remove skills legadas `agendar-revisao-tarefa` e `executar-revisao
 
 O ecossistema **Caveman** (modo compacto, commit/review/compress, cavecrew, …) é um **pacote de skills de terceiros** que **recomendamos**, mas **não** faz parte do `install.sh` nem do `upgrade.sh` deste repositório. **Instale e atualize pelo próprio projeto Caveman** (instruções e releases no repositório oficial).
 
-**Por quê:** a skill `tdd-dev` referencia **caveman** quando ela existir no ambiente (ex.: em `skills/` no Cursor ou em `~/.agents/skills/`) — menos tokens e comportamento alinhado. Sem essa instalação, esse trecho é ignorado (sem erro).
+**Por quê:** skills do pacote (ex. legado `tdd-dev`) podem referenciar **caveman** quando existir no ambiente — menos tokens e comportamento alinhado. Sem essa instalação, esse trecho é ignorado (sem erro).
 
 ---
 

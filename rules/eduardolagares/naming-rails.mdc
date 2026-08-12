@@ -1,13 +1,15 @@
 ---
-VERSION: "1.0.0"
-description: Naming Rails — PT domínio, EN convenções Rails, métodos, variáveis, colunas, models
+VERSION: "1.3.0"
+description: Naming Rails — ficheiros, classes, métodos, variáveis, colunas, models (PT domínio / EN Rails)
 alwaysApply: true
 ---
 # Naming (Rails)
 
-**Escopo:** métodos, variáveis, colunas, `validates`, scopes, associations, enums, callbacks, constants.
+**Escopo:** ficheiros, classes, métodos, variáveis, colunas, `validates`, scopes, associations, enums, callbacks, constants.
 
 **Resolução de conflito:** padrão existente em ficheiros vizinhos > esta rule.
+
+**Antes de nomear:** abra 1–2 ficheiros da mesma pasta/camada e copie o padrão (idioma, sufixo, verbos, profundidade do path). Não invente convenção nova no mesmo diretório.
 
 ## Idioma
 
@@ -16,6 +18,42 @@ alwaysApply: true
 - **Nunca** misturar idiomas num identificador. Ruim: `buscar_tickets`, `criado_at`. Bom: `buscar_ingressos`.
 - **Nunca** abreviar. Ruim: `qtd`, `desc`, `val`, `num`. Bom: `quantidade`, `descricao`, `valor`, `numero`.
 - **Nunca** acentos em identificadores. Bom: `descricao`, `usuario`, `numero`.
+
+## Ficheiros
+
+- `snake_case.rb` — espelha o nome da classe (Zeitwerk): `criar_pedido.rb` ↔ `CriarPedido`.
+- Path ↔ constante aninhada: pastas = módulos. Ex.: `app/domains/dominio_pedidos/use_cases/pedidos/criar_pedido.rb` ↔ `DominioPedidos::UseCases::Pedidos::CriarPedido`.
+- **Um** conceito público por ficheiro (uma classe principal). Não juntar `CreateX` + `UpdateX` no mesmo `.rb`.
+- Teste: `test/**` espelha `app/**` — `criar_pedido_test.rb` para `criar_pedido.rb` (`writting-tests-rails.mdc`).
+- **Nunca** nomes de ticket/fase/RF no ficheiro: `rf12_fix.rb`, `temp_helper.rb`, `new_service.rb`.
+- **Nunca** pastas genéricas (`utils/`, `helpers/` de domínio, `services/` paralelo) se a camada já tem lar (`domain-layer.mdc`).
+
+## Classes
+
+- `PascalCase`, palavras completas, domínio em português (exceto termos Rails: `User`, `ApplicationRecord` já existentes).
+- Nome = **o que é / o que faz**, não o ticket: `CriarPedido`, não `PedidoServiceRf3`.
+- Sufixos / forma por camada (detalhe na rule da camada):
+
+| Camada | Forma | Exemplo |
+|--------|--------|---------|
+| Use case | `VerbNoun` | `CriarPedido` |
+| Query | substantivo do resultado + `Query` | `PedidosRecentesQuery` |
+| Rule | pergunta de domínio, sem `?` | `ClienteEstaPortador` |
+| Infrastructure | `VerbNoun` | `LerPlanilha` |
+| Model AR | substantivo singular | `Pedido`, `Ingresso` |
+| Validator | `…Validator` | `CpfValidator` |
+| Job | `…Job` | `EnviarConfirmacaoJob` |
+| Presenter / Component | conceito de UI | `PedidoPresenter` |
+
+### Rules = pergunta; Queries = o que devolve
+
+- **Rule:** nome = a **pergunta** (pt-BR). Verbos/auxiliares bem-vindos para clareza (sem acento). Sem `?`. → primitivo `#result`. Não usar inglês `Is`/`May`.
+- **Query:** nome = o **conjunto / resultado** que devolve + sufixo `Query`. Ex.: `PedidosRecentesQuery`, não `QuaisPedidosRecentesQuery`. Ficheiro `snake_case` espelha a classe.
+- Comentário de classe pode descrever a intenção em linguagem natural; o identificador segue a forma da camada.
+- **Nunca** inglês `Is`/`May`/`Has`/`Get` no meio do nome se o domínio é PT.
+
+- **Nunca** `*Service`, `*Manager`, `*Handler`, `*Helper`, `*Util` como desculpa genérica — escolha a camada e o sufixo dela.
+- **Nunca** inglês genérico colado em domínio PT: `OrderCreator`, `TicketChecker` → `CriarPedido`, rule/query adequada.
 
 ## Colunas
 
@@ -36,7 +74,8 @@ Detalhe de migrations → `migrations.mdc`.
 - **Nunca** `get_` / `set_`. Quando getter/setter explícito → `obter_` / `definir_`: `obter_token_externo`, `definir_status_inicial`.
 - Getter simples → só o nome do valor. Bom: `total`. Ruim: `get_total`, `obter_total`.
 - Passo opcional em use case → prefixo `maybe_`: `maybe_aplicar_cupom`. Passo obrigatório → sem prefixo (`use_cases.mdc`).
-- Helper privado → nomeado pelo efeito. Bom: `normalizar_cpf`. Ruim: `before_save_callback`.
+- Helper privado → nomeado pelo efeito. Bom: `normalizar_cpf`. Ruim: `before_save_callback`, `process_data`, `handle_stuff`, `do_work`.
+- Nome descreve o **efeito de domínio**, não o passo técnico: `aplicar_desconto`, não `run_step_2` / `execute_logic`.
 
 ## Variáveis
 
@@ -87,18 +126,21 @@ Detalhe de arquitetura de model → `models.mdc`.
 
 - Prefixo boolean `is_` / `has_` / `flag_`.
 - `get_` / `set_` em qualquer sítio → usar `obter_` / `definir_`.
-- Nomes genéricos: `data`, `info`, `dados`, `item`, `obj`, `temp`, `aux`.
+- Nomes genéricos: `data`, `info`, `dados`, `item`, `obj`, `temp`, `aux`, `manager`, `handler`, `processor`, `helper`, `util`, `service` (como nome/sufixo vago).
 - Sufixo de tipo: `_array`, `_hash`, `_string`, `_obj`.
 - Idioma misto: `criado_at`, `buscar_tickets`.
 - Enum em forma array (sem valor explícito).
+- Ficheiro/classe com RF, ticket, `new_`, `tmp_`, `fix_`, `improved_`.
 
 ```ruby
 # ruim
+# ficheiro: order_service_rf12.rb  class OrderManager
 def get_total; is_pago?; end
 enum :status, %i[pendente pago cancelado]
 scope :buscar_ativos, -> { where(ativo: true) }
 
 # bom
+# ficheiro: criar_pedido.rb  class CriarPedido
 def total; pago?; end
 enum :status, { pendente: 0, pago: 1, cancelado: 2 }
 scope :ativos, -> { where(ativo: true) }

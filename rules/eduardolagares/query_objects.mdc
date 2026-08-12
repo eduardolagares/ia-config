@@ -1,13 +1,14 @@
 ---
-VERSION: "0.0.6"
-description: Query objects — read-only, relation: / @relation, self.call, YARD
+VERSION: "0.2.0"
+description: Query objects — nome = resultado + Query, relation: / @relation, self.call, YARD
 alwaysApply: true
 ---
 # Query objects
 
-- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe termina em `Query` (PascalCase).
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **o que a query devolve** (substantivo / frase do conjunto) + sufixo `Query`.
 - **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`use_cases.mdc`); domain yes/no primitive → rule object (`rule_objects.mdc`).
-- **Name:** ends with `Query`. **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
+- **Name:** resultado em português + `Query`. Ex.: `PedidosRecentesQuery` — **não** `QuaisPedidosRecentesQuery` (forma interrogativa fica para rules). **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
+- **Doc:** class comment pode descrever a intenção em pt-BR; o identificador nomeia o resultado.
 
 ## Invariants
 
@@ -18,21 +19,22 @@ alwaysApply: true
 - **Base relation:** starting relation kwarg **must** be named `relation:`; store as `@relation`; thread `relation:` through `self.call` defaulting to `Model.all` when applicable.
 - **Includes:** prefer `preload` when associations are for display/preload only and no `where`/`order` on joined tables; use `includes` only when needed for conditional SQL on associations.
 - **Reuse:** prefer existing model **named scopes** over duplicating `where` strings.
-- **Structure:** one concern per class; decompose `#call` into private methods when clauses compose.
+- **Structure:** `#call` pode conter a composição quando for curta e linear; decompose em privados quando as cláusulas crescerem ou se misturarem.
 - **Perf:** never `SomeQuery.new` / `.call` **inside** a loop — build relation once, then iterate.
 - **YARD (mandatory):** both `self.call` and `#call` need `# @return [ActiveRecord::Relation<Model>]` or `# @return [Hash]` (narrow `Hash{...}` when useful) — same bar as rule objects’ non-boolean `#result`.
 
 ## Do not
 
-- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop.
+- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop; nomes em inglês (`RecentOrdersQuery`, `GetOrdersQuery`) ou interrogativos (`QuaisPedidos…Query`) quando o domínio é PT.
 
 ## Reference skeleton
 
 ```ruby
+# Pedidos recentes (opcionalmente filtrados por status).
 module DominioOrders
   module Queries
     module Orders
-      class RecentOrdersQuery
+      class PedidosRecentesQuery
         # @return [ActiveRecord::Relation<Order>]
         def self.call(status: nil, relation: Order.all)
           new(status:, relation:).call

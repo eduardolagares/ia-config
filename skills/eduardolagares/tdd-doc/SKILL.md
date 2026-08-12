@@ -1,13 +1,24 @@
 ---
 name: tdd-doc
 description: >-
-  Elabora spec TDD em PT (docs/specs/tdd/); modo padrão ou grill; NO_CODE.
-  Use com /tdd-doc, "tdd-doc", ou para criar/atualizar spec de requisitos TDD.
+  DEPRECATED — use /spec-implementer (ou /escrever-tarefa + /spec-implementer).
+  Legado: elabora spec TDD em PT (docs/specs/tdd/); modo padrão ou grill; NO_CODE.
+  Só invoque se o utilizador insistir no protocolo legado.
 disable-model-invocation: true
-VERSION: "1.0.0"
+VERSION: "1.1.0"
 ---
 
 # tdd-doc
+
+## DEPRECATED
+
+**Substituída por `spec-implementer` (`/spec-implementer`).** Para redigir o documento funcional sem implementar, use `/escrever-tarefa`.
+
+Ao ativar esta skill:
+
+1. Em pt-BR, diga que `tdd-doc` está **depreciada**.
+2. Aponte para `/spec-implementer` (implementar) e/ou `/escrever-tarefa` (só o doc).
+3. **Não** execute o protocolo abaixo, salvo se o utilizador pedir **explicitamente** continuar com o legado (`tdd-doc` / spec TDD antigo).
 
 ## Maintainer note (for editors)
 
@@ -21,7 +32,7 @@ VERSION: "1.0.0"
 
 - `NOT`::`Write`/`StrReplace`/repo_touch outside agreed spec `.md`.
 - `NOT`::app/lib/**tests**/migrations/jobs/scripts/patches/source/config_runtime_behavior.
-- `REQ`::implementation_request → refuse; point `tdd-dev` or stop skill.
+- `REQ`::implementation_request → refuse; point `spec-implementer` (not `tdd-dev`) or stop skill.
 - `OUT`::single writable artifact path `docs/specs/tdd/NNNN-AAAA-MM-DD-<slug>.md` per `STRUCT.path`.
 - `OK`::chat may quote/read code; `NOT` persist non-spec code.
 

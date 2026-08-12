@@ -1,37 +1,38 @@
 ---
-VERSION: "0.0.5"
-description: Rule objects — one domain question, primitive #result, read-only
+VERSION: "0.1.2"
+description: Rule objects — pergunta de domínio em PT (#result primitivo), read-only
 alwaysApply: true
 ---
 # Rule objects
 
-- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = pergunta de domínio, **sem** `?` no identificador da classe.
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **pergunta de domínio em português**, **sem** `?` no identificador.
 - **When:** one boolean / small primitive answers “is this domain fact true?” reused in use cases, auth hints, views. **Else:** SQL-shaped reads → query object (`query_objects.mdc`); multi-step mutation → use case (`use_cases.mdc`).
-- **Name:** domain question, **no** trailing `?` (e.g. `ClienteIsPortador`). **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::` (same depth idea as queries / use cases).
+- **Name:** pergunta clara em português; verbos/auxiliares na pergunta são bem-vindos quando aumentam a clareza (sem acento no identificador). Ex.: `ClienteEstaPortador` — não `ClienteIsPortador`. **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::`.
 
 ## Invariants
 
 - **Single question** per class. `#result` returns **only** `Boolean`, `String`, `Integer`, or `BigDecimal` — never `ActiveRecord::Relation`, model instance, or `Hash`.
+- **`#result` costuma ser curto:** a expressão/execução fica **no próprio `#result`**. Extrair privado só se o corpo deixar de ser óbvio de uma leitura. Não orquestre por formalidade em rule curta.
 - **API:** instance `#result`. Optional `def self.result(...) = new(...).result` with **same** kwargs as `initialize`. **Never** `self.call` for rules.
 - **Input:** resolved domain objects / validated scalars in `initialize`. **Never** raw `params` / `ActionController::Parameters`. **Validate** types at boundary → `raise ArgumentError`. Use **top-level** `::Model` in `is_a?` to avoid NS confusion.
 - **Effects:** read-only — no saves, jobs, mail, I/O, callbacks.
 - **Compose:** other rules via `::DominioX::Rules::Y::Other.result(...)` or `new(...).result` — always **full** constant path.
-- **Doc:** class comment = the question in natural language. YARD `# @return [Type]` on `#result` **mandatory** when result is not `Boolean` (e.g. `BigDecimal`).
+- **Doc:** class comment = the question in natural language (pt-BR). YARD `# @return [Type]` on `#result` **mandatory** when result is not `Boolean` (e.g. `BigDecimal`).
 
 ## Do not
 
-- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace.
+- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace; inglês `Is`/`May`/`Has` no nome quando o domínio é PT.
 
 ## Reference skeleton
 
 ```ruby
 # frozen_string_literal: true
 
-# Natural-language question this class answers.
+# O cliente é o portador deste ingresso?
 module DominioIngressos
   module Rules
     module Ingressos
-      class ClienteIsPortador
+      class ClienteEstaPortador
         def self.result(ingresso:, cliente_id:)
           new(ingresso:, cliente_id:).result
         end
