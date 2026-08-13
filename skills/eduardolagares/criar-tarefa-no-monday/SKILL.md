@@ -7,7 +7,7 @@ description: >-
   Monday — não redige o documento. Converte qualquer gráfico Mermaid em PNG
   antes de adicionar ao documento. Use com /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.3.0"
+VERSION: "1.3.2"
 ---
 
 # criar-tarefa-no-monday
@@ -51,7 +51,7 @@ Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 | 2 | Quadro | Ex.: Dia a dia |
 | 3 | Grupo | **Fixo:** **Escrevendo** — não perguntar; não usar **Aguardando atribuição** |
 | 4 | Responsável(is) | Owner de **Executar** e **Corrigir** (as demais subtarefas têm owner fixo — ver § Atribuição) |
-| 5 | Branch | Valor da coluna **Branch** (`texto`) |
+| 5 | Branch | Valor da coluna **Branch** (`texto`) — seguir a rule `git-branch-naming` |
 | 6 | Tipo | Coluna **Tipo** (`label`) — ex.: FUNCIONALIDADE |
 | 7 | Solicitante | Coluna **Solicitante** (`label6`) — ex.: SÓCIO TORCEDOR |
 | 8 | **Ação** | **Fixo:** label **Avaliar** — não perguntar; substitui o antigo **Status consolidado** (descontinuado) |
@@ -81,12 +81,21 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 …
 
 **Em aberto:**
-- 5. Branch — valor da coluna Branch? (ex.: `feat/…`)
+- 5. Branch — valor da coluna Branch? (nome conforme a rule `git-branch-naming`)
 - 6. Tipo — …?
 …
 ```
 
-**Subtarefas:** se o utilizador não especificar, manter em aberto e **perguntar** a lista completa — não assumir `Executar`, `Revisar código automaticamente`, `Revisar código manualmente`, `Testar`, `Corrigir`, `Fazer deploy` sem confirmação. Owners das subtarefas padrão: ver § Atribuição (aplicar automaticamente salvo override explícito).
+**Subtarefas:** se o utilizador não especificar, manter em aberto e **perguntar** a lista completa — não assumir a lista padrão sem confirmação. Owners das subtarefas padrão: ver § Atribuição (aplicar automaticamente salvo override explícito).
+
+**Ordem fixa (lista padrão):** quando o utilizador confirmar a lista proposta, criar **nesta ordem exata** (1→6). Não reordenar, não embaralhar, não criar em paralelo:
+
+1. `Executar`
+2. `Revisar código automaticamente`
+3. `Revisar código manualmente`
+4. `Testar`
+5. `Corrigir`
+6. `Fazer deploy`
 
 **Título:** pode sugerir a partir do documento; o utilizador confirma ou corrige.
 
@@ -147,9 +156,9 @@ Alternativa para `public_url` no Monday: URL Kroki comprimida (base64url + defla
 5. Converter **todos** os gráficos Mermaid do documento em PNG **antes** de publicar
 6. create_doc — location: item, item_id, column_id: monday_doc, markdown **sem** nenhum bloco mermaid
 7. update_doc → create_block (imagem) com `after_block_id` após cada bloco de texto que tinha diagrama
-8. create_items — subtarefas com parentItemId, person + status por subtarefa
+8. create_items — subtarefas com parentItemId, person + status; **lista padrão: criar na ordem fixa 1→6** (ver § Ordem fixa). Preferir **uma chamada por subtarefa, em sequência** (aguardar cada resposta antes da próxima) para o Monday preservar a ordem. Se usar batch, o array `items` deve seguir exatamente essa ordem — nunca paralelo nem ordem aleatória.
 9. change_item_column_values — branch em texto (e outros campos se faltarem)
-10. Responder com URLs do item, documento e subtarefas
+10. Responder com URLs do item, documento e subtarefas (listar subtarefas na mesma ordem fixa)
 ```
 
 ### columnValues — formato
@@ -163,18 +172,19 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 
 - Item principal do Dia a dia **não** tem coluna Person direta; responsável reflete nas subtarefas (`person`).
 - Resolver `user_id` via `list_users_and_teams` / `get_user_context` pelo nome — **nunca** inventar IDs.
-- Com a lista padrão de subtarefas, aplicar **automaticamente** (salvo override explícito do utilizador):
+- Com a lista padrão de subtarefas, aplicar **automaticamente** (salvo override explícito do utilizador). Owners **na mesma ordem fixa de criação**:
 
-| Subtarefa | Owner (`person`) |
-|-----------|------------------|
-| `Revisar código automaticamente` | Eduardo Lagares |
-| `Revisar código manualmente` | Eduardo Lagares |
-| `Fazer deploy` | Eduardo Lagares |
-| `Testar` | João Sanches |
-| `Executar` | perguntar (#4) |
-| `Corrigir` | perguntar (#4) |
+| # | Subtarefa | Owner (`person`) |
+|---|-----------|------------------|
+| 1 | `Executar` | perguntar (#4) |
+| 2 | `Revisar código automaticamente` | Eduardo Lagares |
+| 3 | `Revisar código manualmente` | Eduardo Lagares |
+| 4 | `Testar` | João Sanches |
+| 5 | `Corrigir` | perguntar (#4) |
+| 6 | `Fazer deploy` | Eduardo Lagares |
 
-- Na entrevista / confirmação final, **mostrar** estes owners no resumo; só mudar se o utilizador pedir.
+- Na entrevista / confirmação final, **mostrar** estes owners e a ordem 1→6 no resumo; só mudar se o utilizador pedir.
+- **Proibido** criar as subtarefas padrão fora desta ordem.
 
 ## Saída no chat (obrigatória)
 
@@ -187,9 +197,10 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 **Documento:** [nome](doc_url)
 - Diagramas: N imagens (se aplicável)
 
-**Subtarefas:**
-1. Nome — responsável — status — url
-...
+**Subtarefas:** (na ordem de criação; lista padrão = 1→6 fixa)
+1. Executar — responsável — status — url
+2. Revisar código automaticamente — …
+…
 ```
 
 ## Erros comuns
@@ -200,6 +211,7 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 | Mermaid como código no Monday | Remover; substituir por imagem |
 | Label de status inexistente | `get_board_info` → labels exatos; ou `createLabelsIfMissing: true` |
 | Grupo/coluna descontinuados | Não usar **Aguardando atribuição** nem **Status consolidado**; usar **Escrevendo** e **Ação = Avaliar** |
+| Subtarefas em ordem aleatória | Recriar na ordem fixa 1→6 (ou criar uma a uma em sequência); não confiar em batch paralelo |
 | MCP Monday indisponível | Parar; não inventar IDs |
 
 ## Skills relacionadas
