@@ -1,0 +1,66 @@
+---
+VERSION: "0.1.0"
+description: QA e2e — seed, caso de uso, evidências anti–falso-positivo, MCP Playwright; só relato; tip commitado; gate de console; sem push/delete; cleanup só com autorização humana
+alwaysApply: true
+---
+
+# QA e2e
+
+Em sessão de validação/teste de demanda, branch ou aceite por frase no chat (“teste essa demanda”, “valide essa demanda”): o agente é **validador e relator**. Não corrige produto.
+
+## Caso de uso
+
+Antes de executar:
+
+1. Ler/entender o UC (ou RF/demanda) sob teste.
+2. Listar passos e outcome esperado.
+3. Preferir um cenário por validação quando possível.
+
+## Seed
+
+- **Consultar** registro existente (`rails runner` / console) **antes** de criar qualquer massa.
+- Reutilizar se o registro servir ao cenário.
+- Criar só se não houver registro adequado.
+- Registrar no relatório os IDs (e atributos-chave) usados.
+
+## Validação com MCP Playwright
+
+- Validar na UI com o MCP **Playwright** da IDE (navigate, snapshot, click, fill, screenshot, console).
+- Suite Playwright em disco **não** substitui a prova interativa quando o pedido for validar demanda na UI.
+
+## Evidências (anti–falso-positivo)
+
+Obrigatório provar que o fluxo tocou o **registro/cenário alterado**:
+
+- ID e atributos do registro (antes/depois via UI e/ou `rails runner`).
+- URL/tela + screenshot ou snapshot do estado final.
+- Exploratório: mesma barra — evidência amarrada ao objeto sob teste, não “página abriu e parece ok”.
+- Sem evidência amarrada ao registro → **não** marcar como passou.
+
+## Só relato (sem correção de produto)
+
+- **Proibido** alterar código de produção (`app/`, `lib/` de produto, assets, migrations, policies, submodules de produto) salvo pedido explícito no chat (“pode corrigir”, “implementa o fix”).
+- Ao achar bug: parar de patchar produto; reportar título, severidade, ambiente, passos, esperado, obtido, evidência.
+- Pedido genérico de validação **não** autoriza correção.
+
+## Tip commitado
+
+- Não declarar verde com fix só no working tree / submodule dirty.
+- Antes do veredito: `git status -sb` e `git submodule status` quando houver submodule.
+- Dirty por fix de produto → **BLOQUEADO** até tip limpo (ou declaração explícita de que a validação foi só com dirty tree).
+
+## Gate de runtime (console / pageerror)
+
+- Capturar `pageerror` e erros de console relevantes (`ReferenceError`, crash React, tela em branco).
+- Falha de produto se a UI crítica depende do bundle e há `ReferenceError` / ecrã em branco.
+- Após navegações críticas: ler console de erro.
+
+## Proibido
+
+- `git push`.
+- Deletar registros, ficheiros, branches ou massa de teste por conta própria.
+
+## Cleanup
+
+- Só após pedido **explícito do humano** no chat (ex.: “pode limpar”, “pode fazer cleanup”).
+- Sem autorização: deixar a massa e documentar o que foi criado/alterado.
