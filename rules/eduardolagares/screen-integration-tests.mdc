@@ -1,0 +1,42 @@
+---
+VERSION: "0.1.0"
+description: Telas alteradas precisam de teste de integração/request com status HTTP
+alwaysApply: true
+---
+
+# Teste de integração por tela
+
+Ao **criar ou alterar** uma tela (controller action + view/component que responde HTTP), garantir que existe teste de integração/request cobrindo essa superfície.
+
+## Checklist
+
+1. Localizar o teste de integração/request da action/rota tocada (`test/controllers/`, `test/integration/`, `test/requests/` — conforme o layout do projeto).
+2. Se **não existir**, criar um antes de considerar a tarefa pronta.
+3. O teste deve bater no endpoint real (GET/POST/…) e asserir **um** status HTTP deliberado (`200`, `201`, `404`, `409`, `422`, redirect, etc.).
+4. Detalhes de negócio, validações e regras → testes unitários (model, use case, rule, component). O request **não** revalida o domínio inteiro.
+
+## Contrato mínimo do request
+
+- Nome em português: cenário + status/outcome esperado.
+- Um status por caso.
+- Auth, tenant e setup seguem as conventions/helpers do projeto em questão.
+- Mock só de fronteira externa — nunca stub de classes da app.
+
+```ruby
+# ✅ suficiente: tela sobe e devolve o status certo
+test 'exibe a página quando o usuário está autorizado' do
+  get recurso_path(recurso)
+
+  assert_response :ok
+end
+
+# ❌ demais para request — isso é unitário
+# assert_equal 'cancelado', recurso.reload.status
+# assert_select '.regra-de-negocio-interna'
+```
+
+## Quando pular
+
+- Mudança só em helper/partial sem rota própria **e** já coberta pelo request da tela pai.
+- Job, mailer, migration, ou código sem resposta HTTP.
+- Exige alteração de produção só para testar → reportar bloqueio.
