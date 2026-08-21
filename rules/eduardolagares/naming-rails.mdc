@@ -1,6 +1,6 @@
 ---
-VERSION: "1.3.0"
-description: Naming Rails — ficheiros, classes, métodos, variáveis, colunas, models (PT domínio / EN Rails)
+VERSION: "2.0.0"
+description: Naming Rails — ficheiros, classes, métodos; rule = pergunta (esta/tem/pode); query = pedido de leitura (obter/contar/…); use case = mutação
 alwaysApply: true
 ---
 # Naming (Rails)
@@ -36,8 +36,8 @@ alwaysApply: true
 
 | Camada | Forma | Exemplo |
 |--------|--------|---------|
-| Use case | `VerbNoun` | `CriarPedido` |
-| Query | substantivo do resultado + `Query` | `PedidosRecentesQuery` |
+| Use case | `VerbNoun` de mutação | `CriarPedido` |
+| Query | pedido de leitura + `Query` | `ObterPedidosRecentesQuery` |
 | Rule | pergunta de domínio, sem `?` | `ClienteEstaPortador` |
 | Infrastructure | `VerbNoun` | `LerPlanilha` |
 | Model AR | substantivo singular | `Pedido`, `Ingresso` |
@@ -45,11 +45,23 @@ alwaysApply: true
 | Job | `…Job` | `EnviarConfirmacaoJob` |
 | Presenter / Component | conceito de UI | `PedidoPresenter` |
 
-### Rules = pergunta; Queries = o que devolve
+### Ao nomear rule, query ou use case (obrigatório)
 
-- **Rule:** nome = a **pergunta** (pt-BR). Verbos/auxiliares bem-vindos para clareza (sem acento). Sem `?`. → primitivo `#result`. Não usar inglês `Is`/`May`.
-- **Query:** nome = o **conjunto / resultado** que devolve + sufixo `Query`. Ex.: `PedidosRecentesQuery`, não `QuaisPedidosRecentesQuery`. Ficheiro `snake_case` espelha a classe.
-- Comentário de classe pode descrever a intenção em linguagem natural; o identificador segue a forma da camada.
+Ao **escrever o nome**, escolha o verbo/auxiliar **só** na coluna Referências da camada. Não invente outra família. Sem acento. Ficheiro `snake_case` espelha a classe.
+
+- **Rule:** a pergunta lê-se no nome (`…Esta…`, `…Tem…`, `…Possui…`, `…Pode…`). Não precisa começar pelo verbo.
+- **Query / use case:** o pedido ou o comando vem **no início** do identificador.
+
+| Camada | O nome é | Referências (use uma destas famílias) | Exemplo |
+|--------|----------|----------------------------------------|---------|
+| **Rule** | uma **pergunta** | `esta`, `tem`, `possui`, `pode` | `ClienteEstaPortador`, `PedidoTemPagamento`, `IngressoPossuiCadeira`, `ClientePodeCancelar` |
+| **Query** | um **pedido de leitura** (sem mutar estado) | `obter`, `identificar`, `montar`, `capturar`, `contar`, `calcular` | `ObterPedidosRecentesQuery`, `IdentificarPortadorDoIngressoQuery`, `MontarResumoDoPedidoQuery`, `CapturarItensDoCarrinhoQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery` |
+| **Use case** | uma **ação que altera estado** de objetos | verbo de comando (`criar`, `atualizar`, `cancelar`, `enviar`, `aplicar`, …) | `CriarPedido`, `CancelarIngresso` |
+
+- **Rule:** `#result` continua **primitivo** (`Boolean`, `String`, `Integer`, `BigDecimal`). Sem `?` no identificador. Sem inglês `Is`/`May`/`Has`.
+- **Query:** read-only. Sempre sufixo `Query`. Não usar pergunta (`Quais…`, `Esta…`, `Pode…`). Não usar verbo de mutação (`Criar…Query`).
+- **Use case:** mutação / orquestração com efeito em objetos. Não nomear com `obter`/`contar`/`esta`/`pode` — isso é query ou rule (`query_objects.mdc`, `rule_objects.mdc`).
+- Comentário de classe pode descrever a intenção em linguagem natural; o identificador segue a tabela acima.
 - **Nunca** inglês `Is`/`May`/`Has`/`Get` no meio do nome se o domínio é PT.
 
 - **Nunca** `*Service`, `*Manager`, `*Handler`, `*Helper`, `*Util` como desculpa genérica — escolha a camada e o sufixo dela.

@@ -1,13 +1,13 @@
 ---
-VERSION: "0.1.2"
-description: Rule objects — pergunta de domínio em PT (#result primitivo), read-only
+VERSION: "0.2.0"
+description: Rule objects — nome = pergunta (esta/tem/possui/pode), #result primitivo, read-only
 alwaysApply: true
 ---
 # Rule objects
 
 - Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **pergunta de domínio em português**, **sem** `?` no identificador.
-- **When:** one boolean / small primitive answers “is this domain fact true?” reused in use cases, auth hints, views. **Else:** SQL-shaped reads → query object (`query_objects.mdc`); multi-step mutation → use case (`use_cases.mdc`).
-- **Name:** pergunta clara em português; verbos/auxiliares na pergunta são bem-vindos quando aumentam a clareza (sem acento no identificador). Ex.: `ClienteEstaPortador` — não `ClienteIsPortador`. **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::`.
+- **When:** one boolean / small primitive answers a domain **question**. Reused in use cases, auth hints, views. **Else:** pedido de leitura (obter/contar/…) → query object (`query_objects.mdc`); mutação de objetos → use case (`use_cases.mdc`).
+- **Name (obrigatório):** ao escrever o identificador, use uma referência de pergunta: **`esta`**, **`tem`**, **`possui`**, **`pode`**. Ex.: `ClienteEstaPortador`, `PedidoTemPagamento`, `IngressoPossuiCadeira`, `ClientePodeCancelar` — não `ClienteIsPortador`, não `ObterPortador`, não `VerificarPortador`. **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::`.
 
 ## Invariants
 
@@ -21,7 +21,7 @@ alwaysApply: true
 
 ## Do not
 
-- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace; inglês `Is`/`May`/`Has` no nome quando o domínio é PT.
+- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace; inglês `Is`/`May`/`Has` no nome quando o domínio é PT; nome de **pedido** (`Obter…`, `Contar…`, `Calcular…`) — isso é query; nome de **comando** (`Criar…`, `Cancelar…`) — isso é use case.
 
 ## Reference skeleton
 

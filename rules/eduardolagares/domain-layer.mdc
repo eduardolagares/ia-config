@@ -1,6 +1,6 @@
 ---
-VERSION: "0.1.2"
-description: Domain layer routing — query vs use case vs rule vs infrastructure vs scope
+VERSION: "0.2.0"
+description: Domain layer routing — query (pedido de leitura) vs use case (mutação) vs rule (pergunta) vs infrastructure vs scope
 alwaysApply: true
 ---
 # Domain layer routing
@@ -8,13 +8,13 @@ alwaysApply: true
 Escolha **uma** forma por responsabilidade — detalhes nas rules por camada. Uma responsabilidade por classe/método, encaixe na estrutura do projeto e o que não misturar → `responsibilities.mdc`.
 
 **Antes de criar ficheiro:** confirmar layer na tabela; colocar na pasta/namespace que o **projeto já usa** para essa layer. Inaugurar estrutura nova só com pedido explícito do utilizador.
-| Necessidade | Onde | Rule |
-|-------------|------|------|
-| Filtro/join/order/contagem read-only reutilizável | `app/domains/**/queries/` | `query_objects.mdc` |
-| Mutação ou orquestração (controller action, job) | `app/domains/**/use_cases/` | `use_cases.mdc` |
-| Uma pergunta de domínio → primitivo (`Boolean`, etc.) | `app/domains/**/rules/` | `rule_objects.mdc` |
-| I/O, gems, gateways ou parsers **só deste domínio** | `app/domains/**/infrastructure/` | `infrastructure.mdc` |
-| Filtro one-liner, só no model | `scope` no model | `models.mdc` |
+| Necessidade | Nome da classe (referência) | Onde | Rule |
+|-------------|------------------------------|------|------|
+| Pedido de leitura sem mutar estado (`obter`, `identificar`, `montar`, `capturar`, `contar`, `calcular`) | `Obter…Query` | `app/domains/**/queries/` | `query_objects.mdc` |
+| Ação que **muta** objetos (controller action, job) | `Criar…` / `Cancelar…` | `app/domains/**/use_cases/` | `use_cases.mdc` |
+| Pergunta de domínio (`esta`, `tem`, `possui`, `pode`) → primitivo | `ClienteEsta…` / `…Pode…` | `app/domains/**/rules/` | `rule_objects.mdc` |
+| I/O, gems, gateways ou parsers **só deste domínio** | `Ler…` | `app/domains/**/infrastructure/` | `infrastructure.mdc` |
+| Filtro one-liner, só no model | scope sem verbo de pedido | `scope` no model | `models.mdc` |
 
 - Controllers/jobs **chamam** use cases / queries — não embutem regras (`controllers.mdc`).
 - Use cases **delegam** gates a rule objects — não duplicam corpo de regra (`use_cases.mdc`).

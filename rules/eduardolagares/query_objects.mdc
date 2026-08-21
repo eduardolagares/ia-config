@@ -1,14 +1,14 @@
 ---
-VERSION: "0.2.0"
-description: Query objects — nome = resultado + Query, relation: / @relation, self.call, YARD
+VERSION: "1.0.0"
+description: Query objects — nome = pedido de leitura (obter/identificar/montar/capturar/contar/calcular) + Query; read-only
 alwaysApply: true
 ---
 # Query objects
 
-- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **o que a query devolve** (substantivo / frase do conjunto) + sufixo `Query`.
-- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; command / writes → use case (`use_cases.mdc`); domain yes/no primitive → rule object (`rule_objects.mdc`).
-- **Name:** resultado em português + `Query`. Ex.: `PedidosRecentesQuery` — **não** `QuaisPedidosRecentesQuery` (forma interrogativa fica para rules). **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
-- **Doc:** class comment pode descrever a intenção em pt-BR; o identificador nomeia o resultado.
+- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **pedido de leitura** + sufixo `Query`.
+- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; mutação de objetos → use case (`use_cases.mdc`); pergunta de domínio (`esta`/`tem`/`possui`/`pode`) → rule object (`rule_objects.mdc`).
+- **Name (obrigatório):** ao escrever o identificador, use uma referência de pedido: **`obter`**, **`identificar`**, **`montar`**, **`capturar`**, **`contar`**, **`calcular`**. Sempre sufixo `Query`. Ex.: `ObterPedidosRecentesQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery` — **não** `PedidosRecentesQuery` (falta o pedido), **não** `QuaisPedidosRecentesQuery` (pergunta = rule), **não** `CriarPedidosQuery` (mutação = use case). **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
+- **Doc:** class comment pode descrever a intenção em pt-BR; o identificador nomeia o **pedido** (verbo da tabela) + o alvo.
 
 ## Invariants
 
@@ -25,16 +25,16 @@ alwaysApply: true
 
 ## Do not
 
-- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop; nomes em inglês (`RecentOrdersQuery`, `GetOrdersQuery`) ou interrogativos (`QuaisPedidos…Query`) quando o domínio é PT.
+- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop; nomes em inglês (`RecentOrdersQuery`, `GetOrdersQuery`); nomes sem pedido (`PedidosRecentesQuery`); interrogativos (`Quais…`, `Esta…`, `Pode…Query`) — isso é rule; verbos de mutação (`Criar…Query`).
 
 ## Reference skeleton
 
 ```ruby
-# Pedidos recentes (opcionalmente filtrados por status).
+# Obter pedidos recentes (opcionalmente filtrados por status).
 module DominioOrders
   module Queries
     module Orders
-      class PedidosRecentesQuery
+      class ObterPedidosRecentesQuery
         # @return [ActiveRecord::Relation<Order>]
         def self.call(status: nil, relation: Order.all)
           new(status:, relation:).call

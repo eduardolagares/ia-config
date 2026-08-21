@@ -1,12 +1,12 @@
 ---
-VERSION: "0.1.2"
+VERSION: "0.1.3"
 description: Use cases — Dry::Monads Result, #call como roteiro linear, sem dry-transaction
 alwaysApply: true
 ---
 # Use cases
 
-- **When:** one class per controller action / `ApplicationJob` that mutates state or orchestrates steps. **Else:** read-only relation → query object (`query_objects.mdc`); single domain yes/no → rule object (`rule_objects.mdc`).
-- **Name:** `VerbNoun`. **NS:** `DominioX::UseCases::Y::`. **Path:** `app/domains/<domain>/use_cases/**/verb_noun.rb` ↔ nested `Y::` (same as `rules/`, `queries/`).
+- **When:** one class per controller action / `ApplicationJob` that **mutates** state or orchestrates steps with side effects on objects. **Else:** pedido de leitura (`obter`/`contar`/…) → query object (`query_objects.mdc`); pergunta (`esta`/`tem`/`possui`/`pode`) → rule object (`rule_objects.mdc`).
+- **Name:** `VerbNoun` de **comando** (`criar`, `atualizar`, `cancelar`, `enviar`, `aplicar`, …). Não usar referências de rule/query (`esta`, `obter`, `contar`). Tabela canónica → `naming-rails.mdc`. **NS:** `DominioX::UseCases::Y::`. **Path:** `app/domains/<domain>/use_cases/**/verb_noun.rb` ↔ nested `Y::` (same as `rules/`, `queries/`).
 
 ## `#call` — roteiro por padrão
 

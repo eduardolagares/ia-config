@@ -1,5 +1,5 @@
 ---
-VERSION: "0.2.1"
+VERSION: "0.2.2"
 description: Uma responsabilidade por classe/método — layers existentes, estrutura do projeto, sem inventar pasta
 alwaysApply: true
 ---
@@ -21,8 +21,9 @@ Se a layer existe nas rules mas o projeto **ainda não tem** a pasta → pergunt
 - Método: um efeito. Nome com "and" / dois verbos → split.
 - Use case: um fluxo (uma action/job). Não acumule Create+Update+Cancel na mesma classe.
 - Use case / query: `#call` **orquestra por padrão**; corpo **curto** pode executar inline (`use_cases.mdc`, `query_objects.mdc`).
-- Rule: uma pergunta via `#result` (**nunca** `#call`); costuma ser expressão curta inline (`rule_objects.mdc`).
-- Query: uma composição de leitura. Infrastructure: um I/O concreto.
+- Rule: uma **pergunta** (`esta`/`tem`/`possui`/`pode`) via `#result` (**nunca** `#call`); primitivo; costuma ser expressão curta inline (`rule_objects.mdc`).
+- Query: um **pedido de leitura** (`obter`/`identificar`/`montar`/`capturar`/`contar`/`calcular`) sem mutar estado (`query_objects.mdc`). Infrastructure: um I/O concreto.
+- Nomes dessas classes → referências em `naming-rails.mdc` (não inventar outra família de verbos).
 
 ## Não misturar (sempre separar)
 
