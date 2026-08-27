@@ -40,7 +40,7 @@ CallMcpTool
 | **Ação** | `color_mm5tr97v` (confirmar com `get_board_info` se o id mudar) |
 | Subelementos | `subelementos` |
 
-Labels úteis **Ação:** `Concluir`, `Rejeitar`.
+Labels úteis **Ação:** `Concluir`, `Rejeitar` (a skill grava); `Avaliar` (repouso após automação — a skill **não** grava).
 
 ### Colunas — subtarefa (board `4571892432`)
 
@@ -293,7 +293,9 @@ Owner merge (people):
 
 ### Decisão da revisão (passo 8)
 
-Na tarefa principal, **só** gravar coluna **Ação**: **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou). A automação do Monday faz o restante. Resolver o id por `title: Ação` via `get_board_info` se necessário.
+Na tarefa principal, **só** gravar coluna **Ação**: **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **uma vez**. Resolver o id por `title: Ação` via `get_board_info` se necessário.
+
+**Aprovar:** gravar **Concluir** → **aguardar**. Não pular. A automação move **Revisão automática de código** → **Revisão manual de código** e devolve **Ação** para **Avaliar**. Relê com `get_board_items_page` (`includeGroup: true`, `includeColumns: true`) até os dois. **Não** repetir **Concluir**. **Não** gravar **Avaliar**. **Não** mover o grupo.
 
 ```json
 {
@@ -302,6 +304,22 @@ Na tarefa principal, **só** gravar coluna **Ação**: **`Concluir`** (aprovou) 
     "boardId": 4571892384,
     "itemId": 12052222930,
     "columnValues": "{\"color_mm5tr97v\": {\"label\": \"Concluir\"}}"
+  }
+}
+```
+
+Confirmar automação (após Concluir):
+
+```json
+{
+  "toolName": "get_board_items_page",
+  "arguments": {
+    "boardId": 4571892384,
+    "itemIds": [12052222930],
+    "includeGroup": true,
+    "includeColumns": true,
+    "columnIds": ["color_mm5tr97v"],
+    "limit": 1
   }
 }
 ```
@@ -315,7 +333,7 @@ Na tarefa principal, **só** gravar coluna **Ação**: **`Concluir`** (aprovou) 
 | 1 | `get_board_items_page`, `read_docs` (+ `get_updates` opcional) |
 | 6 | `create_item` (subtarefa Revisar código se ausente), `read_docs`, `update_doc` / `create_doc` |
 | 7 | `read_docs` (`include_blocks`), `update_doc` (`update_block` + `checked`); criar subtarefa se ausente |
-| 8 | `create_item` (subtarefa se ausente), `change_item_column_values`, `update_doc` / `create_doc` (Merge requests / Resultado) |
+| 8 | `create_item` (subtarefa se ausente), `change_item_column_values`, `get_board_items_page` (aguardar automação após Concluir), `update_doc` / `create_doc` (Merge requests / Resultado) |
 
 ## Checklist
 

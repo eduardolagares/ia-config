@@ -23,9 +23,9 @@ Leitura: skill **`monday-task-info`**. Escrita (passos 6–8): sub-skills de `re
 | Documento | `monday_doc` |
 | Owner subtarefa | `person` |
 
-Labels da coluna **Ação:** **`Concluir`**, **`Rejeitar`**.
+Labels da coluna **Ação:** **`Concluir`**, **`Rejeitar`** (a skill grava); **`Avaliar`** (repouso após automação — a skill **não** grava).
 
-**Avanço = gravar Ação.** Resolver id: `get_board_info(4571892384)` → `title: Ação`. Sucesso na mutation = fim do trabalho na tarefa principal. A automação do Monday trata o restante.
+**Avanço ao aprovar = gravar Concluir uma vez → aguardar.** Resolver id: `get_board_info(4571892384)` → `title: Ação`. Depois de **Concluir**, **não** encerrar: reler até grupo **Revisão manual de código** e **Ação** **Avaliar**. **Não** repetir **Concluir**. **Não** gravar **Avaliar**. **Não** mover grupo.
 
 ## Subtarefa **Revisar código** (criar se ausente)
 
@@ -48,9 +48,9 @@ Sempre que um passo precisar da subtarefa de revisão de código e **nenhum** t�
 
 ## Decisão da revisão → coluna **Ação** (passo 8)
 
-**Contrato:** na tarefa principal, **basta** gravar **Ação** = **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou). A automação do Monday faz o restante. Id da coluna: `get_board_info` → `title: Ação` (típico `color_mm5tr97v`).
+**Contrato:** na tarefa principal, gravar **Ação** = **`Concluir`** (aprovou) ou **`Rejeitar`** (reprovou) — **uma vez**. Id da coluna: `get_board_info` → `title: Ação` (típico `color_mm5tr97v`).
 
-Isso **é** o avanço completo da tarefa nesta skill.
+**Aprovar:** **Concluir** → **aguardar** a automação (grupo **Revisão manual de código** + **Ação** **Avaliar**). A mutation sozinha **não** encerra o passo. **Não** repetir **Concluir**. **Não** gravar **Avaliar**. **Não** mover o grupo.
 
 | Veredito | Label **Ação** |
 |----------|----------------|
