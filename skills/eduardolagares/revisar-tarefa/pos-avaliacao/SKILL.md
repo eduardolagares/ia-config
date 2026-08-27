@@ -4,9 +4,10 @@ description: >-
   Passo 8 de revisar-tarefa: em qualquer veredito, garante MRs GitLab (branch → master)
   e publica links no doc Revisar código (tópico Merge requests); depois aplica status
   de subtarefa, owners e coluna Ação conforme o veredito. Em qualquer veredito, anota
-  veredito + data no doc Revisar código; se avançar, Ação → Concluir; se reprovar, Ação → Rejeitar.
+  veredito + data no doc Revisar código; se avançar, Ação → Concluir **uma vez** e
+  aguardar a automação (grupo Revisão manual de código + Ação Avaliar); se reprovar, Ação → Rejeitar.
 disable-model-invocation: true
-VERSION: "2.12.1"
+VERSION: "2.13.0"
 ---
 
 # revisar-tarefa — pós avaliação (passo 8)
@@ -19,12 +20,19 @@ Sub-skill **`pos-avaliacao`** do passo 8. **Escrita** no Monday (status subtaref
 
 | Veredito | Coluna **Ação** |
 |----------|-----------------|
-| `pode_avancar_para_revisao_manual` | **`Concluir`** |
+| `pode_avancar_para_revisao_manual` | **`Concluir`** — **uma vez** — depois **aguardar** |
 | `precisa_de_correcao` | **`Rejeitar`** |
 
-**Basta** isso. A **automação do Monday** faz o restante. Depois de `change_item_column_values` em **Ação** com sucesso, o avanço da tarefa **está concluído** para esta skill.
+**Aprovar = gravar Concluir → aguardar.** Não pular. A **automação do Monday** move a tarefa de **Revisão automática de código** para **Revisão manual de código** e devolve **Ação** para **Avaliar**.
 
-Se o agente não gravou **Ação**, o bug é **não ter gravado Ação**.
+O avanço **só está concluído** quando **ambos** forem verdade:
+
+1. grupo da tarefa = **Revisão manual de código**
+2. coluna **Ação** = **Avaliar**
+
+`change_item_column_values` com **Concluir** a devolver ok **não** encerra o passo — falta a espera. **Não** gravar **Avaliar**. **Não** mover o grupo. **Não** repetir **Concluir**.
+
+Se o agente não gravou **Ação**, o bug é **não ter gravado Ação**. Se gravou **Concluir** duas vezes, o bug é **não ter aguardado** a automação.
 
 **Independente do veredito** (`precisa_de_correcao`, `pode_avancar_para_revisao_manual`, ou outro desfecho futuro): **sempre** (1) garantir MRs no GitLab e publicá-los no doc, (2) anotar **veredito + data** em **`## Resultado da revisão`**. Só depois executar status/owners/**Ação** do veredito.
 
@@ -40,7 +48,8 @@ Se o agente não gravou **Ação**, o bug é **não ter gravado Ação**.
 | Criar subtarefa Revisar código | `create_item` (`parentItemId`, `name: Revisar código automaticamente`, status `A fazer`) |
 | Resolver id da coluna **Ação** | `get_board_info` board `4571892384` → coluna com `title` **`Ação`** (id típico `color_mm5tr97v`) — **antes** de gravar na tarefa |
 | Status subtarefa / coluna **Ação** | `change_item_column_values` — `columnValues` string JSON com `{"label":"…"}` |
-| Decisão da revisão (tarefa) | **Só** **Ação** → **`Concluir`** / **`Rejeitar`** — automação Monday faz o resto — ver [reference.md](../reference.md) |
+| Decisão da revisão (tarefa) | **Só** **Ação** → **`Concluir`** (uma vez) / **`Rejeitar`**. Após **Concluir**: **aguardar** automação (§ abaixo) — ver [reference.md](../reference.md) |
+| Confirmar automação (após Concluir) | `get_board_items_page` (`itemIds`, `includeGroup: true`, `includeColumns: true`) até grupo **Revisão manual de código** + **Ação** **Avaliar** |
 | Append **Merge requests** / resultado | `update_doc` → `add_markdown_content` |
 | Owners merge | `get_board_items_page` (`itemIds`) + `change_item_column_values` (`person.personsAndTeams`) |
 
@@ -69,15 +78,15 @@ Resolver `item_id` de cada subtarefa via passo 1 (markdown) ou MCP `get_board_it
 
 ### Resolver coluna **Ação** (obrigatório antes de gravar na tarefa)
 
-A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. Labels válidos: **`Concluir`** \| **`Rejeitar`**.
+A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. Labels que esta skill **grava:** **`Concluir`** \| **`Rejeitar`**. Label de **repouso** após automação: **`Avaliar`** (a skill **não** grava este).
 
 **Antes** de qualquer `change_item_column_values` na tarefa principal:
 
 1. Chamar `get_board_info` com `boardId: 4571892384`.
 2. Em `columns`, achar a coluna com `title` exatamente **`Ação`** (tipo status). Guardar o `id` (ex.: `color_mm5tr97v`).
-3. Confirmar que os labels incluem **`Concluir`** e **`Rejeitar`**.
+3. Confirmar que os labels incluem **`Concluir`**, **`Rejeitar`** e **`Avaliar`**.
 4. Usar **esse** `id` no JSON: `{"<id>": {"label": "Concluir"}}` ou `"Rejeitar"`.
-5. Após sucesso → reportar `ok` na linha da tarefa; **parar** (não há passo seguinte na tarefa principal).
+5. Se o veredito for **`pode_avancar_para_revisao_manual`**: após **uma** gravação de **Concluir**, ir ao § **Aguardar automação** — **não** reportar avanço completo ainda.
 
 | Se… | Então… |
 |-----|--------|
@@ -98,10 +107,11 @@ A decisão da revisão **só** vai na coluna cujo **título** é **`Ação`**. L
 1. Confirmar veredito ∈ {`precisa_de_correcao`, `pode_avancar_para_revisao_manual`}.
 2. **Sempre** (§ **Merge requests — comum**): GitLab (criar/reutilizar MRs) → doc Monday (**Merge requests**).
 3. **Sempre** (§ **C — Resultado da revisão**): anotar **veredito + data** no doc **Revisar código**. **Não** pular por veredito.
-4. **Resolver coluna Ação** (§ acima) via `get_board_info` — **antes** do passo 5.
+4. **Resolver coluna Ação** (§ acima) via `get_board_info` — **antes** do passo 5. Se o veredito for `pode_avancar_para_revisao_manual`, ler também o **grupo atual** (`includeGroup: true`) — esperado: **Revisão automática de código**.
 5. Executar o bloco de status/owners/**Ação** **do veredito** (§ abaixo) — **depois** dos MRs, do resultado e da resolução do id.
-6. Status subtarefa / **Ação**: `change_item_column_values` com `{"label": "<texto exato>"}` no **id resolvido**.
-7. Reportar cada mutation no chat (sucesso/erro por item).
+6. Status subtarefa / **Ação**: `change_item_column_values` com `{"label": "<texto exato>"}` no **id resolvido**. **Concluir** / **Rejeitar** na tarefa: **no máximo uma** chamada com sucesso.
+7. Se **`pode_avancar_para_revisao_manual`**: **aguardar** a automação (§ **Aguardar automação**) **antes** de reportar avanço. Não pular.
+8. Reportar cada mutation no chat (sucesso/erro por item).
 
 ### Bloqueio (diff indisponível)
 
@@ -237,7 +247,7 @@ Incluir em **`## Pós avaliação`**: linha `Doc Merge requests` = `append` \| `
 **Veredito:** `pode_avancar_para_revisao_manual` (`/revisar-tarefa`).
 
 - Revisão automatizada passou — sem pendências abertas
-- Coluna **Ação** → **Concluir**
+- Coluna **Ação** → **Concluir** (uma vez); aguardar automação → grupo **Revisão manual de código** + **Ação** **Avaliar**
 ```
 
 Outro veredito futuro: mesmo heading com `**Veredito:** \`<nome>\`` + 1–2 bullets do desfecho.
@@ -277,17 +287,62 @@ Se **Executar** não tiver owner → pular merge; reportar aviso; executar passo
 
 **Antes:** § Merge requests (§ A + A.2) + § **C** (veredito + data) — **mesmo** bloco comum.
 
-**Avanço = só isto:** coluna **Ação** → **`Concluir`** (id do § Resolver). Critério de sucesso: a mutation de **Ação** retornou ok. A automação do Monday faz o restante.
+**Avanço = gravar Concluir uma vez → aguardar.** Critério de sucesso: grupo **Revisão manual de código** **e** **Ação** **Avaliar**. A mutation MCP de **Concluir** sozinha **não** basta.
 
-**Ordem (após MRs + § C + resolver Ação):** subtarefa Revisar código → coluna **Ação** da tarefa principal.
+**Ordem (após MRs + § C + resolver Ação):** subtarefa Revisar código → **uma** gravação de **Ação** **Concluir** → **aguardar** automação.
 
 | # | Alvo | Ação |
 |---|------|------|
 | 1 | Subtarefa **Revisar código** | Status → **`Concluída`** |
-| 2 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Concluir`** |
+| 2 | Tarefa principal | Coluna **Ação** (id resolvido) → **`Concluir`** — **uma vez** |
+| 3 | Tarefa principal | **Aguardar** automação (§ abaixo) — **sem** nova mutation |
 
 **Não** alterar subtarefa **Testar**, **Executar** nem **Deploy**.
-Se o passo 2 falhar → re-resolver **Ação** e repetir o passo 2.
+
+**Não** repetir o passo 2. Se a chamada MCP de **Concluir** **falhou de verdade** (erro de ferramenta / coluna / label, **sem** resposta de sucesso): re-resolver **Ação** e tentar **uma** vez mais. Se a chamada **retornou** (qualquer `index`/`id`/label no payload): **não** gravar de novo — ir ao § **Aguardar automação**.
+
+## Aguardar automação (obrigatório após Concluir)
+
+Fluxo fixo: **aprovar → aguardar**. Não pular etapas. Não gravar **Ação** de novo.
+
+A automação do Monday, disparada por **Concluir**:
+
+1. Move a tarefa **Revisão automática de código** → **Revisão manual de código**
+2. Devolve a coluna **Ação** para **Avaliar**
+
+Enquanto isso não aconteceu, o passo 8 **não terminou**.
+
+### Como aguardar
+
+1. **Não** interpretar o payload da mutation (`index`, `id`, `label`) como falha nem como motivo para repetir **Concluir**. `index: 1` neste board é **Rejeitar**; `id: 1` é **Concluir** — **ignorar** esses números após a primeira gravação.
+2. Ler a tarefa com `get_board_items_page`:
+
+```json
+{
+  "boardId": 4571892384,
+  "itemIds": [<item_id>],
+  "includeGroup": true,
+  "includeColumns": true,
+  "columnIds": ["<id Ação>"],
+  "limit": 1
+}
+```
+
+3. **Concluído** só quando **ambos**:
+   - `group.title` = **Revisão manual de código**
+   - label de **Ação** = **Avaliar**
+4. Se ainda não: **esperar ~3 segundos** (`AwaitShell` com `block_until_ms: 3000`, ou equivalente) e reler. Zero mutations nesse intervalo.
+5. Teto: **~10 leituras / ~30s**. Se estourar: reportar `Automação Monday: pendente`; **não** gravar **Concluir** de novo; **não** gravar **Avaliar**; **não** mover o grupo.
+
+### Proibido nesta espera (e depois dela, na tarefa principal)
+
+| Tentação | Porquê |
+|----------|--------|
+| Segundo **Concluir** porque a leitura veio **Avaliar** | A automação **já** resetou **Ação**; outro **Concluir** move a tarefa **outra vez** |
+| Segundo **Concluir** porque o payload tinha `index: 1` | Número ≠ veredito; a automação pode estar a meio |
+| Gravar **Avaliar** | Isso é da automação, não da skill |
+| Mover o grupo (para **Revisão manual de código** ou outro) | Isso é da automação; a skill **não** muda grupo |
+| Tratar **Avaliar** como “Concluir não gravou” | Estado esperado **depois** da automação |
 
 ## Exemplo MCP — status subtarefa
 
@@ -311,7 +366,7 @@ Id típico `color_mm5tr97v` — **substituir** pelo id retornado em § Resolver 
 }
 ```
 
-Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovou). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
+Labels da coluna **Ação:** **`Concluir`** (aprovou — a skill grava) \| **`Rejeitar`** (reprovou — a skill grava) \| **`Avaliar`** (repouso após automação — a skill **não** grava). Se `change_item_column_values` falhar por label inexistente → reportar erro com label tentado; **não** inventar índice.
 
 ## Saída obrigatória (chat)
 
@@ -322,8 +377,9 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 |-------|-------|
 | Veredito | `<veredito>` |
 | Ações executadas | <lista resumida> |
-| Coluna Ação | `Concluir` \| `Rejeitar` \| — |
-| Avanço tarefa | `ok` se **Ação** gravada; senão detalhe do erro |
+| Coluna Ação | `Concluir` (uma vez) \| `Rejeitar` \| — |
+| Avanço tarefa | `ok` se automação concluída (grupo **Revisão manual de código** + **Ação** **Avaliar**); `pendente` se o teto de espera estourou; senão detalhe do erro |
+| Automação Monday | `ok` (grupo + **Avaliar**) \| `pendente` \| `—` (reprovou) |
 | Doc Merge requests | `append` \| `criado` \| `nenhum` \| `erro` \| — |
 | Doc Resultado | `append` \| `criado` \| `já anotado` \| `erro` \| — (sempre) |
 | Erros | — (ou detalhe) |
@@ -342,10 +398,12 @@ Labels da coluna **Ação:** **`Concluir`** (aprovou) \| **`Rejeitar`** (reprovo
 |------|-------|---------|---------------|------------|-----------|
 | Revisar código | 4571892432 | … | doc Resultado | veredito + data | ok |
 | Revisar código | 4571892432 | … | status | Concluída | ok |
-| Tarefa | 4571892384 | … | \<id\> (Ação) | Concluir | ok |
+| Tarefa | 4571892384 | … | \<id\> (Ação) | Concluir (1×) | ok |
+| Tarefa | 4571892384 | … | grupo | Revisão manual de código | ok (automação) |
+| Tarefa | 4571892384 | … | \<id\> (Ação) | Avaliar | ok (automação) |
 ```
 
-Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)`. Se **Ação** = `ok`, o trabalho na tarefa principal terminou.
+Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)`. O trabalho na tarefa principal **só** terminou quando a automação deixou o grupo em **Revisão manual de código** e **Ação** em **Avaliar**.
 
 ## Erros
 
@@ -357,7 +415,10 @@ Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)`.
 | MCP Monday indisponível | Parar; **não** simular mutations |
 | MCP GitLab indisponível | Parar antes de Monday (Ação/status); pedir GitLab em Settings → MCP — MRs são obrigatórios em **qualquer** veredito |
 | `get_board_info` sem coluna `title: Ação` | Reportar só isso; **não** gravar na tarefa |
-| Falhou gravar **Ação** (id errado / label) | Re-resolver por título e repetir **só** `Concluir`/`Rejeitar` |
+| Falhou gravar **Ação** (erro de ferramenta / coluna / label, **sem** sucesso) | Re-resolver por título e tentar **uma** vez `Concluir`/`Rejeitar` |
+| Mutation de **Concluir** retornou (qualquer payload) | **Não** repetir; § **Aguardar automação** |
+| Após Concluir, leitura mostra **Avaliar** ainda no grupo antigo | **Esperar**; **não** gravar Concluir de novo |
+| Teto de espera (~30s) sem grupo **Revisão manual de código** | Reportar `pendente`; **não** gravar Concluir/Avaliar nem mover grupo |
 | MR falhou em todos os repos | Reportar; § A.2 omitido; ações do veredito opcionais |
 | Doc sem `doc_object_id` e `create_doc` falhou | Reportar; seguir § B |
 | Subtarefa Revisar código ausente | **Criar** (§ Subtarefa Revisar código no SKILL pai); se `create_item` falhar → parar |
@@ -371,7 +432,10 @@ Na linha da tarefa, a coluna reportada deve ser o **id resolvido** + `(Ação)`.
 - `create_update` / comentários
 - Remover owners existentes em **Revisar código** (só merge)
 - Mudar status de **Executar**, **Testar** ou **Deploy** (salvo pedido explícito)
-- Qualquer mutation na tarefa principal **exceto** coluna **Ação** (`Concluir` / `Rejeitar`)
+- Qualquer mutation na tarefa principal **exceto** coluna **Ação** (`Concluir` / `Rejeitar`) — **uma vez** por veredito
+- Segundo `change_item_column_values` de **Ação** depois de **Concluir** ter retornado (inclui gravar **Avaliar** ou **Concluir** de novo)
+- Mover a tarefa de grupo (isso é da automação do Monday)
+- Reportar avanço completo sem ter visto grupo **Revisão manual de código** + **Ação** **Avaliar**
 
 ## Skills relacionadas
 
