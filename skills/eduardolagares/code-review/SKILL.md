@@ -5,7 +5,7 @@ description: >-
   lacunas teste/diff; cruzamento diff↔spec TDD se existir; sem cobertura.
   Use com /code-review, "code-review", "revisar código", ou revisão de diff/PR.
 disable-model-invocation: true
-VERSION: "1.2.1"
+VERSION: "1.2.2"
 ---
 
 # code-review
@@ -17,7 +17,7 @@ VERSION: "1.2.1"
 ## Papel e âmbito
 
 - Atuar como sénior full-stack: correcção, fluxos, segurança, contratos API/UI, persistência, concorrência/erros, observabilidade quando pertinente.
-- **Omitir:** estética, preferências de formatação, micro-refactors sem efeito; paths sob `.local_ci_metadata/` (artefactos gerados só para atestar execução do CI local — não revisar conteúdo, estilo, testes nem escopo).
+- **Omitir:** estética, preferências de formatação, micro-refactors sem efeito; paths sob `.local_ci_metadata/` (artefactos gerados só para atestar execução do CI local — não revisar conteúdo, estilo, testes nem escopo); paths cobertos pelo `.gitignore` daquele repo e não versionados (ausência no diff é o esperado — mesma lógica que `.local_ci_metadata/`).
 - **Não listar:** achados já corrigidos no diff/revisão; achados neutralizados por outro caminho verificável (guard, validação, fluxo complementar E2E). Proibir duplicar achados redundantes.
 
 ## Modo
@@ -31,7 +31,7 @@ VERSION: "1.2.1"
 3. `.cursor/rules/`, `AGENTS.md`, constituição se existir (complementar; não substituir `rules/eduardolagares`).
 4. Convenções observáveis no código.
 
-- **Âmbito:** validar regras só em **código novo ou alterado no diff**; não exigir retrofit de legado não tocado. Excluir do âmbito de revisão (blocos **1–5** e cruzamento Spec TDD) qualquer path sob `.local_ci_metadata/`.
+- **Âmbito:** validar regras só em **código novo ou alterado no diff**; não exigir retrofit de legado não tocado. Excluir do âmbito de revisão (blocos **1–5** e cruzamento Spec TDD) qualquer path sob `.local_ci_metadata/` e qualquer path coberto pelo `.gitignore` do repo que **não** está versionado. **Antes de exigir ficheiro “em falta” no MR:** ler o `.gitignore` daquele repo. Path ignorado e não rastreado **não é achado** — não exigir `schema:dump` + commit só porque o diff inclui uma migration.
 - Evidência fraca para conclusão forte → no relatório uma linha com **suposição** ou **não verificável** (pt-BR).
 
 ## Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade
