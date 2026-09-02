@@ -1,5 +1,5 @@
 ---
-VERSION: "1.29.2"
+VERSION: "1.29.1"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 

@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–5 (Crítico, Grave, Padrão de código, Outros, Lacunas de teste).
   Itens 1.M, 2.M e 3.M alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.7.4"
+VERSION: "1.7.3"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
