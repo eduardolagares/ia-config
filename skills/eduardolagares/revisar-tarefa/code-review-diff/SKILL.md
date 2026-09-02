@@ -5,7 +5,7 @@ description: >-
   Entrega blocos 1–5 (Crítico, Grave, Padrão de código, Outros, Lacunas de teste).
   Itens 1.M, 2.M e 3.M alimentam o passo 6 (gerar-requisitos-de-codigo). Use após executar-diff ou "code review diff revisar".
 disable-model-invocation: true
-VERSION: "1.7.2"
+VERSION: "1.7.3"
 ---
 
 # revisar-tarefa — code review do diff (passo 4)
@@ -71,7 +71,7 @@ Sem diff com conteúdo (só erros por repo) → entregar code review com stocks 
 1. Confirmar que **`## Diff`** do passo 3 está no contexto (senão → parar e executar passo 3).
 2. Montar **lista de projetos** = todos os `### <namespace/project>` em `## Diff`; cruzar com **Projetos alterados** do passo 1.
 3. Para **cada** projeto da lista, aplicar o protocolo **só** nos hunks daquele fence — read-only, pt-BR, ids `N.M` **por projeto** (reiniciar `M` em cada bloco de severidade **ou** numerar globalmente; preferir **global** `1.1`, `1.2`… mantendo agrupamento visual por `### <repo>`).
-4. Ler [../../code-review/SKILL.md](../../code-review/SKILL.md) e seguir **todas** as regras (read-only, pt-BR, blocos 1–5).
+4. Ler [../../code-review/SKILL.md](../../code-review/SKILL.md) e seguir **todas** as regras (read-only, pt-BR, blocos 1–5), incluindo **Omitir** / **Âmbito**: path no `.gitignore` e não versionado (ex. `db/structure.sql` em Baladapp) **não** é achado.
 5. **Aplicar code-review com fonte = diff do passo 3** — secção **Fontes (ordem fixa)**: item 1 é **exclusivamente** esse diff; regras/convenções/spec TDD entram nos itens 2–3.
 6. **Não** reler o repositório inteiro salvo para confirmar contexto de uma linha duvidosa **já visível no diff**.
 7. **Spec TDD:** se houver `docs/specs/tdd/*.md` aplicável, cruzar **paths que aparecem no diff do passo 3** ↔ escopo da spec (por projeto).
