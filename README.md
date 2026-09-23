@@ -74,6 +74,7 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 | Skill | O que faz |
 |-------|-----------|
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
+| `atualizar-changelog` | Gera markdown de changelog a partir das tarefas Changelog no board Dia a Dia (Monday MCP). |
 | `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
 | `revisar-ders` | Revisor read-only do DERS no Monday (título idêntico): coesão RF/UC/CA, Cenário, suficiência funcional e aceite por CA. Não implementa nem altera o Monday. |
 | `gerar-plano-de-implementacao` | No projeto a alterar: avalia estrutura de código + grill-me; cobre RFs/UCs/Impactos com nomes concretos; grava em `docs/planos-de-implementacao/`. |
