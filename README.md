@@ -1,5 +1,5 @@
 ---
-VERSION: "1.30.0"
+VERSION: "1.32.0"
 description: "README do baladapp-ia-config — visão geral, instalação, atualização e skills opcionais."
 ---
 
@@ -75,7 +75,8 @@ Skills copiadas pelo instalador para `~/.cursor/skills/eduardolagares/` (Cursor)
 |-------|-----------|
 | `comitar` | Lê `git diff`/staging, gera mensagem curta em pt-BR e executa `git add` + `git commit` sem pedir confirmação. |
 | `atualizar-changelog` | Gera markdown de changelog a partir das tarefas Changelog no board Dia a Dia (Monday MCP). |
-| `escrever-tarefa` | Entrevista (grill-me em `~/.agents`, `~/.cursor` ou `~/.claude`); texto livre ou ficheiro (referência ou continuar `docs/tarefas/*.md`). |
+| `escrever-tarefa` | DERS orientado ao delta (referencia comportamento atual pelo nome; RFs do que muda); entrevista grill-me; grava em `docs/tarefas/`; pode acionar `criar-tarefa-no-monday`. |
+| `reportar-bug` | Relatório de bug em pt-BR (Cenário, Como replicar, Comportamento esperado opcional, Impactos); grill-me mínimo; grava em `docs/tarefas/`; depois pode usar `criar-tarefa-no-monday`. |
 | `revisar-ders` | Revisor read-only do DERS no Monday (título idêntico): coesão RF/UC/CA, Cenário, suficiência funcional e aceite por CA. Não implementa nem altera o Monday. |
 | `gerar-plano-de-implementacao` | No projeto a alterar: avalia estrutura de código + grill-me; cobre RFs/UCs/Impactos com nomes concretos; grava em `docs/planos-de-implementacao/`. |
 | `planejar-tenant` | Plan enxuto de tenant (`docs/plans/<id>/`) neste clone; brief/estilo/negócio/logo na fonte do ingressos. Entrevista só na 1ª vez. Não implementa nem commita. |
