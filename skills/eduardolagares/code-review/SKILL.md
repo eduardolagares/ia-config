@@ -5,7 +5,7 @@ description: >-
   lacunas teste/diff; cruzamento diff↔spec TDD se existir; sem cobertura.
   Use com /code-review, "code-review", "revisar código", ou revisão de diff/PR.
 disable-model-invocation: true
-VERSION: "1.2.2"
+VERSION: "1.3.0"
 ---
 
 # code-review
@@ -17,7 +17,7 @@ VERSION: "1.2.2"
 ## Papel e âmbito
 
 - Atuar como sénior full-stack: correcção, fluxos, segurança, contratos API/UI, persistência, concorrência/erros, observabilidade quando pertinente.
-- **Omitir:** estética, preferências de formatação, micro-refactors sem efeito; paths sob `.local_ci_metadata/` (artefactos gerados só para atestar execução do CI local — não revisar conteúdo, estilo, testes nem escopo); paths cobertos pelo `.gitignore` daquele repo e não versionados (ausência no diff é o esperado — mesma lógica que `.local_ci_metadata/`).
+- **Omitir:** estética (formatação, ordem, espaçamento — **não** inclui nomes: nome ruim é achado, ver **Padrão de código**), preferências de formatação, micro-refactors sem efeito; paths sob `.local_ci_metadata/` (artefactos gerados só para atestar execução do CI local — não revisar conteúdo, estilo, testes nem escopo); paths cobertos pelo `.gitignore` daquele repo e não versionados (ausência no diff é o esperado — mesma lógica que `.local_ci_metadata/`).
 - **Não listar:** achados já corrigidos no diff/revisão; achados neutralizados por outro caminho verificável (guard, validação, fluxo complementar E2E). Proibir duplicar achados redundantes.
 
 ## Modo
@@ -104,6 +104,7 @@ VERSION: "1.2.2"
 - **Crítico:** regra de negócio errada; fluxo partido; dados inconsistentes; corrupção de estado; exposição de alto risco (auth, pagamentos, PII); regressão óbvia vs comportamento esperado; **diff com ficheiros fora do escopo declarado** numa spec `docs/specs/tdd/*.md` quando essa spec integra a revisão (ver secção **Spec TDD (`docs/specs/tdd/*.md`) e escopo da atividade**).
 - **Grave:** contrato API/schema partido; N+1 ou bug de performance real; tratamento de erros em falta → estado inválido utilizador/sistema; testes que mentem sobre o comportamento.
 - **Padrão de código:** violação de `rules/eduardolagares/**` (ou regra/convenção de projecto citada nas fontes) no código novo ou alterado do diff — bloco **3**, não **1**/**2**.
+  - **Nome que não revela o que faz é Padrão de código, não estética.** Para cada classe, método público e variável relevante **nova** no diff, aplicar o § Teste do nome de `rules/eduardolagares/naming-rails.mdc`: escrever a frase do que faz/devolve e comparar com o nome. Palavra central da frase ausente do nome, comentário de classe mais preciso que o nome, substantivo-curinga (`contexto`, `dados`, `situacao`…), negativa (`Nao…`) ou layer entortada (rule que devolve não-Boolean, use case que não grava nada) → item `3.M` com o nome sugerido na **correção**.
 - **Outros:** sugestões com valor claro (clareza, consistência, dívida técnica pequena com ROI explícito).
 
 ## Proibido (global)

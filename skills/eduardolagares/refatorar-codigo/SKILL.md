@@ -6,7 +6,7 @@ description: >-
   do projeto. Use com /refatorar-codigo, "refatorar diff", "refatorar código"
   ou pedidos de limpeza/encurtamento do código alterado.
 disable-model-invocation: true
-VERSION: "1.0.2"
+VERSION: "1.1.0"
 ---
 
 # refatorar-codigo
@@ -17,7 +17,7 @@ VERSION: "1.0.2"
 
 Atue como um desenvolvedor Ruby on Rails Sênior e especialista em refatoração de código.
 
-Seu objetivo é analisar as alterações feitas no branch atual em relação à branch `master` (o diff fornecido abaixo) e refatorar esse código para torná-lo o mais limpo, performático e curto possível (Clean & Short Code), mantendo estritamente a mesma funcionalidade original e respeitando as convenções do projeto.
+Seu objetivo é analisar as alterações feitas no branch atual em relação à branch `master` (o diff fornecido abaixo) e refatorar esse código para torná-lo limpo, legível e performático, mantendo estritamente a mesma funcionalidade original e respeitando as convenções do projeto. Legível vem antes de curto: código menor com nomes vagos é pior que o original.
 
 ## Obter o escopo (ordem fixa)
 
@@ -27,15 +27,16 @@ Seu objetivo é analisar as alterações feitas no branch atual em relação à 
 
 Se nenhuma fonte tiver alterações → parar e pedir paths ou confirmar branch/base.
 
-Ler `.cursor/rules/`, `AGENTS.md` e convenções observáveis no código antes de refatorar.
+Ler `rules/eduardolagares/**` (instaladas em `~/.cursor/rules/eduardolagares/`), `.cursor/rules/`, `AGENTS.md` e convenções observáveis no código antes de refatorar.
 
 ## Diretrizes de qualidade (obrigatórias)
 
 1. **Foco no Diff:** Refatore apenas o código que sofreu alterações ou que está diretamente impactado pelas mudanças entre as branches.
-2. **Padrões Rails:** Use padrões modernos (Service/Query/Form Objects se o código modificado estiver inflando Models ou Controllers).
-3. **Regras de Sandi Metz:** Métodos curtos (idealmente até 5 linhas) e princípio de responsabilidade única.
-4. **Idiomas do Ruby:** Use cláusulas de guarda (guard clauses), memoization (`||=`) e métodos nativos de enumerable para reduzir o tamanho do código sem perder legibilidade.
-5. **Performance:** Garanta que as novas alterações não introduzam queries N+1 ou alocações de memória desnecessárias.
+2. **Camadas do projeto:** Se o código modificado estiver inflando Models ou Controllers, extraia para a layer certa de `domain-layer.mdc` (query, use case, rule, infrastructure, presenter). Nunca `*Service`.
+3. **Nomes primeiro:** Renomear classe, método ou variável do diff que reprova no § Teste do nome de `naming-rails.mdc` é refatoração válida e prioritária — vale mais que encurtar.
+4. **Responsabilidade única:** Métodos com um efeito só. **Só extraia** um método privado se existir um nome mais claro que o próprio código extraído; se o único nome possível é vago (`processar`, `tratar`, `validar_kwargs`), deixe inline.
+5. **Idiomas do Ruby:** Use cláusulas de guarda (guard clauses), memoization (`||=`) e métodos nativos de enumerable quando deixam o código mais legível — não só mais curto.
+6. **Performance:** Garanta que as novas alterações não introduzam queries N+1 ou alocações de memória desnecessárias.
 
 ## Modo de execução
 
@@ -62,6 +63,8 @@ Uma lista em tópicos curtos explicando o que foi melhorado no diff e por quê.
 
 - [ ] Só código do diff ou impacto directo foi alterado
 - [ ] Convenções do projecto respeitadas (rules, kwargs, query/use-case objects quando aplicável)
-- [ ] Métodos curtos; guard clauses onde reduzem aninhamento
+- [ ] Cada nome novo ou renomeado passa no § Teste do nome (`naming-rails.mdc`): frase do que faz/devolve ↔ nome
+- [ ] Nenhum método extraído com nome mais vago que o código que esconde
+- [ ] Guard clauses onde reduzem aninhamento
 - [ ] Sem N+1 novo (`includes`/`preload`/`eager_load` quando necessário)
 - [ ] Comportamento preservado (sem alterar contratos públicos sem necessidade do diff original)
