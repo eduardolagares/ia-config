@@ -1,54 +1,83 @@
 ---
-VERSION: "1.0.0"
-description: Query objects — nome = pedido de leitura (obter/identificar/montar/capturar/contar/calcular) + Query; read-only
+VERSION: "1.1.0"
+description: Query objects — nome = pedido de leitura (obter/identificar/montar/capturar/contar/calcular) + o que volta + Query; read-only; devolve relation, hash ou valor calculado
 alwaysApply: true
 ---
 # Query objects
 
-- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **pedido de leitura** + sufixo `Query`.
-- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`). **Else:** one-liner filter → model scope; mutação de objetos → use case (`use_cases.mdc`); pergunta de domínio (`esta`/`tem`/`possui`/`pode`) → rule object (`rule_objects.mdc`).
-- **Name (obrigatório):** ao escrever o identificador, use uma referência de pedido: **`obter`**, **`identificar`**, **`montar`**, **`capturar`**, **`contar`**, **`calcular`**. Sempre sufixo `Query`. Ex.: `ObterPedidosRecentesQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery` — **não** `PedidosRecentesQuery` (falta o pedido), **não** `QuaisPedidosRecentesQuery` (pergunta = rule), **não** `CriarPedidosQuery` (mutação = use case). **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
-- **Doc:** class comment pode descrever a intenção em pt-BR; o identificador nomeia o **pedido** (verbo da tabela) + o alvo.
+- Naming de métodos/variáveis → `naming-rails.mdc` (§ Teste do nome primeiro). Nome de classe = **pedido de leitura** + **o que volta** + sufixo `Query`.
+- **When:** non-trivial / reused AR composition (filters, joins, order, counts, small read-only aggregations as `Hash`) **ou** valor derivado do domínio sem mutar nada (número, data, texto, id, mensagem, objeto de valor). **Else:** one-liner filter → model scope; mutação de objetos → use case (`use_cases.mdc`); pergunta de sim/não (`esta`/`tem`/`possui`/`pode`) → rule object (`rule_objects.mdc`).
+- **Name (obrigatório):** ao escrever o identificador, use uma referência de pedido: **`obter`**, **`identificar`**, **`montar`**, **`capturar`**, **`contar`**, **`calcular`**. Sempre sufixo `Query`. Ex.: `ObterPedidosRecentesQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery`, `CalcularDiasDeRateioQuery` — **não** `PedidosRecentesQuery` (falta o pedido), **não** `QuaisPedidosRecentesQuery` (pergunta = rule), **não** `CriarPedidosQuery` (mutação = use case), **não** `ObterContextoDoPedidoQuery` (não diz o que volta). **NS:** `DominioX::Queries::Y::`. **Path:** `app/domains/<domain>/queries/**/name_query.rb` ↔ nested `Y::`.
+- **Doc:** class comment = a frase "devolve X …" em pt-BR; o identificador nomeia o **pedido** (verbo da tabela) + **X**.
 
 ## Invariants
 
 - **API:** `def self.call(...) = new(...).call` — public entry **only** at class level through `self.call` (same pattern as `new(...).call`).
-- **Return:** `ActiveRecord::Relation<Model>` **or** `Hash` (aggregations). Caller owns pagination, `find`, iteration — query returns relation/hash only.
+- **Return:** `ActiveRecord::Relation<Model>`, `Hash` (aggregations) **ou** valor calculado (`Integer`, `BigDecimal`, `String`, `Date`, `Data.define`). Caller owns pagination, `find`, iteration — query returns relation/hash/value only.
 - **Read-only:** no writes, callbacks, jobs, mail, side effects (no `each(&:touch)` etc.).
 - **Input:** validated kwargs — **never** raw `params`. Normalize variants in `initialize` (e.g. `id:` vs `ids:` → one internal shape).
-- **Base relation:** starting relation kwarg **must** be named `relation:`; store as `@relation`; thread `relation:` through `self.call` defaulting to `Model.all` when applicable.
+- **Base relation:** quando a query parte de uma relation, o kwarg **must** be named `relation:`; store as `@relation`; thread `relation:` through `self.call` defaulting to `Model.all` when applicable. Query de valor calculado sem relation de partida não precisa de `relation:`.
 - **Includes:** prefer `preload` when associations are for display/preload only and no `where`/`order` on joined tables; use `includes` only when needed for conditional SQL on associations.
 - **Reuse:** prefer existing model **named scopes** over duplicating `where` strings.
 - **Structure:** `#call` pode conter a composição quando for curta e linear; decompose em privados quando as cláusulas crescerem ou se misturarem.
 - **Perf:** never `SomeQuery.new` / `.call` **inside** a loop — build relation once, then iterate.
-- **YARD (mandatory):** both `self.call` and `#call` need `# @return [ActiveRecord::Relation<Model>]` or `# @return [Hash]` (narrow `Hash{...}` when useful) — same bar as rule objects’ non-boolean `#result`.
+- **YARD (mandatory):** both `self.call` and `#call` need `# @return [Type]` — `ActiveRecord::Relation<Model>`, `Hash` (narrow `Hash{...}` when useful), ou o tipo do valor calculado.
 
 ## Do not
 
-- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning non-relation/non-hash domain objects; instantiating query per row in a loop; nomes em inglês (`RecentOrdersQuery`, `GetOrdersQuery`); nomes sem pedido (`PedidosRecentesQuery`); interrogativos (`Quais…`, `Esta…`, `Pode…Query`) — isso é rule; verbos de mutação (`Criar…Query`).
+- Mutations or touching records; pagination inside query object; raw `params`; kwarg named `scope:` / `base_query:` instead of `relation:`; ivar named other than `@relation` for the base; returning model instances or Boolean (Boolean = rule); instantiating query per row in a loop; nomes em inglês (`RecentOrdersQuery`, `GetOrdersQuery`); nomes sem pedido (`PedidosRecentesQuery`); nomes que não dizem o que volta (`…Contexto…`, `…Dados…`, `…Situacao…`); interrogativos (`Quais…`, `Esta…`, `Pode…Query`) — isso é rule; verbos de mutação (`Criar…Query`).
 
 ## Reference skeleton
 
 ```ruby
-# Obter pedidos recentes (opcionalmente filtrados por status).
-module DominioOrders
+# frozen_string_literal: true
+
+# Devolve os pedidos dos últimos 30 dias, opcionalmente filtrados por status.
+module DominioPedidos
   module Queries
-    module Orders
+    module Pedidos
       class ObterPedidosRecentesQuery
-        # @return [ActiveRecord::Relation<Order>]
-        def self.call(status: nil, relation: Order.all)
+        # @return [ActiveRecord::Relation<Pedido>]
+        def self.call(status: nil, relation: Pedido.all)
           new(status:, relation:).call
         end
 
-        def initialize(status: nil, relation: Order.all)
+        def initialize(status: nil, relation: Pedido.all)
           @status = status
           @relation = relation
         end
 
-        # @return [ActiveRecord::Relation<Order>]
+        # @return [ActiveRecord::Relation<Pedido>]
         def call
-          orders = @relation.preload(:customer).where("created_at > ?", 30.days.ago)
-          @status ? orders.where(status: @status) : orders
+          pedidos_recentes = @relation.preload(:cliente).where("created_at > ?", 30.days.ago)
+          @status ? pedidos_recentes.where(status: @status) : pedidos_recentes
+        end
+      end
+    end
+  end
+end
+```
+
+```ruby
+# frozen_string_literal: true
+
+# Devolve quantos dias, da data de início até o fim do mês, entram no rateio da primeira fatura.
+module DominioAssinaturas
+  module Queries
+    module Intervalos
+      class CalcularDiasDeRateioQuery
+        # @return [Integer]
+        def self.call(data_inicio:)
+          new(data_inicio:).call
+        end
+
+        def initialize(data_inicio:)
+          @data_inicio = data_inicio
+        end
+
+        # @return [Integer]
+        def call
+          (@data_inicio.end_of_month - @data_inicio).to_i + 1
         end
       end
     end
