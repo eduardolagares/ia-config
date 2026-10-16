@@ -1,15 +1,35 @@
 ---
-VERSION: "2.0.0"
-description: Naming Rails — ficheiros, classes, métodos; rule = pergunta (esta/tem/pode); query = pedido de leitura (obter/contar/…); use case = mutação
+VERSION: "3.0.0"
+description: Naming Rails — teste do nome (o nome diz o que faz/devolve); rule = pergunta Boolean (esta/tem/pode); query = pedido de leitura ou valor calculado (obter/calcular/…); use case = mutação
 alwaysApply: true
 ---
 # Naming (Rails)
 
 **Escopo:** ficheiros, classes, métodos, variáveis, colunas, `validates`, scopes, associations, enums, callbacks, constants.
 
-**Resolução de conflito:** padrão existente em ficheiros vizinhos > esta rule.
+**Resolução de conflito:** padrão existente em ficheiros vizinhos > esta rule **para a forma** (idioma, sufixo, profundidade do path). O vizinho **nunca** dispensa o § Teste do nome: não copie nome vizinho que reprova nele.
 
 **Antes de nomear:** abra 1–2 ficheiros da mesma pasta/camada e copie o padrão (idioma, sufixo, verbos, profundidade do path). Não invente convenção nova no mesmo diretório.
+
+## Teste do nome (obrigatório — vale antes das demais secções)
+
+Forma correta (idioma, sufixo, verbo da tabela) **não basta**. O nome tem de dizer o que a coisa faz ou devolve.
+
+1. **Frase primeiro.** Antes de nomear classe, método ou variável, escreva a frase: "Recebe X e devolve Y" / "Faz Y em X" / "Responde se X…". Em classe, essa frase é o comentário da classe.
+2. **O nome sai da frase.** O verbo e os substantivos centrais da frase aparecem no nome. Palavra central da frase ausente do nome → renomear.
+3. **Comentário mais preciso que o nome = nome errado.** Promova o comentário a nome.
+4. **Leitura cega.** Quem vê só o nome no ponto de chamada, sem abrir o ficheiro, sabe o que volta ou o que muda. Precisa abrir para entender → renomear.
+5. **Nomeie o retorno, não o assunto.** `IdentificarBloqueioQueExigeDocumentacaoQuery`, não `ObterContextoDoBloqueioQuery`; `dias_de_rateio`, não `dados_do_intervalo`.
+6. **Afirmativo.** Rule e predicado em forma afirmativa: `MediaEstaBloqueadaPorFacial`, não `NaoExibirMediaComFacial`.
+7. **Comprido e claro > curto e vago.** Não encurte para caber. Se o nome honesto ficou enorme, a unidade faz coisa demais (`responsibilities.mdc`).
+
+| Ruim (passa na forma, falha no sentido) | Frase | Bom |
+|-----------------------------------------|-------|-----|
+| `ObterContextoEnvioDocumentacaoPorBloqueioQuery` | devolve o bloqueio ativo que exige documentação e o benefício que o libera | `IdentificarBloqueioQueExigeDocumentacaoQuery` |
+| `NaoExibirMediaComFacial` | responde se a mídia do ingresso fica oculta por causa da facial | `MediaEstaBloqueadaPorFacial` |
+| `FormaPagamentoId` (rule que devolve Integer) | devolve o id da forma de pagamento do tipo informado | `ObterIdDaFormaPagamentoQuery` |
+| `MontarFormasPagamentoConfig` (use case que não muta nada) | monta a configuração de cada meio de pagamento pedido | `MontarConfiguracaoDosMeiosDePagamentoQuery` |
+| `perdoar = perdoar?(...)` | indica se o período de transição foi perdoado | `transicao_perdoada = ...` |
 
 ## Idioma
 
@@ -18,6 +38,7 @@ alwaysApply: true
 - **Nunca** misturar idiomas num identificador. Ruim: `buscar_tickets`, `criado_at`. Bom: `buscar_ingressos`.
 - **Nunca** abreviar. Ruim: `qtd`, `desc`, `val`, `num`. Bom: `quantidade`, `descricao`, `valor`, `numero`.
 - **Nunca** acentos em identificadores. Bom: `descricao`, `usuario`, `numero`.
+- **Nunca** jargão técnico em inglês em identificador de domínio — traduza para o termo de negócio. Ruim: `span`, `gap`, `kwargs`, `skip`, `payload`, `mismatch`, `reconcile`, `config`, `label`. Bom: `vao`, `parametros`, `pular_`, `divergencia`, `reconciliar`, `configuracao`, `rotulo`. Exceção: quando espelha atributo, coluna ou API externa que já existe com esse nome.
 
 ## Ficheiros
 
@@ -55,13 +76,13 @@ Ao **escrever o nome**, escolha o verbo/auxiliar **só** na coluna Referências 
 | Camada | O nome é | Referências (use uma destas famílias) | Exemplo |
 |--------|----------|----------------------------------------|---------|
 | **Rule** | uma **pergunta** | `esta`, `tem`, `possui`, `pode` | `ClienteEstaPortador`, `PedidoTemPagamento`, `IngressoPossuiCadeira`, `ClientePodeCancelar` |
-| **Query** | um **pedido de leitura** (sem mutar estado) | `obter`, `identificar`, `montar`, `capturar`, `contar`, `calcular` | `ObterPedidosRecentesQuery`, `IdentificarPortadorDoIngressoQuery`, `MontarResumoDoPedidoQuery`, `CapturarItensDoCarrinhoQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery` |
+| **Query** | um **pedido de leitura** ou **valor calculado** (sem mutar estado) | `obter`, `identificar`, `montar`, `capturar`, `contar`, `calcular` | `ObterPedidosRecentesQuery`, `IdentificarPortadorDoIngressoQuery`, `MontarResumoDoPedidoQuery`, `CapturarItensDoCarrinhoQuery`, `ContarIngressosVendidosQuery`, `CalcularTotalDoPedidoQuery`, `CalcularDiasDeRateioQuery` |
 | **Use case** | uma **ação que altera estado** de objetos | verbo de comando (`criar`, `atualizar`, `cancelar`, `enviar`, `aplicar`, …) | `CriarPedido`, `CancelarIngresso` |
 
-- **Rule:** `#result` continua **primitivo** (`Boolean`, `String`, `Integer`, `BigDecimal`). Sem `?` no identificador. Sem inglês `Is`/`May`/`Has`.
-- **Query:** read-only. Sempre sufixo `Query`. Não usar pergunta (`Quais…`, `Esta…`, `Pode…`). Não usar verbo de mutação (`Criar…Query`).
-- **Use case:** mutação / orquestração com efeito em objetos. Não nomear com `obter`/`contar`/`esta`/`pode` — isso é query ou rule (`query_objects.mdc`, `rule_objects.mdc`).
-- Comentário de classe pode descrever a intenção em linguagem natural; o identificador segue a tabela acima.
+- **Rule:** `#result` devolve **só** `Boolean`. Sem `?` no identificador. Sem inglês `Is`/`May`/`Has`. Precisa devolver número, texto, data ou id → é query (`Calcular…Query`, `Obter…Query`, `Montar…Query`).
+- **Query:** read-only. Sempre sufixo `Query`. Não usar pergunta (`Quais…`, `Esta…`, `Pode…`). Não usar verbo de mutação (`Criar…Query`). O alvo nomeia **o que volta** (§ Teste do nome).
+- **Use case:** mutação / orquestração com efeito em objetos. Não nomear com `obter`/`contar`/`esta`/`pode` — isso é query ou rule (`query_objects.mdc`, `rule_objects.mdc`). Não altera estado → não é use case, mesmo que o verbo pareça comando (`MontarConfiguracao…` é query).
+- Comentário de classe = a frase do § Teste do nome; o identificador sai dessa frase, com o verbo da tabela acima.
 - **Nunca** inglês `Is`/`May`/`Has`/`Get` no meio do nome se o domínio é PT.
 
 - **Nunca** `*Service`, `*Manager`, `*Handler`, `*Helper`, `*Util` como desculpa genérica — escolha a camada e o sufixo dela.
@@ -87,14 +108,18 @@ Detalhe de migrations → `migrations.mdc`.
 - Getter simples → só o nome do valor. Bom: `total`. Ruim: `get_total`, `obter_total`.
 - Passo opcional em use case → prefixo `maybe_`: `maybe_aplicar_cupom`. Passo obrigatório → sem prefixo (`use_cases.mdc`).
 - Helper privado → nomeado pelo efeito. Bom: `normalizar_cpf`. Ruim: `before_save_callback`, `process_data`, `handle_stuff`, `do_work`.
-- Nome descreve o **efeito de domínio**, não o passo técnico: `aplicar_desconto`, não `run_step_2` / `execute_logic`.
+- Nome descreve o **efeito de domínio**, não o passo técnico: `aplicar_desconto`, não `run_step_2` / `execute_logic`. Ruim: `validar_kwargs_cartao`. Bom: `exigir_dados_do_cartao`.
+- **Não extraia** método privado se o único nome que cabe é mais vago que o código que ele esconde — deixe inline.
 
 ## Variáveis
 
 - Nome = conteúdo, não tipo. Bom: `ingressos_pendentes`. Ruim: `array_ingressos`, `lista`, `hash_dados`.
 - Variável de bloco → nome completo: `pedidos.map { |pedido| ... }`. Evitar `|p|`.
 - Memoização → mesmo nome do método: `@total ||= calcular_total`.
-- Boolean local → **sem** sufixo `?`: `pagamento_confirmado = pedido.pago?`.
+- Boolean local → adjetivo/particípio, **nunca** verbo, **sem** sufixo `?`: `pagamento_confirmado = pedido.pago?`. Ruim: `perdoar = …`, `exibir = …`. Bom: `transicao_perdoada`, `media_visivel`.
+- Coleção → nomeada pelo recorte: `assinaturas_anteriores`, `faturas_vencidas`. Ruim: `itens`, `registros`, `spans`, `resultado`.
+- **Nunca** truncar o termo de domínio: `forma_pagamento`, não `forma`; `assinatura_anterior`, não `anterior` / `imediata`; `rotulo_do_localizador`, não `label`.
+- Em loops com dois papéis do mesmo tipo, nomeie o papel: `assinatura_atual` / `assinatura_anterior`, não `atual` / `item`.
 
 ## Model — validates
 
@@ -139,6 +164,9 @@ Detalhe de arquitetura de model → `models.mdc`.
 - Prefixo boolean `is_` / `has_` / `flag_`.
 - `get_` / `set_` em qualquer sítio → usar `obter_` / `definir_`.
 - Nomes genéricos: `data`, `info`, `dados`, `item`, `obj`, `temp`, `aux`, `manager`, `handler`, `processor`, `helper`, `util`, `service` (como nome/sufixo vago).
+- Substantivos-curinga que escondem o que volta: `contexto`, `situacao`, `resultado`, `detalhes`, `informacoes`, `previa`, `estado`, `retorno`. Nomeie o conteúdo (`IdentificarBloqueioQueExigeDocumentacaoQuery`, não `ObterContextoDoBloqueioQuery`). Exceção: quando o próprio domínio usa o termo como conceito (ex.: `situacao_eleitoral` é um campo de negócio).
+- Rule ou predicado na negativa: `NaoExibir…`, `nao_pode_…?`.
+- Nome que reprova no § Teste do nome, mesmo cumprindo todas as outras regras.
 - Sufixo de tipo: `_array`, `_hash`, `_string`, `_obj`.
 - Idioma misto: `criado_at`, `buscar_tickets`.
 - Enum em forma array (sem valor explícito).
@@ -150,10 +178,16 @@ Detalhe de arquitetura de model → `models.mdc`.
 def get_total; is_pago?; end
 enum :status, %i[pendente pago cancelado]
 scope :buscar_ativos, -> { where(ativo: true) }
+class ObterContextoDoPedidoQuery  # contexto de quê? o que volta?
+forma = carregar_forma(tipo:)
+perdoar = transicao_coberta?(assinaturas:)
 
 # bom
 # ficheiro: criar_pedido.rb  class CriarPedido
 def total; pago?; end
 enum :status, { pendente: 0, pago: 1, cancelado: 2 }
 scope :ativos, -> { where(ativo: true) }
+class ObterIngressosPendentesDoPedidoQuery
+forma_pagamento = carregar_forma_pagamento(tipo:)
+transicao_perdoada = transicao_coberta?(assinaturas:)
 ```

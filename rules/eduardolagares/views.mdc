@@ -1,5 +1,5 @@
 ---
-VERSION: "0.0.5"
+VERSION: "0.0.6"
 description: Views — ViewComponent, presenters, I18n, dumb templates
 alwaysApply: true
 ---
@@ -16,9 +16,9 @@ alwaysApply: true
 
 ```ruby
 # Presenter wraps record; templates call methods — no AR in ERB.
-class OrderPresenter < SimpleDelegator
-  def initialize(order) = super(order)
+class PedidoPresenter < SimpleDelegator
+  def initialize(pedido) = super(pedido)
 
-  def status_label = I18n.t("orders.status.#{status}", default: status.to_s.titleize)
+  def rotulo_do_status = I18n.t("pedidos.status.#{status}", default: status.to_s.titleize)
 end
 ```

@@ -1,27 +1,27 @@
 ---
-VERSION: "0.2.0"
-description: Rule objects — nome = pergunta (esta/tem/possui/pode), #result primitivo, read-only
+VERSION: "1.0.0"
+description: Rule objects — nome = pergunta afirmativa (esta/tem/possui/pode), #result só Boolean, read-only
 alwaysApply: true
 ---
 # Rule objects
 
-- Naming de métodos/variáveis → `naming-rails.mdc`. Nome de classe = **pergunta de domínio em português**, **sem** `?` no identificador.
-- **When:** one boolean / small primitive answers a domain **question**. Reused in use cases, auth hints, views. **Else:** pedido de leitura (obter/contar/…) → query object (`query_objects.mdc`); mutação de objetos → use case (`use_cases.mdc`).
-- **Name (obrigatório):** ao escrever o identificador, use uma referência de pergunta: **`esta`**, **`tem`**, **`possui`**, **`pode`**. Ex.: `ClienteEstaPortador`, `PedidoTemPagamento`, `IngressoPossuiCadeira`, `ClientePodeCancelar` — não `ClienteIsPortador`, não `ObterPortador`, não `VerificarPortador`. **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::`.
+- Naming de métodos/variáveis → `naming-rails.mdc` (§ Teste do nome primeiro). Nome de classe = **pergunta de domínio em português**, afirmativa, **sem** `?` no identificador.
+- **When:** uma **pergunta de sim/não** do domínio. Reused in use cases, auth hints, views. **Else:** precisa devolver número, texto, data ou id → query object (`Calcular…Query`, `Obter…Query`, `Montar…Query` — `query_objects.mdc`); mensagem ou rótulo para exibição → presenter (`views.mdc`); mutação de objetos → use case (`use_cases.mdc`).
+- **Name (obrigatório):** ao escrever o identificador, use uma referência de pergunta: **`esta`**, **`tem`**, **`possui`**, **`pode`**. Ex.: `ClienteEstaPortador`, `PedidoTemPagamento`, `IngressoPossuiCadeira`, `ClientePodeCancelar` — não `ClienteIsPortador`, não `ObterPortador`, não `VerificarPortador`, não `NaoExibirMedia` (negativa e soa como comando → `MediaEstaBloqueada`). **NS:** `DominioX::Rules::Y::`. **Path:** `app/domains/<domain>/rules/**/name.rb` ↔ nested `Y::`.
 
 ## Invariants
 
-- **Single question** per class. `#result` returns **only** `Boolean`, `String`, `Integer`, or `BigDecimal` — never `ActiveRecord::Relation`, model instance, or `Hash`.
+- **Single question** per class. `#result` returns **only** `true` / `false` — never `String`, `Integer`, `BigDecimal`, id, mensagem, `ActiveRecord::Relation`, model instance, or `Hash`.
 - **`#result` costuma ser curto:** a expressão/execução fica **no próprio `#result`**. Extrair privado só se o corpo deixar de ser óbvio de uma leitura. Não orquestre por formalidade em rule curta.
 - **API:** instance `#result`. Optional `def self.result(...) = new(...).result` with **same** kwargs as `initialize`. **Never** `self.call` for rules.
 - **Input:** resolved domain objects / validated scalars in `initialize`. **Never** raw `params` / `ActionController::Parameters`. **Validate** types at boundary → `raise ArgumentError`. Use **top-level** `::Model` in `is_a?` to avoid NS confusion.
 - **Effects:** read-only — no saves, jobs, mail, I/O, callbacks.
 - **Compose:** other rules via `::DominioX::Rules::Y::Other.result(...)` or `new(...).result` — always **full** constant path.
-- **Doc:** class comment = the question in natural language (pt-BR). YARD `# @return [Type]` on `#result` **mandatory** when result is not `Boolean` (e.g. `BigDecimal`).
+- **Doc:** class comment = the question in natural language (pt-BR). O nome é essa pergunta, encurtada sem perder o sujeito nem o critério.
 
 ## Do not
 
-- Multiple unrelated questions in one class; returning records/collections; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace; inglês `Is`/`May`/`Has` no nome quando o domínio é PT; nome de **pedido** (`Obter…`, `Contar…`, `Calcular…`) — isso é query; nome de **comando** (`Criar…`, `Cancelar…`) — isso é use case.
+- Multiple unrelated questions in one class; returning anything other than Boolean; `self.call`; accepting `params`; writes or side effects; relative constant refs to other rules when cross-namespace; inglês `Is`/`May`/`Has` no nome quando o domínio é PT; nome na negativa (`Nao…`); nome sem pergunta (`CoberturaDeVinculo`, `FormaPagamentoId`, `MensagemBloqueio…`); `module` utilitário com vários métodos públicos em `rules/`; nome de **pedido** (`Obter…`, `Contar…`, `Calcular…`) — isso é query; nome de **comando** (`Criar…`, `Cancelar…`) — isso é use case.
 
 ## Reference skeleton
 
@@ -38,7 +38,7 @@ module DominioIngressos
         end
 
         def initialize(ingresso:, cliente_id:)
-          raise ArgumentError, "ingresso must be Ingresso" unless ingresso.is_a?(::Ingresso)
+          raise ArgumentError, "ingresso deve ser Ingresso" unless ingresso.is_a?(::Ingresso)
 
           @ingresso = ingresso
           @cliente_id = cliente_id
@@ -46,7 +46,7 @@ module DominioIngressos
 
         # @return [Boolean]
         def result
-          # primitive expression only
+          @ingresso.portador_id == @cliente_id
         end
       end
     end
