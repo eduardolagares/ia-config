@@ -7,7 +7,7 @@ description: >-
   Monday — não redige o documento. Converte qualquer gráfico Mermaid em PNG
   antes de adicionar ao documento. Use com /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.9.0"
+VERSION: "1.10.0"
 ---
 
 # criar-tarefa-no-monday
@@ -34,14 +34,15 @@ Publica no Monday uma tarefa já especificada: item no quadro, documento na colu
 
 ## Entrada: documento pronto
 
-O **conteúdo funcional** (UCs, telas, RFs) vem **pronto** — ficheiro (`docs/tarefas/…`), texto colado ou output de `/escrever-tarefa`. **Esta skill não entrevista** para redigir o documento.
+O **conteúdo funcional** vem **pronto** — ficheiro (`docs/tarefas/…`), texto colado ou output de `/escrever-tarefa` (demanda) ou `/reportar-bug` (bug). **Esta skill não entrevista** para redigir o documento.
 
 | Responsabilidade | Skill |
 |------------------|--------|
 | Redigir documento funcional | `escrever-tarefa` |
+| Redigir relatório de bug | `reportar-bug` |
 | Parâmetros Monday + publicar | `criar-tarefa-no-monday` |
 
-Sem documento na invocação → pedir path, texto ou encaminhar para `/escrever-tarefa`. **Não** inventar UCs/RFs nem fazer grill do conteúdo.
+Sem documento na invocação → pedir path, texto ou encaminhar para `/escrever-tarefa` (demanda nova) ou `/reportar-bug` (bug). **Não** inventar UCs/RFs nem fazer grill do conteúdo funcional.
 
 **Regra central:** entrevistar **só** os parâmetros Monday antes de criar. Não reutilizar valores de sessões anteriores (quadro, grupo, branch, responsável, etc.).
 
@@ -65,7 +66,7 @@ Antes de `create_item` / `change_item_column_values`, chamar `get_board_info` no
 |----------------------|------------------------|-------------|
 | “pode gerar o monday”, “cria no monday”, “gera a task” | Criar direto | Iniciar **Parâmetros Monday** (Respondidos fixos + Em aberto: Título, Branch, Prioridade) |
 | Documento `.md` pronto ou contexto da conversa | Assumir título, branch ou prioridade | **Sugerir** valores; **confirmar** com o utilizador |
-| “sim” à gravação do `.md` (`escrever-tarefa`) | Confirmação para publicar no Monday | Entrevista Monday é **fluxo separado** |
+| “sim” à gravação do `.md` (`escrever-tarefa` ou `reportar-bug`) | Confirmação para publicar no Monday | Entrevista Monday é **fluxo separado** |
 | “sim, crie no monday” / “sim + subtarefa UX” na mesma mensagem | Autorização para Executar | Entrevista + **“Posso criar…?”**; extras na lista de subtarefas do resumo |
 
 **Proibido:** inferir branch/título do documento, reutilizar valores de sessões anteriores, ou “ser proativo” pulando a entrevista — **mesmo que o usuário peça para criar** — mesmo que pareça óbvio.
@@ -125,12 +126,13 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 Lista padrão (obrigatória):
 
 1. `Escrever`
-2. `Executar`
-3. `Revisar código automaticamente`
-4. `Revisar código manualmente`
-5. `Testar`
-6. `Corrigir`
-7. `Fazer deploy`
+2. `Refinar documento`
+3. `Executar`
+4. `Revisar código automaticamente`
+5. `Revisar código manualmente`
+6. `Testar`
+7. `Corrigir`
+8. `Fazer deploy`
 
 **Branch:** recomendar e gravar **sempre** com prefixo `dev-` (feature/ajuste) ou `dev-fix-` (correção). **Proibido** sugerir ou gravar `feat/`, `fix/` ou outros prefixos legados.
 
@@ -244,6 +246,7 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 | Subtarefa | Owner (`person`) |
 |-----------|------------------|
 | `Escrever` | Adão Neto (fixo — sempre) |
+| `Refinar documento` | Eduardo Lagares |
 | `Revisar código automaticamente` | Eduardo Lagares |
 | `Revisar código manualmente` | Eduardo Lagares |
 | `Fazer deploy` | Eduardo Lagares |
@@ -299,10 +302,11 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 
 | Skill | Quando |
 |-------|--------|
-| `escrever-tarefa` | **Antes** — quando ainda não há documento funcional pronto |
+| `escrever-tarefa` | **Antes** — demanda nova ou mudança de fluxo ainda não especificada |
+| `reportar-bug` | **Antes** — bug reproduzível; artefato em `docs/tarefas/` sem RFs/UCs |
 | `monday-task-info` | Ler tarefa existente (somente leitura) |
 
-**Ordem típica:** `/escrever-tarefa` → documento pronto → `/criar-tarefa-no-monday` com o ficheiro ou texto.
+**Ordem típica:** `/escrever-tarefa` ou `/reportar-bug` → documento pronto → `/criar-tarefa-no-monday` com o ficheiro ou texto.
 
 ## Referência adicional
 

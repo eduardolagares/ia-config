@@ -1,13 +1,14 @@
 ---
 name: escrever-tarefa
 description: >-
-  Documento funcional resumido em português brasileiro (Cenário, RFs atômicos encadeados,
+  Documento funcional resumido em português brasileiro (Cenário, RFs do que muda,
   UCs em passos com referência a RF e diagrama Mermaid, Impactos, Critérios de aceite para
   agentes de IA); analista/PO que questiona e não presume; entrevista grill-me sem rascunho
-  até entendimento completo; grava em docs/tarefas/; após gravar, pode acionar criar-tarefa-no-monday.
+  até entendimento completo; o DERS descreve o delta e referencia o comportamento atual
+  pelo nome; grava em docs/tarefas/; após gravar, pode acionar criar-tarefa-no-monday.
   Use com /escrever-tarefa.
 disable-model-invocation: true
-VERSION: "2.7.5"
+VERSION: "2.9.0"
 ---
 
 # escrever-tarefa
@@ -16,22 +17,42 @@ Documento **simples** de atividade em **português brasileiro**. **Sempre** modo
 
 ## Papel: analista de sistemas / product owner
 
-Você é um analista de sistemas/ product owner. Você deve sempre questionar e nunca presumir. Não monte e nem apresente qualquer rascunho antes de ter o entendimento completo da necessidade.
+Você é um analista de sistemas/ product owner. Você deve sempre questionar e nunca presumir. Não monte e nem apresente qualquer rascunho antes de ter o entendimento completo da necessidade. **Não inferir** intenção: se o texto do usuário (ou o recorte já acordado) admite duas regras, **perguntar**.
 
 Comportar-se como **analista de sistemas** ou **product owner**: o artefato descreve **o quê** o sistema deve fazer para o usuário e o negócio, não **como** implementar.
 
 | Incluir no documento | Excluir do documento |
 |----------------------|----------------------|
 | Cenário (contexto, relevância, necessidade; `sequenceDiagram` só no gate § Cenário) | Código, pseudocódigo, snippets |
-| RFs atômicos, validações e comportamentos verificáveis | Classes, métodos, gems, frameworks, APIs internas |
-| UCs em passos com referência a RF e diagrama Mermaid | Migrações, tabelas, colunas, índices |
-| Impactos (repositório e, se necessário, tela) | Arquivos, paths, controllers, jobs, testes |
+| RFs atômicos, validações e comportamentos verificáveis | Classes, métodos, gems, frameworks, APIs internas, rotas, controllers, jobs, endpoints |
+| UCs em passos com referência a RF e diagrama Mermaid | Migrações, tabelas, colunas, índices, factories, nomes de arquivo |
+| Impactos (repositório e, se necessário, tela) | Arquivos, paths, testes |
 | Critérios de aceite para agentes de IA (caminhos + resultados) | Detalhe de stack, deploy, performance técnica |
 | Mensagens ao usuário em linguagem de negócio | |
 
-**Exploração do codebase** (quando grill-me o permitir): só para **entender** domínio, fluxos e telas existentes. No artefato, **traduzir** prosa, RFs, UCs e CAs para linguagem funcional. Exceção estreita: se o gate do § Cenário autorizar `sequenceDiagram`, aí classe/método/chamada podem aparecer **só** nesse bloco.
+**Exploração do codebase** (quando grill-me o permitir): só para **entender** domínio, fluxos e telas existentes e separar o que já está em produção do que esta tarefa muda. No artefato, **traduzir** prosa, RFs, UCs e CAs para linguagem funcional. Exceção estreita: se o gate do § Cenário autorizar `sequenceDiagram`, aí classe/método/chamada podem aparecer **só** nesse bloco.
 
 O **chat** pode mencionar código para clarificar dúvidas com o usuário; o **arquivo gravado** não.
+
+## Documento orientado ao delta
+
+O documento descreve **o que muda**. Regra que já existe e não muda vira referência normativa. Não é reescrita.
+
+**Referência válida:** fluxo ou regra nomeados em linguagem de negócio, com o que é reaproveitado e o que fica de fora. Ex.: "segue a compra de jogos até a vitrine, sem a janela de vendas". Quem implementa ou aceita consulta esse fluxo no sistema. O documento não transcreve condições, campos, mensagens nem estados dessa base.
+
+**Referência inválida:** "segue o padrão atual", "como hoje" ou "o de sempre", sem dizer qual fluxo. Também é inválido reaproveitar a base e, no mesmo recorte, criar exceção, precedência ou resultado novo sem escrevê-los.
+
+**Escrever por completo** (estados, recusa, mensagem, o que entra ou sai) somente quando a regra é nova, alterada, ou quando duas regras podem valer no mesmo objeto e a precedência ainda não está na base.
+
+**Uma vez:** permissão, flag ou condição transversal que a tarefa introduz entra num RF. UC e CA citam esse RF. Não repetem a condição em cada item.
+
+Reaproveitar caminho existente:
+- Ruim: um RF por etapa já existente, com mensagem e campo de cada uma.
+- Bom: um RF de preservação — a compra segue a compra de jogos nessas etapas; o comportamento atual é mantido. Outro RF para o que muda — a janela de vendas do jogo não é exigida.
+
+Permissão transversal:
+- Ruim: cada RF, UC e CA repete "com a permissão habilitada".
+- Bom: um RF — a ação só ocorre com a permissão habilitada. Os demais itens citam esse RF.
 
 ## Entrevista: sem rascunho até entendimento completo
 
@@ -41,26 +62,38 @@ O **chat** pode mencionar código para clarificar dúvidas com o usuário; o **a
 | Confirmar fatos já acordados em prosa mínima | Lista numerada de RFs, UCs, Impactos ou CAs |
 | Explorar codebase para responder à pergunta | “Distribuição” ou pré-visualização do artefato |
 
-**Entendimento completo:** o usuário confirma que não há decisões em aberto **ou** a entrevista grill cobriu todos os ramos necessários (cenário, fluxos, validações, impactos e cobertura de caminhos para CA). Só então montar o documento (no chat para revisão ou diretamente ao gravar, conforme pedido).
+**Entendimento completo:** o usuário confirma que não há decisões em aberto **ou** a entrevista grill cobriu todos os ramos necessários (as cinco perguntas do § Cenário, fluxos, validações, impactos, cobertura de caminhos visíveis para CA e o gate de aceite). Só então montar o documento (no chat para revisão ou diretamente ao gravar, conforme pedido).
+
+**Gatilhos grill (uma pergunta; priorizar o que bloquearia implementação):**
+
+- Qualquer uma das cinco perguntas do § Cenário sem resposta inequívoca no que já foi acordado.
+- Duas regras que podem valer no **mesmo objeto** (ex.: situação do ingresso e marcação de utilizado) — perguntar **qual vence em cada transição**; não escrever “qualquer mudança” / “sempre” se o comportamento atual diferencia destinos.
+- Antes de perguntar o miolo de uma regra, identificar se ela já existe. Se existir e não mudar, não entrevistar os ramos internos: nomear o fluxo e seguir para o que muda.
+- Recorte toca regra **já existente**: vai mudar? **Não** → um RF de preservação, “o comportamento atual é mantido”, com o fluxo nomeado; **não** reescrever tabela, mapa, campos, mensagens nem estados. **Sim** → escrever a regra nova por completo (estados, recusa, mensagem).
+- Recusa / bloqueio **novo ou alterado**: qual mensagem e o que **não** muda (registro, estado). Recusa que já existe e não muda fica na referência; não pedir a mensagem de novo.
+- Tarefa **não** deve quebrar um fluxo existente visível no recorte → um CA de regressão que compare com a base nomeada. Não abrir UC por ramo interno dessa base.
 
 ## Qualidade do artefato (obrigatório)
 
-O documento é a **base para o desenvolvimento técnico**. Quem implementa deriva escopo, fluxos e critérios de aceite **só com este arquivo**, sem adivinhar intenção.
+O documento é a **base para o desenvolvimento técnico**, junto com as referências normativas que ele nomeia. Quem implementa deriva o que muda deste arquivo e consulta no sistema o fluxo nomeado. Não adivinha regra nova.
 
 | Critério | O que fazer |
 |----------|-------------|
-| **Resumido** | Só o essencial; não repetir entre seções; não descrever regras/ações **implícitas** no conceito do sistema |
-| **Atômico (RF)** | Um comportamento ou validação por RF; **não agrupar** várias regras num item; pode haver 50+ RFs |
+| **Compreensão** | O texto (Cenário **ou** RF/UC) responde às cinco perguntas do § Cenário; **não inferir** o que falta |
+| **Gate de aceite** | Antes de gravar, as duas perguntas da § Encerrar têm de ser **sim** (salvo insistência do usuário após o aviso) |
+| **Caminho visível** | Toda ramificação **nova ou alterada** tem CA; todo UC tem CA; família de bloqueios inalterados pode ter um CA representativo |
+| **Resumido** | Só o essencial; não reescrever regra existente; declarar condição transversal uma vez e citar o RF nas outras seções; não descrever regras/ações **implícitas** no conceito do sistema |
+| **Atômico (RF)** | Decisão **nova ou alterada**: um comportamento por RF. Teste do “e”: dois resultados que são decisões independentes → dois RF. Consequências da mesma decisão podem ficar juntas. RF de preservação pode reunir várias etapas já existentes. Pode haver 50+ RFs quando o delta for grande |
 | **Encadeado (RF)** | Numeração sequencial global RF 1, RF 2, …; agrupar com **título curto em negrito terminado em `:`** em linha própria (sem prefixo fixo; não substitui itens RF) |
 | **Caminho (CA)** | Um CA = um caminho completo (feliz ou alternativo) + resultado esperado; **não** precisa ser atômico — detalhe e pré-condições são bem-vindos |
-| **Interpretável por IA (CA)** | Cada CA deve ser **interpretável por agentes de IA**: pré-condições, fluxo e resultado esperados explícitos, verificáveis e sem ambiguidade — um agente deve conseguir aceitar ou rejeitar a implementação só com o texto do CA |
-| **Cobertura (CA)** | Maximizar fluxos derivados dos UCs **e** das ramificações dos RF; não inventar escopo sem base |
+| **Interpretável por IA (CA)** | Caminho **novo ou alterado**: pré-condições, fluxo e resultado explícitos. Caminho **preservado**: o resultado pode ser a comparação com o fluxo nomeado (“a tela e a mensagem são as da compra de jogos”). Não completar o delta com Cenário, UC ou memória. Não exigir a transcrição da base |
+| **Cobertura (CA)** | Caminhos dos UCs **e** ramificações **novas ou alteradas**; RF de recusa nova ou alterada tem CA de recusa; invariante e preservação podem estar embutidos noutro CA; um CA representativo cobre uma família de bloqueios inalterados; não abrir CA por ramo interno da base; não inventar escopo sem base |
 | **Espaçamento** | Quebra de linha **somente entre blocos** — nunca entre título, subtítulo e corpo do mesmo bloco |
-| **Passos (UC)** | Um passo por item de lista; referenciar RFs nos passos (`RF n`); diagrama Mermaid essencial por UC |
-| **Coeso** | UCs, RFs e CAs alinhados; mesmo termo de negócio em todo o doc |
-| **Sem ambiguidade** | Atores, estados, condições e resultados explícitos; zero “etc.”, “quando aplicável”, “pode” vago ou “a definir” no texto final |
+| **Passos (UC)** | Um passo por item de lista; referenciar o RF **certo** nos passos (`RF n`); diagrama Mermaid essencial por UC |
+| **Coeso** | Mesmo vocabulário de negócio em Cenário, RF, UC e CA; **proibido contradizer** outro RF/UC/Cenário; **proibido duplicar** o mesmo requisito com outras palavras (fundir); UC não inventa regra fora dos RF nem ignora RF obrigatório do fluxo |
+| **Sem ambiguidade** | Atores, estados, condições e resultados explícitos; zero “etc.”, “quando aplicável”, “pode” vago ou “a definir” no texto final; exceção tem **escopo** (“nas mudanças que não cancelam”), nunca “sempre” se outro RF reserva outro destino |
 
-**Antes de gravar:** resolver no chat qualquer ponto que um dev possa interpretar de duas formas. **Não gravar** com ambiguidades conhecidas.
+**Antes de gravar:** resolver no chat qualquer ponto **novo ou alterado** que um dev possa interpretar de duas formas. **Não gravar** com referência vaga, ambiguidade no delta, nem regra nova ou alterada não escrita. Referência válida não é buraco.
 
 **Pacote:** `skills/eduardolagares/escrever-tarefa/` — instalada pelo `install/` em `{destino}/skills/eduardolagares/escrever-tarefa/` (Cursor ou `~/.agents`).
 
@@ -115,7 +148,17 @@ Classificar mentalmente cada trecho ( **não** apresentar classificação estrut
 
 ## Cenário (no documento)
 
-Prosa curta (2–4 frases): o que muda, para quem, por que é necessária.
+Prosa curta (2–4 frases). O conjunto **Cenário + RF/UC** (não exige as duas para cada item) tem de responder, **sem inferir**:
+
+1. Qual o **problema de negócio**?
+2. Qual a **demanda** (o que muda)?
+3. Qual o **objetivo final verificável**?
+4. **Onde** isso ocorre (jornada ou formulário nomeados nos RF bastam; não exige nome comercial da tela no Cenário)?
+5. O que o desenvolvedor deve **entregar sem adivinhar** — falha se um recorte **novo ou alterado** já colocado no RF/UC exige decisão de negócio não escrita (valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo, o que entra ou sai). Referência válida a fluxo existente não é falha. Referência vaga é falha.
+
+Ordem da prosa: problema → demanda → objetivo verificável. **Não** listar regras no Cenário. **Não** falar de stack. **Não** começar com “O que deve ser feito”, lista solta ou código.
+
+Se qualquer uma das cinco estiver aberta na entrevista → **uma pergunta grill**; **não gravar**.
 
 **Diagrama de sequência — default omitir.** Não colocar `sequenceDiagram` no Cenário nem em UC. O template **não** inclui esse bloco; não copiar o exemplo abaixo “por completar a seção”.
 
@@ -155,6 +198,12 @@ sequenceDiagram
 
 Monte uma lista encadeada de requisitos/validações referenciadas por RF 1, RF 2 etc. Quebre os requisitos/validações em partes pequenas fáceis de validar individualmente (atômico). Os requisitos não devem ser agrupados, cada requisito deve ser um item. Não tem problema de ter 50 requisitos.
 
+**Teste do “e”:** vale para decisões **novas ou alteradas**. Dois resultados visíveis que são decisões independentes (ex.: cancela os ativos **e** recusa o marcado como utilizado) → **dois RF**. Consequências da mesma decisão ficam juntas (ex.: não exigir a janela de vendas, não exibir a mensagem dessa janela e não usar a tela de jogo indisponível). Recusa nova ou alterada: mensagem no RF ou no CA estruturado.
+
+**Comportamento atual:** se a regra existente **não muda**, um RF nomeia o fluxo e diz “o comportamento atual é mantido”. Pode reunir várias etapas já existentes. **Não** redefinir mapa, tabela, campos, mensagens nem estados. As regras mantidas não são escritas neste documento. Se **muda**, escrever a regra nova por completo.
+
+**Conflito:** proibido contradizer outro RF, UC ou o Cenário. Proibido o mesmo requisito com outras palavras — fundir. Exceção com **escopo** explícito.
+
 Estrutura na seção **Requisitos funcionais**:
 
 1. **Título do agrupamento** em linha própria, **negrito** e terminado em **`:`** (ex.: `**Formulário de cadastro:**`, `**Ao clicar em Salvar:**`). **Sem** prefixo literal (`CONTEXTO OU AÇÃO`, `CENÁRIO OU AÇÃO`, etc.) — era orientação interna, não texto do documento.
@@ -178,7 +227,9 @@ Cada RF: verificável (dado X, o sistema faz Y); linguagem de negócio; sem term
 
 ## Casos de uso (no documento)
 
-Monte uma lista de casos de uso exemplificando cada fluxo. Um caso de uso pode relacionar com outro e esse relacionamento deve ser descrito. Os casos de uso devem ser narrados em passos. Ex quando o usuário clicar em salvar o sistema terá que verificar o valor X e exibir o resultado em Y. Escreva o caso de uso em forma de lista simples com um passo por item. Use referencias para os Requisitos funcionais durante as etapas do caso de uso.
+Monte casos de uso das jornadas **novas, alteradas ou de regressão essencial**. Agrupe ramos que terminam no mesmo resultado visível. Não recrie os caminhos internos do fluxo referenciado. Um caso de uso pode relacionar com outro e esse relacionamento deve ser descrito. Os casos de uso devem ser narrados em passos. Ex quando o usuário clicar em salvar o sistema terá que verificar o valor X e exibir o resultado em Y. Escreva o caso de uso em forma de lista simples com um passo por item. Use referencias para os Requisitos funcionais durante as etapas do caso de uso.
+
+**UC não inventa** regra que não está nos RF. **UC não ignora** RF obrigatório do fluxo. O passo cita o **RF certo** daquela ramificação.
 
 Formato por UC:
 
@@ -216,16 +267,20 @@ Substitui a antiga seção “Projetos envolvidos” e a seção “Telas” sep
 
 **Última seção** do documento (depois de Impactos). Serve para agentes de IA (e humanos) verificarem se a implementação cobre os fluxos da tarefa.
 
-**Obrigatório:** os critérios de aceite devem ser **interpretáveis por agentes de IA** — redigidos de forma que um agente consiga, sem inferência humana, determinar se o caminho foi cumprido (condições, ações e resultado esperado inequívocos).
+**Obrigatório:** os critérios de aceite devem ser **interpretáveis por agentes de IA**. Caminho novo ou alterado: condições, ações e resultado inequívocos no próprio CA. Caminho preservado: a comparação com o fluxo nomeado no DERS é resultado verificável. **Não** completar o delta com memória solta, com o Cenário nem com o UC. **Não** transcrever a base para tornar o CA “autossuficiente”.
+
+Caminho no escopo = ramificação **nova ou alterada** já escrita em RF ou UC que **muda o resultado visível** (exibe, some, exige, recusa, registra, estado, o que entra ou sai). Ramo interno de fluxo só referenciado não entra nesse escopo.
 
 | Aspecto | Regra |
 |---------|--------|
 | **Granularidade** | Um CA = um caminho completo (feliz ou alternativo) + resultado esperado. **Não** atômico: detalhe, pré-condições e contexto são bem-vindos |
-| **Interpretável por IA** | Cada CA deve bastar para um agente de IA aceitar ou rejeitar a entrega: linguagem verificável, sem “etc.”, “quando aplicável”, “pode” vago ou dependência de contexto implícito |
-| **Cobertura** | Maximizar fluxos dos **UCs** e das **ramificações dos RF** (ex.: bloqueio no RF sem UC dedicado). **Não** inventar fluxo sem base em RF/UC |
+| **Interpretável por IA** | Caminho novo ou alterado: linguagem verificável, sem “etc.”, “quando aplicável”, “pode” vago ou dependência de contexto implícito. Caminho preservado: “igual ao fluxo nomeado” basta; “como hoje”, sem nome, não basta |
+| **Cobertura** | **Todo UC** tem CA. Toda ramificação **nova ou alterada** tem **pelo menos um CA**. RF de **bloqueio/recusa novo ou alterado**: CA de recusa (mensagem + o que não muda); UC sozinho não basta. Família de bloqueios inalterados: um CA representativo. **Não** inventar fluxo sem base em RF/UC |
+| **Invariante** | RF de definição, invariante ou “permanece como está” **não** exige CA próprio se o critério já estiver embutido num CA de caminho |
+| **Comportamento atual** | Se o caminho não muda: o RF nomeia o fluxo e diz que o comportamento atual é mantido. O CA pode afirmar o resultado por comparação com esse fluxo, sem reescrever mapa, mensagem ou estado |
 | **Fluxo não mapeado** | Se ao montar um CA surgir caminho incompleto/ausente no restante do doc → **alertar no chat** (uma pergunta grill) para decidir se entram novos RF/UC. Não fechar esse CA como escopo sem a decisão |
 | **Referências** | Opcional citar `(UC n)` / `(RF n)` quando esclarecer; o CA deve bastar sozinho |
-| **Linguagem** | Verificável em negócio: estados, mensagens, registros criados/não criados, telas. Sem código, paths ou classes |
+| **Linguagem** | Verificável em negócio: estados, mensagens, registros criados/não criados, telas. Sem código, paths, classes, rotas, jobs, tabelas, colunas, endpoints, factories ou nomes de arquivo |
 | **Confirmação** | **Não** pedir confirmação explícita dos CA antes de gravar (diferente de Impactos). Derivar do entendimento acordado |
 
 Estrutura na seção:
@@ -249,6 +304,12 @@ Exemplo de forma (conteúdo ilustrativo):
   - Pré-condições: plano descontinuado selecionado
   - Fluxo: operador tenta concluir a adesão
   - Resultado esperado: adesão impedida; mensagem de plano indisponível; nenhuma assinatura nem fatura criadas (RF 5)
+
+**Bloqueio já existente, aplicado na jornada nova:**
+- CA 3:
+  - Pré-condições: cliente que a compra de jogos já impediria de abrir a vitrine
+  - Fluxo: o cliente compra a experiência
+  - Resultado esperado: a vitrine não abre e a autorização de compra não é registrada; a tela e a mensagem são as da compra de jogos
 ```
 
 ## Idioma — português brasileiro (obrigatório)
@@ -270,14 +331,19 @@ Na revisão pré-gravação (junto com impactos): percorrer o documento inteiro 
 
 ## Encerrar o documento (antes de gravar)
 
-**Sempre** confirmar **impactos** com o usuário antes de considerar o documento fechado ou sugerir gravação. **Não** exigir confirmação explícita da lista de CAs — montá-los a partir dos fluxos já acordados, com cobertura máxima (UCs + ramificações dos RF). Se um CA revelar fluxo não mapeado → alertar e resolver **antes** de gravar.
+**Sempre** confirmar **impactos** com o usuário antes de considerar o documento fechado ou sugerir gravação. **Não** exigir confirmação explícita da lista de CAs — montá-los a partir dos fluxos já acordados, cobrindo UCs e ramificações **novas ou alteradas**, mais um CA representativo para a família de bloqueios inalterados. Se um CA revelar fluxo não mapeado → alertar e resolver **antes** de gravar.
 
 1. Resumir no chat a lista atual de repositórios/telas (ou “ainda não definida”) — **sem** colar o documento completo, salvo pedido explícito de revisão.
 2. **Uma pergunta** (grill-me): quais repositórios (e telas) estão no âmbito; incluir recomendação se o contexto sugerir candidatos — no chat pode usar nome comercial; no doc gravar slug do repositório.
-3. Revisão mental: cada RF é testável isoladamente? UCs referenciam RFs corretos? CAs cobrem caminhos dos UCs e ramificações dos RF e são **interpretáveis por agentes de IA**? Algum CA aponta fluxo não mapeado (alerta pendente)? Texto 100% pt-BR (sem pt-PT)? Headings `###` e títulos de agrupamento RF/CA em negrito com `:`? Espaçamento só entre blocos? Agrupamentos só com título, sem prefixo `CONTEXTO OU AÇÃO`? Sobrou regra implícita ou termo vago?
-4. Só depois de impactos confirmados, alertas de CA resolvidos e **entendimento completo** → montar documento e gravar ou pedir confirmação para gravar.
+3. Revisão mental — **gate de aceite** (as duas têm de ser **sim** antes de gravar):
+   1. Dá para implementar o recorte **sem inventar regra nova ou alterada**, com este arquivo e as referências normativas nomeadas? (valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo, o que entra ou sai — só do que muda)
+   2. Dá para aceitar ou rejeitar **cada caminho novo ou alterado** com os CA e essas referências, sem inventar cenário? Caminho preservado pode ser aceito por comparação com o fluxo nomeado.
+   - **Não** bloquear gravação só por: RF de preservação que agrupa etapas existentes; consequências da mesma decisão no mesmo RF; CA que compara com a base nomeada; objetivo repetido entre Cenário e CA quando o RF não é copiado inteiro; RF de jornada sem UC se o RF já descreve o comportamento **e** o CA cobre o resultado; “pode”; termo técnico isolado com efeito de negócio já escrito; invariante já embutido noutro CA.
+   - Bloquear se a referência for vaga, se uma condição transversal for repetida em todo RF/UC/CA, ou se a base for reescrita.
+   - Também: cada decisão nova é testável isoladamente? UCs citam o RF certo? Algum CA aponta fluxo novo não mapeado? Texto 100% pt-BR? Headings `###` e agrupamentos RF/CA em negrito com `:`? Espaçamento só entre blocos? Vocabulário único? Exceção nova com escopo? Sobrou regra nova implícita?
+4. Só depois de impactos confirmados, gate de aceite **sim**, alertas de CA resolvidos e **entendimento completo** → montar documento e gravar ou pedir confirmação para gravar.
 
-Se o usuário pedir gravar sem impactos confirmados → fazer a pergunta **nesse turno** (não assumir lista por defeito).
+Se o usuário pedir gravar sem impactos confirmados **ou** com qualquer pergunta do gate em **não** → fazer a pergunta **nesse turno** (não assumir lista por defeito). Só gravar depois da resposta ou se insistirem na mesma mensagem após o aviso.
 
 ## Artefato: caminho e nome
 
@@ -307,7 +373,7 @@ Resposta negativa ou silêncio → encerrar; **não** criar tarefa no monday.
 
 ### Gravação incompleta
 
-Se pedirem gravar antes de cenário, RFs, UCs ou CAs suficientes: **avisar** o que falta e **gravar mesmo assim** (não bloquear), exceto **impactos** não confirmados — **perguntar primeiro**; só gravar depois da resposta ou se insistirem na mesma mensagem após o aviso. Se houver alerta de CA com fluxo não mapeado ainda sem decisão → **perguntar primeiro** (mesmo tratamento que impactos).
+Se pedirem gravar antes de cenário, RFs, UCs ou CAs suficientes: **avisar** o que falta e **gravar mesmo assim** (não bloquear), exceto **impactos** não confirmados, **gate de aceite** em não, ou alerta de CA com fluxo não mapeado ainda sem decisão — **perguntar primeiro**; só gravar depois da resposta ou se insistirem na mesma mensagem após o aviso.
 
 Seções em falta: placeholder mínimo `_A preencher._`. Impactos vazios sem confirmação de “nenhum” → `- _A confirmar com o usuário._`
 
@@ -339,7 +405,7 @@ Usar **exatamente** esta estrutura (substituir conteúdo; manter headings, negri
 
 ```markdown
 ### **Cenário:**
-[Contextualizar a alteração: o que muda, relevância e por que é necessária. Prosa curta — preferir 2–4 frases.]
+[Contextualizar a alteração: problema, demanda e objetivo verificável. Prosa curta — preferir 2–4 frases.]
 _(Não incluir `sequenceDiagram` aqui. Só acrescentar o bloco mermaid se o gate do § Cenário — ≥3 participantes, ordem/resultado das mensagens, flowchart do UC insuficiente — for verdadeiro.)_
 
 ### **Requisitos funcionais:**
@@ -398,14 +464,17 @@ Regras adicionais:
 - Mencionar ou delegar a skills além de **grill-me** (entrevista) e **criar-tarefa-no-monday** (somente pós-gravação aprovada).
 - Apresentar rascunho ou pré-visualização do documento **antes** do entendimento completo.
 - Implementar código, migrações ou testes neste fluxo.
-- No **documento gravado**: código, pseudocódigo, paths, SQL, seção Telas separada, estimativas de esforço, texto prolixo, ambiguidade (“talvez”, “ou similar”, “TBD” sem placeholder acordado), português europeu (pt-PT), prefixo literal `CONTEXTO OU AÇÃO` / `CENÁRIO OU AÇÃO` nos agrupamentos de RF/CA. Nomes de classe/método **só** em `sequenceDiagram` — não na prosa, RFs, passos de UC nem CAs.
+- No **documento gravado**: código, pseudocódigo, paths, SQL, rotas, controllers, jobs, tabelas, colunas, endpoints, factories, nomes de arquivo, seção Telas separada, estimativas de esforço, texto prolixo, ambiguidade (“talvez”, “ou similar”, “TBD” sem placeholder acordado), português europeu (pt-PT), prefixo literal `CONTEXTO OU AÇÃO` / `CENÁRIO OU AÇÃO` nos agrupamentos de RF/CA. Nomes de classe/método **só** em `sequenceDiagram` — não na prosa, RFs, passos de UC nem CAs.
 - UC **sem** lista de passos **ou** sem diagrama Mermaid; `sequenceDiagram` em UC; `flowchart TD` em UC.
 - `sequenceDiagram` no Cenário **sem** as três condições do gate (§ Cenário); copiar o exemplo de sequência “por ter seção Cenário”.
 - CA estruturado **sem** `Resultado esperado:`; CA estruturado com travessão `—` após o número (usar `CA n:`); gravar CA de fluxo não mapeado **sem** alerta e decisão do usuário.
-- Exigir CA atômico no estilo RF; inventar CA sem base em UC/RF; gravar CA ambíguo ou não interpretável por agentes de IA.
+- Exigir CA atômico no estilo RF; inventar CA sem base em UC/RF; gravar CA de caminho novo ou alterado ambíguo ou não interpretável por agentes de IA; gravar “como hoje” sem nomear o fluxo.
+- Gravar com recorte que exige **regra nova ou alterada não escrita**; gravar UC ou ramificação **nova ou alterada** **sem CA** correspondente (exceto invariante já embutido noutro CA).
+- Reescrever no documento regras cujo comportamento atual é mantido; repetir condição transversal em cada RF, UC e CA.
+- Inferir qual regra vence quando duas se aplicam ao mesmo objeto; gravar “qualquer mudança” / “sempre” se outro RF reserva outro destino.
 - Duplicar ou sobrescrever defaults de board do monday (grupo, colunas, labels) nesta skill — responsabilidade exclusiva de **criar-tarefa-no-monday**.
 - Linha em branco entre título/subtítulo e corpo do mesmo bloco; headings `###` ou agrupamentos RF/CA **sem** negrito ou **sem** `:` no título.
-- Agrupar várias validações num único RF.
+- Agrupar várias validações **novas ou alteradas** e independentes num único RF (teste do “e”). RF de preservação e consequências da mesma decisão não entram nessa proibição.
 - Gravar impactos com nome comercial de sistema em vez de slug de repositório.
 - Gravar fora de `docs/tarefas/…` (novo ou continuação) sem pedido explícito.
 - Colocar Critérios de aceite em posição diferente da **última** seção.
