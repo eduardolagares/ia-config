@@ -7,7 +7,7 @@ description: >-
   impactados. Grava em docs/tarefas/. Após gravar, pode acionar criar-tarefa-no-monday.
   Use com /reportar-bug.
 disable-model-invocation: true
-VERSION: "1.1.0"
+VERSION: "1.1.1"
 ---
 
 # reportar-bug
@@ -25,6 +25,11 @@ Pedido de funcionalidade nova ou de mudança de regra de um fluxo que ainda vai 
 Questionar o que impede outra pessoa de repetir o bug, ou o que ainda não está decidido para corrigir. Não presumir regra nova. Não inferir o comportamento esperado quando o usuário não o deu.
 
 Explorar o codebase só para entender a tela, o fluxo e **quais repositórios** a correção toca. No arquivo gravado, linguagem de negócio: sem código, paths, SQL, classes, rotas, jobs, tabelas ou nomes de arquivo. Exceção: slug de repositório Git **somente** em **Impactos**.
+
+## Regras de escrita (obrigatório)
+
+- Seja objetivo, sem rodear ou florear.
+- Comportamento ou regra já existente ou já aplicado não é repetido no documento.
 
 ## Entrevista
 
@@ -134,7 +139,8 @@ Resultado observado: [o que aconteceu, em uma frase].
 - Elencar regras, RFs, UCs, critérios de aceite ou diagramas do processo já definido.
 - Tratar bug como tarefa nova de `/escrever-tarefa`.
 - Inventar comportamento esperado ou regra nova.
-- Gravar regra existente dentro de **Comportamento esperado**.
+- Gravar regra existente ou já aplicada dentro de **Comportamento esperado**.
+- Rodeio ou floreio no documento.
 - Gravar **Impactos** com nome comercial de sistema em vez do slug do repositório.
 - Gravar a lista de repositórios sem a confirmação do usuário.
 - Descrever em **Impactos** o efeito no usuário ou no negócio — a seção é só repositório e, se couber, tela.

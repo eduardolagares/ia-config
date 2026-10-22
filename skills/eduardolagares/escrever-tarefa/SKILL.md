@@ -8,7 +8,7 @@ description: >-
   pelo nome; grava em docs/tarefas/; após gravar, pode acionar criar-tarefa-no-monday.
   Use com /escrever-tarefa.
 disable-model-invocation: true
-VERSION: "2.9.0"
+VERSION: "2.10.0"
 ---
 
 # escrever-tarefa
@@ -34,6 +34,11 @@ Comportar-se como **analista de sistemas** ou **product owner**: o artefato desc
 
 O **chat** pode mencionar código para clarificar dúvidas com o usuário; o **arquivo gravado** não.
 
+## Regras de escrita (obrigatório)
+
+- Seja objetivo, sem rodear ou florear.
+- Comportamento ou regra já existente ou já aplicado não é repetido no documento.
+
 ## Documento orientado ao delta
 
 O documento descreve **o que muda**. Regra que já existe e não muda vira referência normativa. Não é reescrita.
@@ -58,13 +63,21 @@ Permissão transversal:
 
 | Permitido no chat (antes do entendimento completo) | Proibido até entendimento completo |
 |----------------------------------------------------|-------------------------------------|
-| Uma pergunta grill de cada vez (com recomendação) | Rascunho do documento ou seções do template |
+| Rodada de perguntas grill em lote (§ Rodada de perguntas) | Rascunho do documento ou seções do template |
 | Confirmar fatos já acordados em prosa mínima | Lista numerada de RFs, UCs, Impactos ou CAs |
 | Explorar codebase para responder à pergunta | “Distribuição” ou pré-visualização do artefato |
 
 **Entendimento completo:** o usuário confirma que não há decisões em aberto **ou** a entrevista grill cobriu todos os ramos necessários (as cinco perguntas do § Cenário, fluxos, validações, impactos, cobertura de caminhos visíveis para CA e o gate de aceite). Só então montar o documento (no chat para revisão ou diretamente ao gravar, conforme pedido).
 
-**Gatilhos grill (uma pergunta; priorizar o que bloquearia implementação):**
+**Rodada de perguntas:** cada resposta da entrevista traz **todas** as perguntas abertas que já podem ser feitas, de uma vez, para o usuário responder várias numa só mensagem.
+
+- Lista numerada; cada pergunta com a recomendação.
+- Ordenar pelo que bloquearia a implementação primeiro.
+- Pergunta que depende da resposta de outra da mesma rodada fica para a rodada seguinte.
+- Pergunta respondível explorando o codebase não entra na rodada: explorar antes.
+- Resposta parcial: registrar o que foi respondido e repetir só as pendentes na próxima rodada, junto com as novas.
+
+**Gatilhos grill (entram na rodada; priorizar o que bloquearia implementação):**
 
 - Qualquer uma das cinco perguntas do § Cenário sem resposta inequívoca no que já foi acordado.
 - Duas regras que podem valer no **mesmo objeto** (ex.: situação do ingresso e marcação de utilizado) — perguntar **qual vence em cada transição**; não escrever “qualquer mudança” / “sempre” se o comportamento atual diferencia destinos.
@@ -105,12 +118,12 @@ No **primeiro turno** desta skill, localizar e ler **grill-me** (`SKILL.md`). Pr
 2. `~/.cursor/skills/grill-me/SKILL.md`
 3. `~/.claude/skills/grill-me/SKILL.md`
 
-Seguir o conteúdo lido. Se **nenhum** existir, aplicar o contrato grill-me embutido:
+Seguir o conteúdo lido, **exceto** a cadência: onde o grill-me manda perguntar uma de cada vez, vale a § Rodada de perguntas desta skill. Se **nenhum** existir, aplicar o contrato grill-me embutido:
 
 ```
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions. For each question, provide your recommended answer.
 
-Ask the questions one at a time.
+Ask every question that can already be asked in a single numbered batch. Questions that depend on an unanswered one wait for the next batch.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
 ```
@@ -144,7 +157,7 @@ Classificar mentalmente cada trecho ( **não** apresentar classificação estrut
 - **RF:** regra, validação ou comportamento verificável do **sistema** (não narrativa de jornada).
 - **CA:** caminho possível da tarefa e resultado esperado verificável (para aceite por agente de IA).
 
-**Uma pergunta de cada vez** (grill-me) em lacuna, ambiguidade ou conflito — priorizar o que bloquearia implementação.
+Lacunas, ambiguidades e conflitos entram juntos na **rodada de perguntas** (grill-me) — priorizar o que bloquearia implementação.
 
 ## Cenário (no documento)
 
@@ -158,7 +171,7 @@ Prosa curta (2–4 frases). O conjunto **Cenário + RF/UC** (não exige as duas 
 
 Ordem da prosa: problema → demanda → objetivo verificável. **Não** listar regras no Cenário. **Não** falar de stack. **Não** começar com “O que deve ser feito”, lista solta ou código.
 
-Se qualquer uma das cinco estiver aberta na entrevista → **uma pergunta grill**; **não gravar**.
+Se qualquer uma das cinco estiver aberta na entrevista → entra na **rodada de perguntas**; **não gravar**.
 
 **Diagrama de sequência — default omitir.** Não colocar `sequenceDiagram` no Cenário nem em UC. O template **não** inclui esse bloco; não copiar o exemplo abaixo “por completar a seção”.
 
@@ -278,7 +291,7 @@ Caminho no escopo = ramificação **nova ou alterada** já escrita em RF ou UC q
 | **Cobertura** | **Todo UC** tem CA. Toda ramificação **nova ou alterada** tem **pelo menos um CA**. RF de **bloqueio/recusa novo ou alterado**: CA de recusa (mensagem + o que não muda); UC sozinho não basta. Família de bloqueios inalterados: um CA representativo. **Não** inventar fluxo sem base em RF/UC |
 | **Invariante** | RF de definição, invariante ou “permanece como está” **não** exige CA próprio se o critério já estiver embutido num CA de caminho |
 | **Comportamento atual** | Se o caminho não muda: o RF nomeia o fluxo e diz que o comportamento atual é mantido. O CA pode afirmar o resultado por comparação com esse fluxo, sem reescrever mapa, mensagem ou estado |
-| **Fluxo não mapeado** | Se ao montar um CA surgir caminho incompleto/ausente no restante do doc → **alertar no chat** (uma pergunta grill) para decidir se entram novos RF/UC. Não fechar esse CA como escopo sem a decisão |
+| **Fluxo não mapeado** | Se ao montar um CA surgir caminho incompleto/ausente no restante do doc → **alertar no chat** (na rodada de perguntas) para decidir se entram novos RF/UC. Não fechar esse CA como escopo sem a decisão |
 | **Referências** | Opcional citar `(UC n)` / `(RF n)` quando esclarecer; o CA deve bastar sozinho |
 | **Linguagem** | Verificável em negócio: estados, mensagens, registros criados/não criados, telas. Sem código, paths, classes, rotas, jobs, tabelas, colunas, endpoints, factories ou nomes de arquivo |
 | **Confirmação** | **Não** pedir confirmação explícita dos CA antes de gravar (diferente de Impactos). Derivar do entendimento acordado |
@@ -334,7 +347,7 @@ Na revisão pré-gravação (junto com impactos): percorrer o documento inteiro 
 **Sempre** confirmar **impactos** com o usuário antes de considerar o documento fechado ou sugerir gravação. **Não** exigir confirmação explícita da lista de CAs — montá-los a partir dos fluxos já acordados, cobrindo UCs e ramificações **novas ou alteradas**, mais um CA representativo para a família de bloqueios inalterados. Se um CA revelar fluxo não mapeado → alertar e resolver **antes** de gravar.
 
 1. Resumir no chat a lista atual de repositórios/telas (ou “ainda não definida”) — **sem** colar o documento completo, salvo pedido explícito de revisão.
-2. **Uma pergunta** (grill-me): quais repositórios (e telas) estão no âmbito; incluir recomendação se o contexto sugerir candidatos — no chat pode usar nome comercial; no doc gravar slug do repositório.
+2. **Na rodada de perguntas** (grill-me), junto com as demais pendentes: quais repositórios (e telas) estão no âmbito; incluir recomendação se o contexto sugerir candidatos — no chat pode usar nome comercial; no doc gravar slug do repositório.
 3. Revisão mental — **gate de aceite** (as duas têm de ser **sim** antes de gravar):
    1. Dá para implementar o recorte **sem inventar regra nova ou alterada**, com este arquivo e as referências normativas nomeadas? (valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo, o que entra ou sai — só do que muda)
    2. Dá para aceitar ou rejeitar **cada caminho novo ou alterado** com os CA e essas referências, sem inventar cenário? Caminho preservado pode ser aceito por comparação com o fluxo nomeado.
@@ -343,7 +356,7 @@ Na revisão pré-gravação (junto com impactos): percorrer o documento inteiro 
    - Também: cada decisão nova é testável isoladamente? UCs citam o RF certo? Algum CA aponta fluxo novo não mapeado? Texto 100% pt-BR? Headings `###` e agrupamentos RF/CA em negrito com `:`? Espaçamento só entre blocos? Vocabulário único? Exceção nova com escopo? Sobrou regra nova implícita?
 4. Só depois de impactos confirmados, gate de aceite **sim**, alertas de CA resolvidos e **entendimento completo** → montar documento e gravar ou pedir confirmação para gravar.
 
-Se o usuário pedir gravar sem impactos confirmados **ou** com qualquer pergunta do gate em **não** → fazer a pergunta **nesse turno** (não assumir lista por defeito). Só gravar depois da resposta ou se insistirem na mesma mensagem após o aviso.
+Se o usuário pedir gravar sem impactos confirmados **ou** com qualquer pergunta do gate em **não** → fazer as perguntas pendentes **nesse turno** (não assumir lista por defeito). Só gravar depois da resposta ou se insistirem na mesma mensagem após o aviso.
 
 ## Artefato: caminho e nome
 
@@ -470,7 +483,8 @@ Regras adicionais:
 - CA estruturado **sem** `Resultado esperado:`; CA estruturado com travessão `—` após o número (usar `CA n:`); gravar CA de fluxo não mapeado **sem** alerta e decisão do usuário.
 - Exigir CA atômico no estilo RF; inventar CA sem base em UC/RF; gravar CA de caminho novo ou alterado ambíguo ou não interpretável por agentes de IA; gravar “como hoje” sem nomear o fluxo.
 - Gravar com recorte que exige **regra nova ou alterada não escrita**; gravar UC ou ramificação **nova ou alterada** **sem CA** correspondente (exceto invariante já embutido noutro CA).
-- Reescrever no documento regras cujo comportamento atual é mantido; repetir condição transversal em cada RF, UC e CA.
+- Rodeio ou floreio no documento.
+- Reescrever no documento regras cujo comportamento atual é mantido ou que já foram aplicadas; repetir condição transversal em cada RF, UC e CA.
 - Inferir qual regra vence quando duas se aplicam ao mesmo objeto; gravar “qualquer mudança” / “sempre” se outro RF reserva outro destino.
 - Duplicar ou sobrescrever defaults de board do monday (grupo, colunas, labels) nesta skill — responsabilidade exclusiva de **criar-tarefa-no-monday**.
 - Linha em branco entre título/subtítulo e corpo do mesmo bloco; headings `###` ou agrupamentos RF/CA **sem** negrito ou **sem** `:` no título.
@@ -488,4 +502,4 @@ Regras adicionais:
 /escrever-tarefa docs/referencias/briefing-stakeholder.md
 ```
 
-Com ficheiro ou texto na mesma mensagem: ler de imediato; primeira resposta grill = síntese factual do que entrou (sem rascunho do template) + **uma** pergunta.
+Com ficheiro ou texto na mesma mensagem: ler de imediato; primeira resposta grill = síntese factual do que entrou (sem rascunho do template) + a primeira **rodada de perguntas**.
