@@ -9,7 +9,7 @@ description: >-
   genuinamente crítico, salva plano e decisões em docs/specs/, e nunca reporta
   pronto sem os testes passando.
 disable-model-invocation: true
-VERSION: "1.1.0"
+VERSION: "1.2.0"
 ---
 
 # Spec Implementer
@@ -80,7 +80,7 @@ entrada, mesma numeração, mais uma seção de código:
 Cada RF/critério/UC do doc original aparece com seu próprio status — sem
 resumir vários numa linha. Todo trecho de código alterado ou criado precisa
 estar explícito na seção de código, com diff. Atualize o arquivo conforme
-implementa; o relatório no chat (§5) só aponta pra ele.
+implementa; o relatório no chat (§6) só aponta pra ele.
 
 **Código / comportamento sem teste automatizado:** qualquer pedaço que não
 puder ser travado por teste automático **deve** constar em "Casos de teste
@@ -117,14 +117,31 @@ visual), escreva o teste que for possível e **obrigatoriamente** registre o
 resto em "Casos de teste para QA" no spec — caso pronto pra QA rodar, não
 lembrete. Status: "aguardando QA", nunca "pronto".
 
-## 4. Gate de teste — nunca pular
+## 4. Gate de nomes — nunca pular
+
+Antes do gate de teste, liste para você mesmo cada classe, método e variável
+**nova** desta entrega com uma frase do que faz/devolve:
+
+```text
+IdentificarBloqueioQueExigeDocumentacaoQuery | devolve o bloqueio ativo que exige documentação e o benefício que o libera
+transicao_perdoada                           | indica se jan–mar/2026 conta como coberto
+```
+
+Aplique o § Teste do nome do `naming-rails.mdc`: se a frase tem palavra
+central que não está no nome, se o nome usa curinga (`contexto`, `dados`,
+`situacao`…), negativa (`Nao…`) ou se a layer foi entortada para caber
+(rule devolvendo não-Boolean, use case sem gravar nada) → renomeie ou troque a
+layer **antes** de rodar os testes. Não copie o texto do RF como nome: o RF
+descreve o requisito; o nome descreve o que o código faz.
+
+## 5. Gate de teste — nunca pular
 
 Rode os testes da área tocada. Todos verdes antes de reportar qualquer coisa
 como pronta; se algo falhar, corrija ou diga claramente o que está vermelho e
 por quê. O que ficou sem automação já deve estar listado no spec (§1 / Casos
 de teste para QA).
 
-## 5. Relatório final
+## 6. Relatório final
 
 Em pt-BR, curto — detalhe mora no spec:
 - Caminho do `docs/specs/<slug>.md`.
