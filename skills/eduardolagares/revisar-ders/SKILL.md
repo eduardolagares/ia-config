@@ -3,12 +3,13 @@ name: revisar-ders
 description: >-
   Revisa o Documento de Especificação de Requisitos de Software (DERS) de uma
   tarefa Monday pelo título idêntico. Avalia coesão RF/UC/CA, Cenário,
-  suficiência funcional e se cada caminho é testável por CA, sem implementação.
-  Não julga o título do item contra o documento. Use com /revisar-ders ou quando
-  o usuário pedir para revisar DERS, especificação de requisitos ou o documento
-  da tarefa no Monday.
+  suficiência do delta e se cada caminho novo ou alterado é testável por CA
+  e pelas referências normativas nomeadas, sem implementação e sem consultar
+  o codebase. Não julga o título do item contra o documento. Use com
+  /revisar-ders ou quando o usuário pedir para revisar DERS, especificação
+  de requisitos ou o documento da tarefa no Monday.
 disable-model-invocation: true
-VERSION: "1.4.0"
+VERSION: "1.5.0"
 ---
 
 # `/revisar-ders`
@@ -38,7 +39,19 @@ Quadro **Dia a dia** (`4571892384`). Servidor MCP típico: `user-monday-mcp`. Se
 | 1 item, sem Documento | Impeditivo: item encontrado, DERS ausente. Não completar com updates, descrição ou memória. |
 | 1 item com Documento | Revisar só esse texto. |
 
-Nunca supor a demanda a partir de conversa anterior, branch, MR ou codebase.
+Nunca supor a demanda a partir de conversa anterior, branch, MR ou codebase. Não abrir o repositório para completar ou conferir regra ausente: o veredito sai só do texto do DERS.
+
+## Referência normativa
+
+O DERS descreve o que muda. Fluxo existente nomeado em linguagem de negócio é fonte normativa e oráculo comparativo. O revisor não transcreve nem audita essa base.
+
+**Válida:** nomeia o fluxo e delimita o reaproveitamento e a exceção. Ex.: "segue a compra de jogos até a vitrine, sem a janela de vendas". Comparar tela, mensagem ou estado com esse fluxo é aceite executável.
+
+**Inválida:** "segue o padrão atual", "como hoje" ou "o de sempre", sem dizer qual fluxo. Também é inválido o delta — exceção, precedência ou resultado novo — ficar só na referência.
+
+**Não é defeito:** um RF de preservação reunir várias etapas já existentes; consequências da mesma decisão no mesmo RF; um CA representativo para uma família de bloqueios inalterados; objetivo no Cenário e resultado no CA do caminho novo, desde que o RF não seja copiado inteiro em todas as seções.
+
+**É defeito:** reescrever a base; repetir condição transversal em cada RF, UC e CA; regra nova ou alterada sem texto; caminho novo ou alterado sem CA.
 
 ## Regras
 
@@ -56,19 +69,21 @@ Responder em silêncio (a resposta pode estar no Cenário **ou** nos RF/UC; não
 
 Pergunta 4: jornada ou formulário nomeados nos RF bastam; não exige nome comercial da tela no Cenário.
 
-Pergunta 5: falha só se um recorte **já colocado no RF/UC** exige decisão de negócio não escrita (valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo). Falta de UC ou de diagrama **não** é falha desta pergunta.
+Pergunta 5: falha só se um recorte **novo ou alterado já colocado no RF/UC** exige decisão de negócio não escrita (valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo). Referência válida não é falha. Referência vaga é falha. Falta da transcrição da base não é falha. Falta de UC ou de diagrama **não** é falha desta pergunta.
 
 Se **qualquer** pergunta ficar sem resposta inequívoca no texto → documento **mal escrito**. Isso é **impeditivo**. Não inferir a intenção. Citar o trecho que falta.
 
 ### Aceite por agente (depois da compreensão)
 
-O DERS não pode deixar caminho no escopo **não testável**. Quem valida (dev, QA ou agente de IA) aceita ou rejeita **só com os CA**, sem inventar cenário.
+O DERS não pode deixar caminho **novo ou alterado** não testável. Quem valida aceita ou rejeita com os CA e as referências normativas declaradas no DERS, sem inventar cenário e sem consultar o codebase.
 
-Caminho no escopo = ramificação já escrita em RF ou UC que **muda o resultado visível** (exibe, some, exige, recusa, registra, estado, o que entra ou sai). Cada um desses caminhos precisa de **pelo menos um CA** com pré-condições e resultado esperado inequívocos.
+Caminho no escopo = ramificação **nova ou alterada** já escrita em RF ou UC que **muda o resultado visível** (exibe, some, exige, recusa, registra, estado, o que entra ou sai). Cada um desses caminhos precisa de **pelo menos um CA**. Ramo interno de fluxo só referenciado não é caminho deste escopo.
 
-Não exige CA próprio: RF de definição, invariante ou “permanece como está”, se o critério já estiver embutido em CA de caminho (ex.: fórmula de menor de 18 usada no CA de menor vs. maior). Não exige UC 1:1 com RF.
+Caminho novo ou alterado: pré-condições e resultado inequívocos no CA. Caminho preservado: “a tela e a mensagem são as do fluxo nomeado” é comparação executável.
 
-Sem CA cobrindo o caminho → **impeditivo**. Não completar o teste com UC, Cenário ou memória.
+Não exige CA próprio: RF de definição, invariante ou “permanece como está”, se o critério já estiver embutido em CA de caminho. Família de bloqueios inalterados: um CA representativo basta. Não exige UC 1:1 com RF.
+
+Sem CA cobrindo caminho **novo ou alterado** → **impeditivo**. Não completar o delta com UC, Cenário, conversa ou memória. Não exigir a transcrição da base.
 
 ### Título
 
@@ -84,37 +99,39 @@ Não lista regras. Não fala de stack. Começar por “O que deve ser feito”, 
 
 Mesmo vocabulário de negócio em Cenário, RF, UC e CA. Não incluir o título nessa coesão.
 
-**RF:** um comportamento ou validação por item; numeração RF 1, RF 2, …; verificável (dado X, o sistema faz Y). Proibido agrupar regras, duplicar o mesmo requisito com outras palavras, ou contradizer outro RF/UC/Cenário. RF de bloqueio precisa de **CA** de recusa (UC sozinho não basta para o agente validar).
+**RF:** decisão nova ou alterada = um comportamento por item; numeração RF 1, RF 2, …; verificável (dado X, o sistema faz Y). Proibido agrupar decisões novas independentes, duplicar o mesmo requisito com outras palavras, ou contradizer outro RF/UC/Cenário. RF de preservação pode reunir etapas já existentes. Consequências da mesma decisão podem ficar no mesmo RF. RF de bloqueio **novo ou alterado** precisa de **CA** de recusa (UC sozinho não basta). Bloqueio preservado não exige um CA por motivo.
 
 **UC:** um passo por item; referencia `RF n` sem copiar o RF; tem passos **e** diagrama. UC que inventa regra fora dos RF, ou que ignora RF obrigatório do fluxo → incoerência. RF de jornada sem UC, com o comportamento já no RF e com CA, **não** é impeditivo (Alta).
 
-**CA:** um caminho completo + resultado esperado, interpretável por agente (pré-condições e resultado sem ambiguidade). CA sem base em UC/RF → incoerência. **Todo UC** e **toda ramificação de RF que muda o resultado visível** precisam de CA correspondente. Falta disso → **impeditivo**.
+**CA:** um caminho completo + resultado esperado. Caminho novo ou alterado: pré-condições e resultado sem ambiguidade. Caminho preservado: comparação com o fluxo nomeado. CA sem base em UC/RF → incoerência. **Todo UC** e **toda ramificação nova ou alterada** precisam de CA correspondente. Falta disso → **impeditivo**. “Como hoje”, sem nomear o fluxo, também é impeditivo.
 
 ### Suficiência (sem como técnico)
 
-RF + UC devem bastar para entender o problema, **onde** no produto (tela, jornada, ator) e **como** o sistema se comporta (regras, mensagens, estados). Os **CA** devem bastar para o agente validar cada caminho. “Como” é comportamento, não solução técnica.
+RF + UC devem bastar para entender o problema, **onde** no produto (tela, jornada, ator) e **o que muda**. O comportamento mantido basta estar nomeado. Os **CA**, com as referências declaradas no DERS, devem bastar para validar cada caminho novo ou alterado. “Como” é comportamento, não solução técnica.
 
 Defeito: classe, método, gem, framework, rota, controller, job, migration, tabela, coluna, path, endpoint, factory, nome de arquivo. Não exigir performance, deploy ou stack. Não sugerir desenho de código.
 
 ### Qualidade do texto
 
-Português brasileiro. Sem “etc.”, “quando aplicável”, “pode”, “a definir”. Sem repetir a mesma regra entre Cenário, RF e passo de UC. Se o dev precisa saber, está escrito. Impactos, se existirem: slug do repositório e tela — não nome comercial no lugar do slug.
+Português brasileiro. Sem “etc.”, “quando aplicável”, “pode”, “a definir”. Problema de repetição: redefinir a base ou repetir condição transversal em cada RF, UC e CA. Objetivo no Cenário e resultado no CA do caminho novo não são esse problema. Se o dev precisa saber de regra **nova ou alterada**, está escrita. Regra mantida está referenciada, não reescrita. Impactos, se existirem: slug do repositório e tela — não nome comercial no lugar do slug.
 
 ### Calibração do impeditivo
 
 Duas perguntas, **antes** de classificar cada achado:
 
-1. **Dá para implementar o recorte que o texto colocou no escopo sem inventar regra de negócio?**
-2. **Dá para aceitar ou rejeitar cada caminho desse recorte só com os CA, sem inventar cenário de teste?**
+1. **Dá para implementar o recorte sem inventar regra nova ou alterada, com o texto e as referências normativas declaradas?**
+2. **Dá para aceitar ou rejeitar cada caminho novo ou alterado com os CA e essas referências, sem inventar cenário de teste?**
 
 Qualquer **não** → **Pontos críticos**. `Pronto: não`.
 Os dois **sim** → **Demais problemas**. Não subir para crítico por rigor de estilo.
 
 Regra de negócio = valor inicial, obrigatoriedade, recusa, estado, mensagem, critério de cálculo, o que entra ou sai do recorte.
 
-Não é regra de negócio **nem** falha de aceite (logo **não** é impeditivo): RF repetido, RF de fluxo sem UC quando o RF já descreve o comportamento **e** o CA cobre o resultado, UC sem diagrama, “pode”, termo técnico isolado, script/deploy/pipeline quando o efeito de negócio já está escrito, RF de definição/invariante já embutido noutro CA. Título do item ou do doc **nunca** entra nesta calibração.
+Não é regra de negócio **nem** falha de aceite (logo **não** é impeditivo): RF de preservação que agrupa etapas existentes; consequências da mesma decisão no mesmo RF; comparação com fluxo nomeado; um CA para família de bloqueios inalterados; ausência da transcrição da base; RF repetido; RF de fluxo sem UC quando o RF já descreve o comportamento **e** o CA cobre o resultado; UC sem diagrama; “pode”; termo técnico isolado; script/deploy/pipeline quando o efeito de negócio já está escrito; RF de definição/invariante já embutido noutro CA. Título do item ou do doc **nunca** entra nesta calibração.
 
-**Estabilidade:** o mesmo texto DERS → o mesmo veredito. Na dúvida entre crítico e alta, repetir as duas perguntas. Não rebaixar buraco de regra **nem** caminho sem CA para alta.
+Continua impeditivo: referência vaga; delta sem regra; caminho novo ou alterado sem CA; contradição; exceção ou precedência não escrita.
+
+**Estabilidade:** o mesmo texto DERS → o mesmo veredito. Na dúvida entre crítico e alta, repetir as duas perguntas. Não rebaixar buraco de regra **nova ou alterada** nem caminho **novo ou alterado** sem CA para alta. Não promover a crítico a falta de transcrição da base.
 
 `Pronto: sim` só se **Pontos críticos** = nenhum.
 
@@ -122,7 +139,7 @@ Não é regra de negócio **nem** falha de aceite (logo **não** é impeditivo):
 
 | Gravidade | Quando |
 |-----------|--------|
-| **Impeditivo** | Qualquer das duas perguntas deu não: DERS ausente; Cenário inexistente ou incompleto; teste de compreensão falhou; contradição RF/UC; duplicata que muda o escopo; documento só técnico; UC sem CA; ramificação de RF que muda o resultado visível sem CA. Vai em **Pontos críticos impeditivos**. Título do item **não** gera impeditivo. |
+| **Impeditivo** | Qualquer das duas perguntas deu não: DERS ausente; Cenário inexistente ou incompleto; teste de compreensão falhou; referência vaga; contradição RF/UC; duplicata que muda o escopo; documento só técnico; UC sem CA; ramificação **nova ou alterada** sem CA; exceção ou precedência não escrita. Vai em **Pontos críticos impeditivos**. Título do item **não** gera impeditivo. Ausência da transcrição da base **não** gera impeditivo. |
 | **Não impeditivo** | As duas perguntas deram sim; o trecho precisa correção. Vai em **Demais problemas**, com prioridade **alta**, **média** ou **baixa**. Não é “opcional de estilo”: é problema. |
 
 Prioridade (só para não impeditivos):
@@ -130,7 +147,7 @@ Prioridade (só para não impeditivos):
 | Prioridade | Quando |
 |------------|--------|
 | **Alta** | Coesão fraca (sem título), UC sem RF, RF de jornada sem UC **quando o RF já basta e o CA cobre o resultado**, Cenário frouxo, como técnico (script/deploy) com efeito de negócio já escrito |
-| **Média** | RF não atômico, repetição da mesma regra, termo técnico isolado, UC sem diagrama |
+| **Média** | Decisão nova não atômica, redefinição da base, repetição de condição transversal, termo técnico isolado, UC sem diagrama |
 | **Baixa** | Clareza, recorte, ordem, vocabulário, “pode”/“etc.”, impacto com nome comercial |
 
 Não inventar escopo. Achado só a partir do que está escrito (ou da falta explícita).
