@@ -3,11 +3,13 @@ name: criar-tarefa-no-monday
 description: >-
   Cria tarefa no Monday.com a partir de documento funcional pronto (item,
   documento, subtarefas, branch, colunas) via MCP Monday. No Dia a dia: grupo
-  Escrevendo e coluna Ação = Avaliar (fixos). Entrevista só parâmetros do
-  Monday — não redige o documento. Converte qualquer gráfico Mermaid em PNG
-  antes de adicionar ao documento. Use com /criar-tarefa-no-monday.
+  Escrevendo e coluna Ação = Avaliar (fixos). Tipo, Solicitante e Projetos
+  Impactados são obrigatórios; os projetos são os slugs da seção Impactos do
+  documento. Entrevista só parâmetros do Monday — não redige o documento.
+  Converte qualquer gráfico Mermaid em PNG antes de adicionar ao documento.
+  Use com /criar-tarefa-no-monday.
 disable-model-invocation: true
-VERSION: "1.10.0"
+VERSION: "1.11.0"
 ---
 
 # criar-tarefa-no-monday
@@ -64,12 +66,12 @@ Antes de `create_item` / `change_item_column_values`, chamar `get_board_info` no
 
 | Pedido do utilizador | O que **não** autoriza | O que fazer |
 |----------------------|------------------------|-------------|
-| “pode gerar o monday”, “cria no monday”, “gera a task” | Criar direto | Iniciar **Parâmetros Monday** (Respondidos fixos + Em aberto: Título, Branch, Prioridade) |
-| Documento `.md` pronto ou contexto da conversa | Assumir título, branch ou prioridade | **Sugerir** valores; **confirmar** com o utilizador |
+| “pode gerar o monday”, “cria no monday”, “gera a task” | Criar direto | Iniciar **Parâmetros Monday** (Respondidos fixos + Em aberto: Título, Branch, Tipo, Solicitante, Projetos Impactados, Prioridade) |
+| Documento `.md` pronto ou contexto da conversa | Assumir título, branch, Tipo, Solicitante, Projetos Impactados ou prioridade | **Sugerir** valores; **confirmar** com o utilizador |
 | “sim” à gravação do `.md` (`escrever-tarefa` ou `reportar-bug`) | Confirmação para publicar no Monday | Entrevista Monday é **fluxo separado** |
 | “sim, crie no monday” / “sim + subtarefa UX” na mesma mensagem | Autorização para Executar | Entrevista + **“Posso criar…?”**; extras na lista de subtarefas do resumo |
 
-**Proibido:** inferir branch/título do documento, reutilizar valores de sessões anteriores, ou “ser proativo” pulando a entrevista — **mesmo que o usuário peça para criar** — mesmo que pareça óbvio.
+**Proibido:** inferir branch, título, Tipo ou Solicitante do documento, tratar os slugs de Impactos como Projetos Impactados já confirmados, reutilizar valores de sessões anteriores, ou “ser proativo” pulando a entrevista — **mesmo que o usuário peça para criar** — mesmo que pareça óbvio.
 
 **Ordem obrigatória:** entrevista → checklist completo → **“Posso criar no Monday exatamente com os parâmetros acima?”** → resposta afirmativa **a essa pergunta** → **só então** MCP (turno seguinte).
 
@@ -88,19 +90,24 @@ Checklist — confirmar **todos** (exceto prioridade, opcional) antes de criar:
 | 5 | **Ação** | **Fixo:** label **Avaliar** — não perguntar; substitui o antigo **Status consolidado** (descontinuado) |
 | 6 | Prioridade | Coluna **Priority** (`priority__1`) — opcional |
 | 7 | Subtarefas | **Fixo:** lista padrão + owners do § Atribuição — **não perguntar** a lista padrão; se o utilizador pedir extra (ex.: UX), incluir na **lista nominal** do resumo e confirmar no **“Posso criar…?”** |
+| 8 | **Tipo** | Coluna **Tipo** (`label`) — **obrigatório**. Se o documento for relatório de bug, sugerir **BUG**; nos demais, perguntar o label sem escolher um por defeito |
+| 9 | **Solicitante** | Coluna **Solicitante** (`label6`) — **obrigatório**. Perguntar o label; não sugerir um por defeito |
+| 10 | **Projetos Impactados** | Coluna **Projetos Impactados** (`dropdown_mm7pg84c`) — **obrigatório**. Via de regra, os mesmos slugs da seção **Impactos** do documento — sugerir essa lista e confirmar |
 
-**Não entrevistar (não perguntar nem exigir):** coluna **Tipo** (`label`); coluna **Solicitante** (`label6`); responsáveis de **Executar** e **Corrigir** (deixar `person` vazio). Deixar vazias salvo pedido explícito do utilizador.
+**Não entrevistar (não perguntar nem exigir):** responsáveis de **Executar** e **Corrigir** (deixar `person` vazio). Deixar vazios salvo pedido explícito do utilizador.
+
+**Proibido publicar** com **Tipo**, **Solicitante** ou **Projetos Impactados** vazios. Sugestão (inclusive a lista de Impactos) só entra em **Respondidos** depois que o usuário confirmar ou corrigir.
 
 **Defaults obrigatórios do board (não entrevistar, não sobrescrever):** quadro **Dia a dia**; grupo **Escrevendo**; coluna **Ação** = **Avaliar**; subtarefas = lista padrão; **Executar** e **Corrigir** sem owner. **Proibido** criar em **Aguardando atribuição** ou gravar **Status consolidado**.
 
 ### Como conduzir
 
-1. **Primeira mensagem:** listar os campos **entrevistáveis** (1, 4, 6) com pergunta + recomendação quando o contexto sugerir (ex.: título a partir do documento; branch com `dev-…` ou `dev-fix-…`). Incluir no resumo, como já definidos: Quadro = **Dia a dia**, Grupo = **Escrevendo**, Ação = **Avaliar**, Subtarefas = lista padrão (Executar/Corrigir sem responsável). Não omitir campos “para perguntar depois”.
+1. **Primeira mensagem:** listar os campos **entrevistáveis** (1, 4, 6, 8, 9, 10) com pergunta + recomendação quando o contexto sugerir (ex.: título a partir do documento; branch com `dev-…` ou `dev-fix-…`; Tipo **BUG** se for relatório de bug; Projetos Impactados = slugs de **Impactos**). Incluir no resumo, como já definidos: Quadro = **Dia a dia**, Grupo = **Escrevendo**, Ação = **Avaliar**, Subtarefas = lista padrão (Executar/Corrigir sem responsável). Não omitir campos “para perguntar depois”.
 2. **Após cada resposta do utilizador:** atualizar o estado e mostrar de novo:
    - **Respondidos** — campo + valor confirmado (incluir Quadro, Grupo, Ação e Subtarefas padrão como fixos)
    - **Em aberto** — campos ainda sem resposta (com a pergunta / recomendação)
 3. Aceitar respostas parciais: o utilizador pode preencher um, vários ou todos os campos abertos na mesma mensagem.
-4. Repetir o passo 2 até não restar obrigatório em aberto. Prioridade (#6) pode ficar vazia se o utilizador disser que não quer. **Não** pedir Quadro, Grupo, Ação, Tipo, Solicitante, lista de subtarefas nem owners de Executar/Corrigir.
+4. Repetir o passo 2 até não restar obrigatório em aberto. Prioridade (#6) pode ficar vazia se o utilizador disser que não quer. **Tipo**, **Solicitante** e **Projetos Impactados** não podem ficar vazios. **Não** pedir Quadro, Grupo, Ação, lista de subtarefas nem owners de Executar/Corrigir.
 5. **Confirmação final** (só quando o checklist obrigatório estiver completo): resumo completo + pergunta literal **“Posso criar no Monday exatamente com os parâmetros acima?”** — **sem** MCP no mesmo turno. Só Executar após **sim** do usuário **a essa pergunta**.
 
 Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
@@ -118,6 +125,9 @@ Formato sugerido a cada turno (após a 1.ª listagem ou após cada resposta):
 
 **Em aberto:**
 - 4. Branch — valor da coluna Branch? (ex.: `dev-…` ou `dev-fix-…`)
+- 8. Tipo — label da coluna Tipo? (relatório de bug: sugestão **BUG**)
+- 9. Solicitante — label da coluna Solicitante?
+- 10. Projetos Impactados — os slugs de **Impactos** do documento (`ingressos`, …). Confirma?
 …
 ```
 
@@ -138,6 +148,21 @@ Lista padrão (obrigatória):
 
 **Título:** pode sugerir a partir do documento; o utilizador confirma ou corrige.
 
+**Tipo** (`label`, status): obrigatório. Label não vazio já existente no quadro. Se o documento for relatório de bug (`reportar-bug`, seção **Como replicar**), sugerir **BUG**. Demanda ou ajuste: perguntar, sem label por defeito. Labels: **Ajuste**, **Manutenção**, **BUG**, **IMPLANTAÇÃO**, **SEGURANÇA**, **MELHORIA**, **FUNCIONALIDADE**. Na execução, o texto tem de bater com `get_board_info`. Não criar label novo.
+
+**Solicitante** (`label6`, status): obrigatório. Perguntar qual label; não sugerir um por defeito. Labels: **SAC**, **DIRETORIA**, **ADMINISTRAÇÃO**, **RISCO**, **CONTROLADORIA**, **FINANCEIRO**, **SUPORTE**, **COMERCIAL**, **TI**, **SÓCIO TORCEDOR**, **WHITELABEL**, **FERROVIÁRIA**, **QA**, **TICKETMASTER**, **SPORT RECIFE**, **CRUZEIRO**, **VITÓRIA EC**, **SANTOS FC**, **Eduardo Lagares**. **COMERCIAL** e **SÓCIO TORCEDOR** existem duas vezes no quadro: gravar `{"label": "<texto>"}`; se a API recusar a duplicata, usar o `index` menor entre os labels ativos com esse texto. Não criar label novo.
+
+**Projetos Impactados** (`dropdown_mm7pg84c`, dropdown): obrigatório. Via de regra, os mesmos repositórios eleitos na seção **Impactos** do documento.
+
+1. Ler a seção **Impactos** (`### **Impactos:**` ou equivalente).
+2. De cada bullet, ficar só com o slug do repositório — o texto antes de ` — ` quando houver tela (`assinaturas-adm — Tela Faturas` → `assinaturas-adm`).
+3. Ignorar placeholder (`_A confirmar com o usuário._`, `_A preencher._`) e o bullet `nenhum`.
+4. Sugerir essa lista na entrevista. O usuário confirma ou corrige. Sem essa resposta, o campo continua **Em aberto**.
+5. Cada valor tem de ser um label já existente no dropdown. Slug do documento que não exista no dropdown: avisar na mesma pergunta e pedir o label existente correspondente. Não criar label (`createLabelsIfMissing` proibido nesta coluna).
+6. Lista vazia no documento (`nenhum`, seção ausente ou só placeholder): o campo continua obrigatório — perguntar quais projetos marcar. Não publicar com a coluna vazia.
+
+Labels atuais do dropdown (conferir na execução com `get_board_info`): `auth2`, `ingressos`, `assinaturas`, `assinaturas-adm`, `vitrine-rails`, `checkout`, `account`, `site-v2`, `produtor`, `partner-api`, `comissarios`, `baladapp-react`, `baladapp-react-components`, `baladapp-mapa-assentos`, `biometria-facial`, `custom-errors`, `ingressos-api`, `facial-biometria`, `gatekeeper`, `auth-adm`, `virtual-waiting-room`, `sales_analytics`, `vendedor-api`.
+
 ## Referência — quadro Dia a dia (fixo)
 
 Valores usados no time; quadro **sempre** Dia a dia — **não perguntar**:
@@ -149,8 +174,9 @@ Valores usados no time; quadro **sempre** Dia a dia — **não perguntar**:
 | Branch | `texto` |
 | Documento | `monday_doc` |
 | **Ação** | resolver `column_id` via `get_board_info` pelo título **Ação** — label **`Avaliar`** |
-| Tipo | `label` — **não entrevistar**; não preencher por defeito |
-| Solicitante | `label6` — **não entrevistar**; não preencher por defeito |
+| **Tipo** | `label` — **obrigatório**; status `{"label": "<confirmado>"}` |
+| **Solicitante** | `label6` — **obrigatório**; status `{"label": "<confirmado>"}` |
+| **Projetos Impactados** | `dropdown_mm7pg84c` — **obrigatório**; dropdown `{"labels": ["<slug>", …]}`; via de regra os slugs de **Impactos** |
 | Subtarefas | coluna `subelementos` → board `4571892432` |
 | Owner subtarefa | coluna `person` no subitem |
 | Status subtarefa | coluna `status` — label `A fazer` |
@@ -183,15 +209,27 @@ Ele imprime uma linha por diagrama (`UC n <caminho> <largura>x<altura>`) e sai c
 
 **Nunca inserir imagem que não saiu do script.** Escrever mermaid solto no shell e colar URL no `create_block` foi exatamente o que publicou quatro imagens quebradas em `flowchart TD` — o endpoint `kroki.io/mermaid` vive fora do ar e ninguém percebe, porque o Monday aceita a URL e mostra imagem vazia.
 
-Preferir `asset_id` nativo quando o board tiver coluna de arquivo (imagem fica no Monday, não apodrece); sem coluna de arquivo, `public_url` do renderer verificado.
+**Hospedagem no Monday (obrigatório):** depois do script, enviar **cada PNG como asset** do Monday e inserir no doc com `asset_id`. **Proibido** `public_url` de mermaid.ink, kroki ou outro host externo no `create_block` — hotlink quebra ou cai fora; `replace_block` com URL externa já publicou imagens inválidas.
+
+### Upload PNG → asset (antes de inserir no doc)
+
+Para cada arquivo `ucN.png` gerado pelo script (na ordem dos UCs):
+
+1. `get_asset_upload_url` — `fileName`, `contentType: image/png`, `fileSize` em bytes.
+2. `curl -si -X PUT` no `upload_url` com `--data-binary @ucN.png` — capturar header `ETag` (sem aspas).
+3. `finalize_asset_upload` — `uploadId`, `etag`, `boardId` do item pai, `itemId` da tarefa, `columnId: monday_doc`.
+4. **Asset id:** se a resposta trouxer `asset_id`, usar esse valor. Se falhar com `CellLimitExceededException` (coluna Documento já tem doc e não aceita anexo), o asset **mesmo assim é criado** — extrair `assetId` do JSON em `variables.value` / mensagem de erro (ex.: `"assetId":"3316844352"`).
+5. Guardar mapa `UC N → asset_id` para o passo seguinte.
+
+Detalhes e limites do board **Dia a dia**: [reference-mermaid-monday.md](reference-mermaid-monday.md) § Upload como asset Monday.
 
 ### Inserir no documento
 
 1. **Não** enviar blocos ` ```mermaid ` no `create_doc` / `add_markdown_content`.
 2. Criar documento só com texto (títulos, prosa, RFs).
 3. `read_docs` com `include_blocks: true` — localizar o **último bloco** de cada UC (normalmente o último item da lista de passos).
-4. `update_doc` → `create_block` com `block_type: "image"`, `asset_id` (preferencial) ou `public_url`, `after_block_id` = id desse último bloco do UC.
-5. **Não** usar só `replace_block` no bloco mermaid antigo — reposiciona imagens no fim do doc. Preferir `create_block` com `after_block_id`.
+4. `update_doc` → `create_block` com `block_type: "image"`, **`asset_id`** (do upload acima), `width: 700`, `after_block_id` = id desse último bloco do UC.
+5. Inserir **de UC 6 → UC 1** (ou apagar imagens erradas primeiro) para não deslocar âncoras. **Não** usar `replace_block` para corrigir posição — tende a jogar imagens no **fim** do doc; usar `delete_blocks` nas imagens mal colocadas + `create_block` com `after_block_id` correto.
 6. Pode criar um bloco de texto vazio antes/depois da imagem para separação visual, mas isso **não corrige** imagem com proporção ou largura errada.
 7. Verificar com **um** `read_docs` (blocos + comentários numa só leitura):
    - sequência por UC: passos → imagem → título do próximo UC (espaçadores opcionais);
@@ -210,7 +248,7 @@ Quando o documento já existe e o conteúdo funcional mudou (feedback, renumera�
 - **Editar bloco a bloco é o padrão.** Mudança pontual (uma linha, um RF, um título) → `update_block` só nos blocos afetados, numa única chamada. Reescrever o corpo (`delete_blocks` + `add_markdown_content`) é exceção, reservada a mudança estrutural em cascata: renumeração de RFs, seções reagrupadas, ordem alterada. Refazer ~150 blocos para trocar uma linha custa minutos, força reler o doc inteiro e derruba a âncora de todos os comentários. **Não** decidir com base em preservar comentários.
 - **Diagrama só re-renderiza se o mermaid mudou.** Comparar o bloco mermaid do `.md` com o que já está publicado: fonte idêntica → manter a imagem existente, sem rodar o script e sem refazer o `create_block`.
 - **Comentários:** os ancorados em blocos reescritos somem junto; os de documento (sem âncora) sobrevivem. É aceitável — não é critério para escolher o método.
-- **Diagramas cujo texto mudou** (ex.: número de RF citado): atualizar o bloco mermaid no `.md`, rodar o script e reinserir com `create_block` + `after_block_id`. Bloco de imagem é imutável: apagar o antigo, nunca deixar os dois.
+- **Diagramas cujo texto mudou** (ex.: número de RF citado): atualizar o bloco mermaid no `.md`, rodar o script, **novo upload asset**, `delete_blocks` na imagem antiga e `create_block` + `after_block_id`. Bloco de imagem é imutável: nunca deixar duas imagens no mesmo UC.
 - **Limites da API:** `delete_blocks` aceita ≤ 100 IDs por operação e `update_doc` ≤ 25 operações por chamada — dividir em lotes quando o doc for grande.
 
 ## Fluxo de criação
@@ -219,23 +257,27 @@ Quando o documento já existe e o conteúdo funcional mudou (feedback, renumera�
 1. Obter documento pronto (ler ficheiro ou aceitar texto na invocação)
 2. Entrevista — só parâmetros Monday (checklist acima)
 3. get_board_info(boardId = Dia a dia `4571892384`)
-4. create_item — name, groupId = **Escrevendo**, columnValues (**Ação** = **Avaliar**; sem Tipo/Solicitante por defeito)
+4. create_item — name, groupId = **Escrevendo**, columnValues (**Ação** = **Avaliar**; **Tipo**; **Solicitante**; **Projetos Impactados**; Branch em `texto`)
 5. Rodar o script `render_diagramas.py` sobre o `.md` — exit 0 obrigatório antes de seguir
 6. create_doc — location: item, item_id, column_id: monday_doc, markdown **sem** nenhum bloco mermaid
-7. update_doc → create_block (imagem) com `after_block_id` após o último passo de cada UC
-8. create_items — subtarefas padrão com parentItemId, person + status por subtarefa
-9. change_item_column_values — branch em texto com prefixo `dev-` ou `dev-fix-` (e outros campos se faltarem)
-10. read_docs + get_assets (quando usar asset) — validar ordem, geometria e alinhamento
-11. Responder com URLs do item, documento e subtarefas
+7. Upload de **cada** `ucN.png` → asset Monday (`get_asset_upload_url` + PUT + `finalize_asset_upload`); obter `asset_id` por UC
+8. `update_doc` → `create_block` (imagem com **`asset_id`**, `width: 700`) com `after_block_id` após o último passo de cada UC
+9. create_items — subtarefas padrão com parentItemId, person + status por subtarefa
+10. change_item_column_values — só o que o `create_item` não gravou (Branch, Tipo, Solicitante, Projetos Impactados). Não encerrar com algum desses vazio
+11. `read_docs` (`include_blocks: true`) — validar ordem UC → imagem → próximo UC; `get_assets` se precisar conferir PNG
+12. Responder com URLs do item, documento e subtarefas
 ```
 
 ### columnValues — formato
 
 Ação (principal): `{"<column_id_acao>": {"label": "Avaliar"}}` — `column_id` via `get_board_info`  
+Tipo: `{"label": {"label": "<confirmado>"}}`  
+Solicitante: `{"label6": {"label": "<confirmado>"}}`  
+Projetos Impactados: `{"dropdown_mm7pg84c": {"labels": ["ingressos", "assinaturas-adm"]}}` — array mesmo com um valor; labels = slugs confirmados  
 Texto (branch): string direta em `texto` (prefixo `dev-` ou `dev-fix-`)  
 People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}` — `Testar` leva os dois owners no mesmo array  
 **Não** escrever em **Status consolidado**.  
-**Não** preencher **Tipo** nem **Solicitante** salvo pedido explícito.
+**Não** publicar sem **Tipo**, **Solicitante** e **Projetos Impactados**. **Não** usar `createLabelsIfMissing` nessas três colunas.
 
 ### Atribuição
 
@@ -263,7 +305,7 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 ## Tarefa criada
 
 **Item:** [título](url)
-- Quadro / Grupo (Escrevendo) / Ação (Avaliar) / Branch (`dev-…` ou `dev-fix-…`) / Prioridade (se houver)
+- Quadro / Grupo (Escrevendo) / Ação (Avaliar) / Branch (`dev-…` ou `dev-fix-…`) / Tipo / Solicitante / Projetos Impactados / Prioridade (se houver)
 
 **Documento:** [nome](doc_url)
 - Diagramas: N imagens (se aplicável)
@@ -278,13 +320,17 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 | Problema | Ação |
 |----------|------|
 | Imagens no fim ou no topo do doc | `delete_blocks` + `create_block` com `after_block_id` correto; `create_block` sem `after_block_id` vai para o topo |
-| Imagem vazia / `aspectRatio` igual em diagramas diferentes | Renderer devolveu erro. Rodar o script (ele detecta), trocar o renderer no topo dele e reinserir |
+| Imagem vazia / `aspectRatio` igual em diagramas diferentes | Renderer devolveu erro. Rodar o script (ele detecta), trocar o renderer no topo dele, re-upload asset e reinserir com `asset_id` |
+| Imagens só no fim do doc (após CAs) | Causa comum: `replace_block` ou `create_block` sem `after_block_id`. `delete_blocks` nas imagens + `create_block` após o último passo de cada UC |
+| URL mermaid.ink / kroki no doc | Proibido. Só PNG do script + `asset_id` Monday |
 | Diagrama vertical (`flowchart TD`) | Reescrever em `flowchart LR` no `.md` e rodar o script; ele recusa TD |
 | Imagem sobreposta ao texto | Medir o PNG e a altura exibida; corrigir orientação/proporção e substituir a imagem. Espaçadores não corrigem geometria errada |
 | Diagrama ilegível por ser muito largo | Simplificar nós/rótulos ou reorganizar o fluxo; renderizar e medir novamente antes de publicar |
 | Título vazio, duplicado ou desalinhado | `read_docs`; remover duplicata e normalizar conteúdo, negrito e alinhamento `LEFT` |
 | Mermaid como código no Monday | Remover; substituir por imagem |
-| Label de status inexistente | `get_board_info` → labels exatos; ou `createLabelsIfMissing: true` |
+| Label de status inexistente | `get_board_info` → labels exatos. Em **Tipo**, **Solicitante** e **Projetos Impactados**, não criar label; voltar à entrevista |
+| Tipo, Solicitante ou Projetos Impactados vazio | Não publicar. Os três são obrigatórios |
+| Slug de Impactos sem label no dropdown | Não criar label. Perguntar qual label existente usar |
 | Grupo/coluna descontinuados | Não usar **Aguardando atribuição** nem **Status consolidado**; usar **Escrevendo** e **Ação = Avaliar** |
 | Prefixo de branch legado | Não usar `feat/` nem `fix/`; usar `dev-` ou `dev-fix-` |
 | MCP Monday indisponível | Parar; não inventar IDs |
@@ -295,8 +341,12 @@ People (subtarefa): `{"personsAndTeams": [{"id": <user_id>, "kind": "person"}]}`
 - Chamar MCP Monday ou `render_diagramas.py` **antes** da confirmação explícita à **“Posso criar no Monday exatamente com os parâmetros acima?”**
 - **Mesmo turno:** texto de entrevista ou “vou confirmar…” **e** qualquer tool de Execução
 - Tratar “gera o monday”, “sim”, documento pronto ou pedido de subtarefa extra como substituto do **“Posso criar…?”**
-- Assumir título, branch ou prioridade sem resposta do utilizador na checklist (sugestão ≠ confirmado)
+- Assumir título, branch, prioridade, Tipo, Solicitante ou Projetos Impactados sem resposta do utilizador na checklist (sugestão ≠ confirmado)
+- Publicar com **Tipo**, **Solicitante** ou **Projetos Impactados** vazios
+- Criar label novo em **Tipo**, **Solicitante** ou **Projetos Impactados**
 - Criar item “proativamente” para poupar um turno de chat
+- Inserir diagramas com `public_url` de mermaid.ink ou qualquer CDN externo no Monday doc
+- Usar `replace_block` como atalho para “mover” imagem entre UCs
 
 ## Skills relacionadas
 
